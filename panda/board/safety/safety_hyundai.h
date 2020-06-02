@@ -8,10 +8,14 @@ const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
 const int HYUNDAI_STANDSTILL_THRSLD = 30;  // ~1kph
 const CanMsg HYUNDAI_TX_MSGS[] = {
   {832, 0, 8},  // LKAS11 Bus 0
+  {832, 1, 8},  // LKAS11 Bus 1
   {1265, 0, 4}, // CLU11 Bus 0
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
+  {1265, 1, 4}, // CLU11 Bus 1
+  {1265, 2, 4}, // CLU11 Bus 2
+..{593, 2, 8},  // MDPS12 Bus 2
+..{1057, 0, 8},  // SCC12 Bus 0
   // {1056, 0, 8}, //   SCC11,  Bus 0
-  // {1057, 0, 8}, //   SCC12,  Bus 0
   // {1290, 0, 8}, //   SCC13,  Bus 0
   // {905, 0, 8},  //   SCC14,  Bus 0
   // {1186, 0, 8}  //   4a2SCC, Bus 0
@@ -21,12 +25,12 @@ const CanMsg HYUNDAI_TX_MSGS[] = {
 //       wheel speeds stuck at 0 and we don't disengage on brake press
 // TODO: refactor addr check to cleanly re-enable commented out checks for cars that have them
 AddrCheckStruct hyundai_rx_checks[] = {
-  {.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}}},
+  //{.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}}},
   // TODO: older hyundai models don't populate the counter bits in 902
   //{.msg = {{902, 0, 8, .max_counter = 15U,  .expected_timestep = 10000U}}},
-  {.msg = {{902, 0, 8, .max_counter = 0U,  .expected_timestep = 10000U}}},
+  //{.msg = {{902, 0, 8, .max_counter = 0U,  .expected_timestep = 10000U}}},
   //{.msg = {{916, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}}},
-  {.msg = {{916, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}}},
+  //{.msg = {{916, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}}},
   {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
 };
 const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_checks[0]);
@@ -48,6 +52,15 @@ static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   }
   return cnt;
 }
+
+bool hyundai_has_scc = false;
+int OP_LKAS_live = 0;
+int OP_MDPS_live = 0;
+int OP_CLU_live = 0;
+int OP_SCC_live = 0;
+int hyundai_mdps_bus = 0;
+bool hyundai_LCAN_on_bus1 = false;
+bool hyundai_forward_bus1 = false;
 
 static uint8_t hyundai_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
@@ -86,20 +99,40 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
                                  hyundai_get_checksum, hyundai_compute_checksum,
                                  hyundai_get_counter);
 
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
 
   int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
 
-  if (valid && (bus == 0)) {
-    if (addr == 593) {
+  if (valid) {
+    // check if we have a LCAN on Bus1
+    if (bus == 1 && (addr == 1296 || addr == 524)) {
+      if (hyundai_forward_bus1 || !hyundai_LCAN_on_bus1) {
+        hyundai_LCAN_on_bus1 = true;
+        hyundai_forward_bus1 = false;
+      }
+    }
+    // check if we have a MDPS on Bus1 and LCAN not on the bus
+    if (bus == 1 && (addr == 593 || addr == 897) && !hyundai_LCAN_on_bus1) {
+      if (!hyundai_forward_bus1) {
+        hyundai_mdps_bus = bus;
+        hyundai_forward_bus1 = true;
+      }
+    }
+    // check if we have a SCC on Bus1 and LCAN not on the bus
+    if (bus == 1 && addr == 1057 && !hyundai_LCAN_on_bus1) {
+      if (!hyundai_forward_bus1) {
+        hyundai_forward_bus1 = true;
+      }
+    }
+    if (addr == 593 && bus == hyundai_mdps_bus) {
       int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ff) * 0.79) - 808; // scale down new driver torque signal to match previous one
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if (addr == 1057) {
+    if (addr == 1057 && OP_SCC_live && (bus != 1 || !hyundai_LCAN_on_bus1)) { // for cars with long control
+      hyundai_has_scc = true;
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -110,35 +143,53 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-
-    // exit controls on rising edge of gas press
-    if (addr == 608) {
-      bool gas_pressed = (GET_BYTE(to_push, 7) >> 6) != 0;
-      if (!unsafe_allow_gas && gas_pressed && !gas_pressed_prev) {
+    if (addr == 1056 && !OP_SCC_live && (bus != 1 || !hyundai_LCAN_on_bus1)) { // for cars without long control
+      hyundai_has_scc = true;
+      // 2 bits: 13-14
+      int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+      if (cruise_engaged && !cruise_engaged_prev) {
+        controls_allowed = 1;
+      }
+      if (!cruise_engaged) {
         controls_allowed = 0;
       }
-      gas_pressed_prev = gas_pressed;
+      cruise_engaged_prev = cruise_engaged;
+    }
+    // cruise control for car without SCC
+    if (addr == 871 && !hyundai_has_scc && OP_SCC_live && bus == 0) {
+      // first byte
+      int cruise_engaged = (GET_BYTES_04(to_push) & 0xFF);
+      if (cruise_engaged && !cruise_engaged_prev) {
+        controls_allowed = 1;
+      }
+      if (!cruise_engaged) {
+        controls_allowed = 0;
+      }
+      cruise_engaged_prev = cruise_engaged;
+    }
+    if (addr == 608 && !hyundai_has_scc && !OP_SCC_live && bus == 0) {
+      // bit 25
+      int cruise_engaged = (GET_BYTES_04(to_push) >> 25 & 0x1); // ACC main_on signal
+      if (cruise_engaged && !cruise_engaged_prev) {
+        controls_allowed = 1;
+      }
+      if (!cruise_engaged) {
+        controls_allowed = 0;
+      }
+      cruise_engaged_prev = cruise_engaged;
     }
 
     // sample subaru wheel speed, averaging opposite corners
-    if (addr == 902) {
+    if (addr == 902 && bus == 0) {
       int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
       hyundai_speed += (GET_BYTES_48(to_push) >> 16) & 0x3FFF;  // RL
       hyundai_speed /= 2;
       vehicle_moving = hyundai_speed > HYUNDAI_STANDSTILL_THRSLD;
     }
 
-    // exit controls on rising edge of brake press
-    if (addr == 916) {
-      bool brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
-      if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-        controls_allowed = 0;
-      }
-      brake_pressed_prev = brake_pressed;
-    }
 
     // check if stock camera ECU is on bus 0
-    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (addr == 832)) {
+    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && bus == 0 && addr == 832) {
       relay_malfunction_set();
     }
   }
@@ -160,6 +211,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   // LKA STEER: safety check
   if (addr == 832) {
+    OP_LKAS_live = 20;
     int desired_torque = ((GET_BYTES_04(to_send) >> 16) & 0x7ff) - 1024;
     uint32_t ts = TIM2->CNT;
     bool violation = 0;
@@ -208,11 +260,16 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // FORCE CANCEL: safety check only relevant when spamming the cancel button.
   // ensuring that only the cancel button press is sent (VAL 4) when controls are off.
   // This avoids unintended engagements while still allowing resume spam
-  if ((addr == 1265) && !controls_allowed) {
+  //allow clu11 to be sent to MDPS if MDPS is not on bus0
+  if ((addr == 1265) && !controls_allowed && (bus != hyundai_mdps_bus || !hyundai_mdps_bus)) { 
     if ((GET_BYTES_04(to_send) & 0x7) != 4) {
       tx = 0;
     }
   }
+
+  if (addr == 593) {OP_MDPS_live = 20;}
+  if ((addr == 1265) && (GET_BYTES_04(to_send) & 0x7) == 0) {OP_CLU_live = 20;} // only count non-button msg
+  if (addr == 1057) {OP_SCC_live = 20;}
 
   // 1 allows the message through
   return tx;
@@ -222,12 +279,57 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
 
   int bus_fwd = -1;
   int addr = GET_ADDR(to_fwd);
+  int fwd_to_bus1 = -1;
+  if (hyundai_forward_bus1){fwd_to_bus1 = 1;}
+
   // forward cam to ccan and viceversa, except lkas cmd
   if (!relay_malfunction) {
     if (bus_num == 0) {
-      bus_fwd = 2;
+      if (!OP_CLU_live || addr != 1265 || !hyundai_mdps_bus) {
+        if (!OP_MDPS_live || addr != 593) {
+          bus_fwd = hyundai_forward_bus1 ? 12 : 2;
+        } else {
+          bus_fwd = fwd_to_bus1;  // EON create MDPS for LKAS
+          OP_MDPS_live -= 1;
+        }
+      } else {
+        bus_fwd = 2; // EON create CLU12 for MDPS
+        OP_CLU_live -= 1;
+      }
     }
-    if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
+    if (bus_num == 1 && hyundai_forward_bus1) {
+      if (!OP_MDPS_live || addr != 593) {
+        if (!OP_SCC_live || addr != 1057) {
+          bus_fwd = 20;
+        } else {
+          bus_fwd = 2;  // EON create SCC12 for Car
+          OP_SCC_live -= 1;
+        }
+      } else {
+        bus_fwd = 0;  // EON create MDPS for LKAS
+        OP_MDPS_live -= 1;
+      }
+    }
+    if (bus_num == 2) {
+      if (addr != 832 || !OP_LKAS_live) {
+        if ((addr != 1057) || (!OP_SCC_live)) {
+          bus_fwd = hyundai_forward_bus1 ? 10 : 0;
+        } else {
+          bus_fwd = fwd_to_bus1;  // EON create SCC12 for Car
+          OP_SCC_live -= 1;
+        }
+      } else if (!hyundai_mdps_bus) {
+        bus_fwd = fwd_to_bus1; // EON create LKAS for Car
+        OP_LKAS_live -= 1; 
+      } else {
+        OP_LKAS_live -= 1; // EON create LKAS for Car and MDPS
+      }
+    }
+  } else {
+    if (bus_num == 0) {
+      bus_fwd = fwd_to_bus1;
+    }
+    if (bus_num == 1 && hyundai_forward_bus1) {
       bus_fwd = 0;
     }
   }
