@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# flake8: noqa
+
 """Used to Reverse/Test ELM protocol auto detect and OBD message response without a car."""
 
 import sys
@@ -10,7 +12,7 @@ import threading
 from collections import deque
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
-from panda import Panda
+from panda import Panda  # noqa: E402
 
 def lin_checksum(dat):
     return sum(dat) % 0x100
@@ -74,7 +76,7 @@ class ELMCarSimulator():
     def __lin_monitor(self):
         print("STARTING LIN THREAD")
         self.panda.set_uart_baud(2, 10400)
-        self.panda.kline_drain() # Toss whatever was already there
+        self.panda.kline_drain()  # Toss whatever was already there
 
         lin_buff = bytearray()
 
@@ -85,7 +87,7 @@ class ELMCarSimulator():
 
             lin_buff += lin_msg
             #print("    ** Buff", lin_buff)
-            if lin_buff.endswith(b'\x00\xc1\x33\xf1\x81\x66'): # Leading 0 is wakeup
+            if lin_buff.endswith(b'\x00\xc1\x33\xf1\x81\x66'):  # Leading 0 is wakeup
                 lin_buff = bytearray()
                 self.__lin_active = True
                 print("GOT LIN (KWP FAST) WAKEUP SIGNAL")
@@ -100,7 +102,7 @@ class ELMCarSimulator():
                     continue
                 if len(lin_buff) < msglen + 4: continue
                 if lin_checksum(lin_buff[:-1]) != lin_buff[-1]: continue
-                self.__lin_process_msg(lin_buff[0] & 0xF8, #Priority
+                self.__lin_process_msg(lin_buff[0] & 0xF8,  # Priority
                                        lin_buff[1], lin_buff[2], lin_buff[3:-1])
                 lin_buff = bytearray()
 
@@ -114,8 +116,8 @@ class ELMCarSimulator():
         #SEND = 0x33 # Car OBD Functional Address
         headers = struct.pack("BBB", PHYS_ADDR | len(msg), RECV, to_addr)
         if not self.__silent:
-            print("    Sending LIN", binascii.hexlify(headers+msg),
-                  hex(sum(bytearray(headers+msg))%0x100))
+            print("    Sending LIN", binascii.hexlify(headers + msg),
+                  hex(sum(bytearray(headers + msg)) % 0x100))
         self.panda.kline_send(headers + msg)
 
     def __reset_lin_timeout(self):
@@ -152,14 +154,14 @@ class ELMCarSimulator():
             if len(outmsg) <= 5:
                 self._lin_send(0x10, obd_header + outmsg)
             else:
-                first_msg_len = min(4, len(outmsg)%4) or 4
+                first_msg_len = min(4, len(outmsg) % 4) or 4
                 self._lin_send(0x10, obd_header + b'\x01' +
-                               b'\x00'*(4-first_msg_len) +
+                               b'\x00' * (4 - first_msg_len) +
                                outmsg[:first_msg_len])
 
                 for num, i in enumerate(range(first_msg_len, len(outmsg), 4)):
                     self._lin_send(0x10, obd_header +
-                                   struct.pack('B', (num+2)%0x100) + outmsg[i:i+4])
+                                   struct.pack('B', (num + 2) % 0x100) + outmsg[i:i + 4])
 
     #########################
     # CAN related functions #
@@ -168,7 +170,7 @@ class ELMCarSimulator():
     def __can_monitor(self):
         print("STARTING CAN THREAD")
         self.panda.set_can_speed_kbps(0, self.__can_kbaud)
-        self.panda.can_recv() # Toss whatever was already there
+        self.panda.can_recv()  # Toss whatever was already there
 
         while not self.__stop:
             for address, ts, data, src in self.panda.can_recv():
@@ -201,11 +203,11 @@ class ELMCarSimulator():
     def _can_send(self, addr, msg):
         if not self.__silent:
             print("    CAN Reply (%x)" % addr, binascii.hexlify(msg))
-        self.panda.can_send(addr, msg + b'\x00'*(8-len(msg)), 0)
+        self.panda.can_send(addr, msg + b'\x00' * (8 - len(msg)), 0)
         if self.__can_extra_noise_msgs:
             noise = self.__can_extra_noise_msgs.popleft()
             self.panda.can_send(noise[0] if noise[0] is not None else addr,
-                             noise[1] + b'\x00'*(8-len(noise[1])), 0)
+                             noise[1] + b'\x00' * (8 - len(noise[1])), 0)
 
     def _can_addr_matches(self, addr):
         if self.__can11b and (addr == 0x7DF or (addr & 0x7F8) == 0x7E0):
@@ -216,7 +218,7 @@ class ELMCarSimulator():
 
     def __can_process_msg(self, mode, pid, address, ts, data, src):
         if not self.__silent:
-            print("CAN MSG", binascii.hexlify(data[1:1+data[0]]),
+            print("CAN MSG", binascii.hexlify(data[1:1 + data[0]]),
                   "Addr:", hex(address), "Mode:", hex(mode)[2:].zfill(2),
                   "PID:", hex(pid)[2:].zfill(2), "canLen:", len(data),
                   binascii.hexlify(data))
@@ -225,7 +227,7 @@ class ELMCarSimulator():
             outmsg = None
             if data[:3] == b'\x30\x00\x00' and len(self.__can_multipart_data):
                 if not self.__silent:
-                    print("Request for more data");
+                    print("Request for more data")
                 outaddr = 0x7E8 if address == 0x7DF or address == 0x7E0 else 0x18DAF110
                 msgnum = 1
                 while(self.__can_multipart_data):
@@ -233,7 +235,7 @@ class ELMCarSimulator():
                     msgpiece = struct.pack("B", 0x20 | msgnum) + self.__can_multipart_data[:datalen]
                     self._can_send(outaddr, msgpiece)
                     self.__can_multipart_data = self.__can_multipart_data[7:]
-                    msgnum = (msgnum+1)%0x10
+                    msgnum = (msgnum + 1) % 0x10
                     time.sleep(0.01)
 
             else:
@@ -244,13 +246,13 @@ class ELMCarSimulator():
 
                 if len(outmsg) <= 5:
                     self._can_send(outaddr,
-                                   struct.pack("BBB", len(outmsg)+2, 0x40|data[1], pid) + outmsg)
+                                   struct.pack("BBB", len(outmsg) + 2, 0x40 | data[1], pid) + outmsg)
                 else:
-                    first_msg_len = min(3, len(outmsg)%7)
-                    payload_len = len(outmsg)+3
-                    msgpiece = struct.pack("BBBBB", 0x10 | ((payload_len>>8)&0xF),
-                                           payload_len&0xFF,
-                                           0x40|data[1], pid, 1) + outmsg[:first_msg_len]
+                    first_msg_len = min(3, len(outmsg) % 7)
+                    payload_len = len(outmsg) + 3
+                    msgpiece = struct.pack("BBBBB", 0x10 | ((payload_len >> 8) & 0xF),
+                                           payload_len & 0xFF,
+                                           0x40 | data[1], pid, 1) + outmsg[:first_msg_len]
                     self._can_send(outaddr, msgpiece)
                     self.__can_multipart_data = outmsg[first_msg_len:]
 
@@ -259,32 +261,32 @@ class ELMCarSimulator():
     #########################
 
     def _process_obd(self, mode, pid):
-        if mode == 0x01: # Mode: Show current data
-            if pid == 0x00:   #List supported things
-                return b"\xff\xff\xff\xfe"#b"\xBE\x1F\xB8\x10" #Bitfield, random features
-            elif pid == 0x01: # Monitor Status since DTC cleared
-                return b"\x00\x00\x00\x00" #Bitfield, random features
-            elif pid == 0x04: # Calculated engine load
+        if mode == 0x01:  # Mode: Show current data
+            if pid == 0x00:  # List supported things
+                return b"\xff\xff\xff\xfe"  # b"\xBE\x1F\xB8\x10" #Bitfield, random features
+            elif pid == 0x01:  # Monitor Status since DTC cleared
+                return b"\x00\x00\x00\x00"  # Bitfield, random features
+            elif pid == 0x04:  # Calculated engine load
                 return b"\x2f"
-            elif pid == 0x05: # Engine coolant temperature
+            elif pid == 0x05:  # Engine coolant temperature
                 return b"\x3c"
-            elif pid == 0x0B: # Intake manifold absolute pressure
+            elif pid == 0x0B:  # Intake manifold absolute pressure
                 return b"\x90"
-            elif pid == 0x0C: # Engine RPM
+            elif pid == 0x0C:  # Engine RPM
                 return b"\x1A\xF8"
-            elif pid == 0x0D: # Vehicle Speed
+            elif pid == 0x0D:  # Vehicle Speed
                 return b"\x53"
-            elif pid == 0x10: # MAF air flow rate
+            elif pid == 0x10:  # MAF air flow rate
                 return b"\x01\xA0"
-            elif pid == 0x11: # Throttle Position
+            elif pid == 0x11:  # Throttle Position
                 return b"\x90"
-            elif pid == 0x33: # Absolute Barometric Pressure
+            elif pid == 0x33:  # Absolute Barometric Pressure
                 return b"\x90"
-        elif mode == 0x09: # Mode: Request vehicle information
+        elif mode == 0x09:  # Mode: Request vehicle information
             if pid == 0x02:   # Show VIN
                 return b"1D4GP00R55B123456"
             if pid == 0xFC:   # test long multi message. Ligned up for LIN responses
-                return b''.join((struct.pack(">BBH", 0xAA, 0xAA, num+1) for num in range(80)))
+                return b''.join((struct.pack(">BBH", 0xAA, 0xAA, num + 1) for num in range(80)))
             if pid == 0xFD:   # test long multi message
                 parts = (b'\xAA\xAA\xAA' + struct.pack(">I", num) for num in range(80))
                 return b'\xAA\xAA\xAA' + b''.join(parts)
@@ -292,8 +294,8 @@ class ELMCarSimulator():
                 parts = (b'\xAA\xAA\xAA' + struct.pack(">I", num) for num in range(584))
                 return b'\xAA\xAA\xAA' + b''.join(parts) + b'\xAA'
             if pid == 0xFF:
-                return b'\xAA\x00\x00' +\
-                        b"".join(((b'\xAA'*5)+struct.pack(">H", num+1) for num in range(584)))
+                return b'\xAA\x00\x00' + \
+                       b"".join(((b'\xAA' * 5) + struct.pack(">H", num + 1) for num in range(584)))
                 #return b"\xAA"*100#(0xFFF-3)
 
 
@@ -312,6 +314,7 @@ if __name__ == "__main__":
         sim.can_mode_29b()
 
     import signal
+
     def signal_handler(signal, frame):
         print('\nShutting down simulator')
         sim.stop()

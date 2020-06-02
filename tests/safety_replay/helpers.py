@@ -46,7 +46,7 @@ def get_steer_torque(mode, to_send):
 
 def set_desired_torque_last(safety, mode, torque):
   if mode in [Panda.SAFETY_HONDA_NIDEC, Panda.SAFETY_HONDA_BOSCH_GIRAFFE, Panda.SAFETY_HONDA_BOSCH_HARNESS]:
-    pass # honda safety mode doesn't enforce a rate on steering msgs
+    pass  # honda safety mode doesn't enforce a rate on steering msgs
   elif mode == Panda.SAFETY_TOYOTA:
     safety.set_toyota_desired_torque_last(torque)
   elif mode == Panda.SAFETY_GM:
@@ -87,4 +87,3 @@ def init_segment(safety, lr, mode):
     safety.set_controls_allowed(1)
     set_desired_torque_last(safety, mode, torque)
     assert safety.safety_tx_hook(to_send), "failed to initialize panda safety for segment"
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import matplotlib.pyplot as plt # pylint: disable=import-error
+import matplotlib.pyplot as plt  # pylint: disable=import-error
 
 HASHING_PRIME = 23
 REGISTER_MAP_SIZE = 0x3FF
@@ -32,7 +32,7 @@ def hash(reg_addr):
 hashes = []
 double_hashes = []
 for (start_addr, stop_addr) in REGISTER_ADDRESS_REGIONS:
-  for addr in range(start_addr, stop_addr+1, BYTES_PER_REG):
+  for addr in range(start_addr, stop_addr + 1, BYTES_PER_REG):
     h = hash(addr)
     hashes.append(h)
     double_hashes.append(hash(h))

@@ -23,7 +23,7 @@ def replay_drive(lr, safety_mode, param):
   for msg in lr:
     if start_t is None:
       start_t = msg.logMonoTime
-    safety.set_timer(((msg.logMonoTime // 1000))  % 0xFFFFFFFF)
+    safety.set_timer(((msg.logMonoTime // 1000)) % 0xFFFFFFFF)
 
     if msg.which() == 'sendcan':
      for canmsg in msg.sendcan:
@@ -35,7 +35,7 @@ def replay_drive(lr, safety_mode, param):
           blocked_addrs.add(canmsg.address)
 
           if "DEBUG" in os.environ:
-            print("blocked bus %d msg %d at %f" % (canmsg.src, canmsg.address, (msg.logMonoTime - start_t)/(1e9)))
+            print("blocked bus %d msg %d at %f" % (canmsg.src, canmsg.address, (msg.logMonoTime - start_t) / (1e9)))
         tx_controls += safety.get_controls_allowed()
         tx_tot += 1
     elif msg.which() == 'can':
@@ -65,7 +65,7 @@ def replay_drive(lr, safety_mode, param):
 
 if __name__ == "__main__":
   from tools.lib.route import Route
-  from tools.lib.logreader import MultiLogIterator # pylint: disable=import-error
+  from tools.lib.logreader import MultiLogIterator  # pylint: disable=import-error
 
   mode = int(sys.argv[2])
   param = 0 if len(sys.argv) < 4 else int(sys.argv[3])
@@ -75,4 +75,3 @@ if __name__ == "__main__":
   print("replaying drive %s with safety mode %d and param %d" % (sys.argv[1], mode, param))
 
   replay_drive(lr, mode, param)
-
