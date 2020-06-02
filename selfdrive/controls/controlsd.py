@@ -44,12 +44,12 @@ class Controls:
     # Setup sockets
     self.pm = pm
     if self.pm is None:
-      self.pm = messaging.PubMaster(['sendcan', 'controlsState', 'carState', \
+      self.pm = messaging.PubMaster(['sendcan', 'controlsState', 'carState',
                                      'carControl', 'carEvents', 'carParams'])
 
     self.sm = sm
     if self.sm is None:
-      self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration', \
+      self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration',
                                      'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman'])
 
     self.can_sock = can_sock
@@ -76,8 +76,8 @@ class Controls:
               internet_needed or not openpilot_enabled_toggle
 
     # detect sound card presence and ensure successful init
-    sounds_available = not os.path.isfile('/EON') or (os.path.isfile('/proc/asound/card0/state') \
-                            and open('/proc/asound/card0/state').read().strip() == 'ONLINE')
+    sounds_available = (not os.path.isfile('/EON') or (os.path.isfile('/proc/asound/card0/state') and
+                        open('/proc/asound/card0/state').read().strip() == 'ONLINE'))
 
     car_recognized = self.CP.carName != 'mock'
     # If stock camera is disconnected, we loaded car controls and it's not dashcam mode
@@ -139,13 +139,12 @@ class Controls:
       self.events.add(EventName.communityFeatureDisallowed, static=True)
     if self.read_only and not passive:
       self.events.add(EventName.carUnrecognized, static=True)
-    # if hw_type == HwType.whitePanda:
-    #   self.events.add(EventName.whitePandaUnsupported, static=True)
+    if hw_type == HwType.whitePanda:
+      self.events.add(EventName.whitePandaUnsupported, static=True)
 
     # controlsd is driven by can recv, expected at 100Hz
     self.rk = Ratekeeper(100, print_delay_threshold=None)
     self.prof = Profiler(False)  # off by default
-
 
   def update_events(self, CS):
     """Compute carEvents from carState"""
@@ -185,7 +184,7 @@ class Controls:
         self.events.add(EventName.preLaneChangeLeft)
       else:
         self.events.add(EventName.preLaneChangeRight)
-    elif self.sm['pathPlan'].laneChangeState in [LaneChangeState.laneChangeStarting, \
+    elif self.sm['pathPlan'].laneChangeState in [LaneChangeState.laneChangeStarting,
                                         LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
 
@@ -226,7 +225,6 @@ class Controls:
        and not self.CP.radarOffCan and CS.vEgo < 0.3:
       self.events.add(EventName.noTarget)
 
-
   def data_sample(self):
     """Receive data from sockets and update carState"""
 
@@ -254,7 +252,6 @@ class Controls:
       self.mismatch_counter += 1
 
     return CS
-
 
   def state_transition(self, CS):
     """Compute conditional state transitions and execute actions on state transitions"""
@@ -331,7 +328,6 @@ class Controls:
     # Check if openpilot is engaged
     self.enabled = self.active or self.state == State.preEnabled
 
-
   def state_control(self, CS):
     """Given the state, this function returns an actuators packet"""
 
@@ -381,7 +377,6 @@ class Controls:
         self.events.add(EventName.steerSaturated)
 
     return actuators, v_acc_sol, a_acc_sol, lac_log
-
 
   def publish_logs(self, CS, start_time, actuators, v_acc, a_acc, lac_log):
     """Send actuators and hud commands to the car, send controlsstate and MPC logging"""

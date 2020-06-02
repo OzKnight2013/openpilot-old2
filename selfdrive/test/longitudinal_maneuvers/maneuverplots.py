@@ -7,7 +7,7 @@ import pylab
 from selfdrive.config import Conversions as CV
 
 class ManeuverPlot():
-  def __init__(self, title = None):
+  def __init__(self, title=None):
     self.time_array = []
 
     self.gas_array = []
@@ -60,7 +60,6 @@ class ManeuverPlot():
     self.jerk_factor_array.append(jerk_factor)
     self.a_target_array.append(a_target)
     self.fcw_array.append(fcw)
-
 
   def write_plot(self, path, maneuver_name):
     # title = self.title or maneuver_name

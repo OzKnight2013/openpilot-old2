@@ -60,9 +60,9 @@ def car_plant(pos, speed, grade, gas, brake):
   #*** longitudinal model ***
   # find speed where peak torque meets peak power
   force_brake = brake * force_brake_peak * brake_to_peak_linear_slope
-  if speed < speed_base: # torque control
+  if speed < speed_base:  # torque control
     force_gas = gas * force_peak * gas_to_peak_linear_slope
-  else: # power control
+  else:  # power control
     force_gas = gas * power_peak / speed * gas_to_peak_linear_slope
 
   force_grade = - grade * mass  # positive grade means uphill
@@ -113,6 +113,7 @@ class Plant():
       Plant.sendcan = messaging.sub_sock('sendcan')
       Plant.model = messaging.pub_sock('model')
       Plant.live_params = messaging.pub_sock('liveParameters')
+      Plant.live_location_kalman = messaging.pub_sock('liveLocationKalman')
       Plant.health = messaging.pub_sock('health')
       Plant.thermal = messaging.pub_sock('thermal')
       Plant.driverState = messaging.pub_sock('driverState')
@@ -161,6 +162,7 @@ class Plant():
     Plant.logcan.close()
     Plant.model.close()
     Plant.live_params.close()
+    Plant.live_location_kalman.close()
 
   def speed_sensor(self, speed):
     if speed < 0.3:
@@ -171,7 +173,7 @@ class Plant():
   def current_time(self):
     return float(self.rk.frame) / self.rate
 
-  def step(self, v_lead=0.0, cruise_buttons=None, grade=0.0, publish_model = True):
+  def step(self, v_lead=0.0, cruise_buttons=None, grade=0.0, publish_model=True):
     gen_signals, gen_checks = get_can_signals(CP)
     sgs = [s[0] for s in gen_signals]
     msgs = [s[1] for s in gen_signals]
@@ -355,7 +357,6 @@ class Plant():
     msg_data = fix(msg_data, 0xe4)
     can_msgs.append([0xe4, 0, msg_data, 2])
 
-
     # Fake sockets that controlsd subscribes to
     live_parameters = messaging.new_message('liveParameters')
     live_parameters.liveParameters.valid = True
@@ -378,6 +379,11 @@ class Plant():
     thermal.thermal.freeSpace = 1.
     thermal.thermal.batteryPercent = 100
     Plant.thermal.send(thermal.to_bytes())
+
+    live_location_kalman = messaging.new_message('liveLocationKalman')
+    live_location_kalman.liveLocationKalman.inputsOK = True
+    live_location_kalman.liveLocationKalman.gpsOK = True
+    Plant.live_location_kalman.send(live_location_kalman.to_bytes())
 
     # ******** publish a fake model going straight and fake calibration ********
     # note that this is worst case for MPC, since model will delay long mpc by one time step

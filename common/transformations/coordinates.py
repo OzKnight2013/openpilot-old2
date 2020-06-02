@@ -5,7 +5,6 @@ with each row as a position.
 """
 
 
-
 a = 6378137
 b = 6356752.3142
 esq = 6.69437999014 * 0.001
@@ -52,7 +51,7 @@ def ecef2geodetic(ecef, radians=False):
   S = np.cbrt(1 + C + np.sqrt(C * C + 2 * C))
   P = F / (3 * pow((S + 1 / S + 1), 2) * G * G)
   Q = np.sqrt(1 + 2 * esq * esq * P)
-  r_0 = -(P * esq * r) / (1 + Q) + np.sqrt(0.5 * a * a*(1 + 1.0 / Q) - \
+  r_0 = -(P * esq * r) / (1 + Q) + np.sqrt(0.5 * a * a*(1 + 1.0 / Q) -
         P * (1 - esq) * z * z / (Q * (1 + Q)) - 0.5 * P * r * r)
   U = np.sqrt(pow((r - esq * r_0), 2) + z * z)
   V = np.sqrt(pow((r - esq * r_0), 2) + (1 - esq) * z * z)
@@ -64,6 +63,11 @@ def ecef2geodetic(ecef, radians=False):
   # stack the new columns and return to the original shape
   geodetic = np.column_stack((lat, lon, h))
   return geodetic.reshape(input_shape)
+
+
+geodetic_from_ecef = ecef2geodetic
+ecef_from_geodetic = geodetic2ecef
+
 
 class LocalCoord():
   """
@@ -90,7 +94,6 @@ class LocalCoord():
   def from_ecef(cls, init_ecef):
     init_geodetic = ecef2geodetic(init_ecef)
     return LocalCoord(init_geodetic, init_ecef)
-
 
   def ecef2ned(self, ecef):
     ecef = np.array(ecef)
