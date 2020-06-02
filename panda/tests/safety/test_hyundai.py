@@ -68,7 +68,7 @@ class TestHyundaiSafety(common.PandaSafetyTest):
 
   def _speed_msg(self, speed):
     # panda safety doesn't scale, so undo the scaling
-    values = {"WHL_SPD_%s"%s: speed*0.03125 for s in ["FL", "FR", "RL", "RR"]}
+    values = {"WHL_SPD_%s" % s: speed * 0.03125 for s in ["FL", "FR", "RL", "RR"]}
     values["WHL_SPD_AliveCounter_LSB"] = (self.cnt_speed % 16) & 0x3
     values["WHL_SPD_AliveCounter_MSB"] = (self.cnt_speed % 16) >> 2
     self.__class__.cnt_speed += 1
@@ -156,7 +156,6 @@ class TestHyundaiSafety(common.PandaSafetyTest):
       self.safety.set_torque_driver(-MAX_STEER * sign, -MAX_STEER * sign)
       self.assertFalse(self._tx(self._torque_msg((MAX_STEER - MAX_RATE_DOWN + 1) * sign)))
 
-
   def test_realtime_limits(self):
     self.safety.set_controls_allowed(True)
 
@@ -178,7 +177,6 @@ class TestHyundaiSafety(common.PandaSafetyTest):
       self.safety.set_timer(RT_INTERVAL + 1)
       self.assertTrue(self._tx(self._torque_msg(sign * (MAX_RT_DELTA - 1))))
       self.assertTrue(self._tx(self._torque_msg(sign * (MAX_RT_DELTA + 1))))
-
 
   def test_spam_cancel_safety_check(self):
     RESUME_BTN = 1
