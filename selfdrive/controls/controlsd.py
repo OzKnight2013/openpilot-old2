@@ -34,6 +34,7 @@ LongitudinalPlanSource = log.Plan.LongitudinalPlanSource
 Desire = log.PathPlan.Desire
 LaneChangeState = log.PathPlan.LaneChangeState
 LaneChangeDirection = log.PathPlan.LaneChangeDirection
+LaneChangeBSM = log.PathPlan.LaneChangeBSM
 EventName = car.CarEvent.EventName
 
 class Controls:
@@ -187,6 +188,11 @@ class Controls:
     elif self.sm['pathPlan'].laneChangeState in [LaneChangeState.laneChangeStarting,
                                         LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
+    #bsm alerts
+    if sm['pathPlan'].laneChangeBSM == LaneChangeBSM.left:
+        self.events.add(EventName.leftlanebsm)
+    if sm['pathPlan'].laneChangeBSM == LaneChangeBSM.right:
+        self.events.add(EventName.rightlanebsm)
 
     if self.can_rcv_error or (not CS.canValid and self.sm.frame > 5 / DT_CTRL):
       self.events.add(EventName.canError)
@@ -221,9 +227,9 @@ class Controls:
       self.events.add(EventName.fcw)
 
     # Only allow engagement with brake pressed when stopped behind another stopped car
-    if CS.brakePressed and self.sm['plan'].vTargetFuture >= STARTING_TARGET_SPEED \
-       and not self.CP.radarOffCan and CS.vEgo < 0.3:
-      self.events.add(EventName.noTarget)
+#    if CS.brakePressed and self.sm['plan'].vTargetFuture >= STARTING_TARGET_SPEED \
+#       and not self.CP.radarOffCan and CS.vEgo < 0.3:
+#      self.events.add(EventName.noTarget)
 
   def data_sample(self):
     """Receive data from sockets and update carState"""
@@ -366,15 +372,15 @@ class Controls:
     else:
       self.saturated_count = 0
 
-    # Send a "steering required alert" if saturation count has reached the limit
-    if (lac_log.saturated and not CS.steeringPressed) or \
-       (self.saturated_count > STEER_ANGLE_SATURATION_TIMEOUT):
-      # Check if we deviated from the path
-      left_deviation = actuators.steer > 0 and path_plan.dPoly[3] > 0.1
-      right_deviation = actuators.steer < 0 and path_plan.dPoly[3] < -0.1
+#    # Send a "steering required alert" if saturation count has reached the limit
+#    if (lac_log.saturated and not CS.steeringPressed) or \
+#       (self.saturated_count > STEER_ANGLE_SATURATION_TIMEOUT):
+#      # Check if we deviated from the path
+#      left_deviation = actuators.steer > 0 and path_plan.dPoly[3] > 0.1
+#      right_deviation = actuators.steer < 0 and path_plan.dPoly[3] < -0.1#
 
-      if left_deviation or right_deviation:
-        self.events.add(EventName.steerSaturated)
+#      if left_deviation or right_deviation:
+#        self.events.add(EventName.steerSaturated)
 
     return actuators, v_acc_sol, a_acc_sol, lac_log
 

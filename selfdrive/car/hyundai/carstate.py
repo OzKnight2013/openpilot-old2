@@ -3,6 +3,8 @@ from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
 from selfdrive.config import Conversions as CV
+from common.kalman.simple_kalman import KF1D
+from common.realtime import DT_CTRL
 
 GearShifter = car.CarState.GearShifter
 
@@ -12,20 +14,20 @@ class CarState(CarStateBase):
         super().__init__(CP)
 
         # Auto detection for setup
-        self.rightBlinker = 0
-        self.leftBlinker = 0
-        self.right_blinker_flash = 0
+        self.left_blinker_on = 0
+        self.left_blinker_on_cnt = 0
         self.left_blinker_flash = 0
-        self.rightBlinker_cnt = 0
-        self.leftBlinker_cnt = 0
-        self.right_blinker_flash_cnt = 0
         self.left_blinker_flash_cnt = 0
-
+        self.right_blinker_on = 0
+        self.right_blinker_on_cnt = 0
+        self.right_blinker_flash = 0
+        self.right_blinker_flash_cnt = 0
+        self.lca_left = 0
+        self.lca_right = 0
         self.no_radar = CP.sccBus == -1
         self.mdps_bus = CP.mdpsBus
         self.sas_bus = CP.sasBus
         self.scc_bus = CP.sccBus
-        self.lkas_button_on = 1
         self.is_set_speed_in_mph = 0
 
     def update(self, cp, cp2, cp_cam):
@@ -33,7 +35,13 @@ class CarState(CarStateBase):
         cp_sas = cp2 if self.sas_bus else cp
         cp_scc = cp2 if self.scc_bus == 1 else cp_cam if self.scc_bus == 2 else cp
 
+
         ret = car.CarState.new_message()
+
+        self.prev_left_blinker_on = self.left_blinker_on
+        self.prev_right_blinker_on = self.right_blinker_on
+        self.prev_left_blinker_flash = self.left_blinker_flash
+        self.prev_right_blinker_flash = self.right_blinker_flash
 
         ret.doorOpen = cp.vl["CGW1"]['CF_Gway_DrvDrSw'] != 0
 #        ret.passengerdoorOpen = any([cp.vl["CGW1"]['CF_Gway_AstDrSw'],
@@ -55,13 +63,34 @@ class CarState(CarStateBase):
         ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
         ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
 
-        self.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0
-        self.leftBlinker_cnt = 50 if self.leftBlinker else max(self.leftBlinker_cnt - 1, 0)
-        ret.leftBlinker = self.leftBlinker_cnt > 0
+        self.left_blinker_on_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TSigLHSw'] else max(self.left_blinker_on_cnt - 1, 0)
+        self.left_blinker_on = self.left_blinker_on_cnt > 0
+        self.right_blinker_on_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TSigRHSw'] else max(self.right_blinker_on_cnt - 1, 0)
+        self.right_blinker_on = self.right_blinker_on_cnt > 0
 
-        self.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0
-        self.rightBlinker_cnt = 50 if self.rightBlinker else max(self.rightBlinker_cnt - 1, 0)
-        ret.rightBlinker = self.rightBlinker_cnt > 0
+        ret.leftBlinker = self.left_blinker_on
+        ret.rightBlinker = self.right_blinker_on
+
+        # make blinker flash to be continuous
+        if self.v_ego > 17.5 and not self.left_blinker_on:
+          self.left_blinker_flash_cnt = 300 if cp.vl["CGW1"]['CF_Gway_TurnSigLh'] else max(self.left_blinker_flash_cnt - 1, 0)
+          self.left_blinker_flash = self.left_blinker_flash_cnt > 0
+        elif self.v_ego > 17.5 and self.left_blinker_on:
+          self.left_blinker_flash_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TurnSigLh'] else max(self.left_blinker_flash_cnt - 1, 0)
+          self.left_blinker_flash = self.left_blinker_flash_cnt > 0
+        else:
+          self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
+        if self.v_ego > 17.5 and not self.right_blinker_on:
+          self.right_blinker_flash_cnt = 300 if cp.vl["CGW1"]['CF_Gway_TurnSigRh'] else max(self.right_blinker_flash_cnt - 1, 0)
+          self.right_blinker_flash = self.right_blinker_flash_cnt > 0
+        elif self.v_ego > 17.5 and self.right_blinker_on:
+          self.right_blinker_flash_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TurnSigRh'] else max(self.right_blinker_flash_cnt - 1, 0)
+          self.right_blinker_flash = self.right_blinker_flash_cnt > 0
+        else:
+          self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
+
+        #ret.leftBlinkerflash = self.right_blinker_flash
+        #ret.rightBlinkerflash = self.right_blinker_flash
 
         ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
         ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
@@ -170,8 +199,6 @@ class CarState(CarStateBase):
         self.lkas_error = cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] == 7
         if not self.lkas_error:
             self.lkas_button_on = cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"]
-        self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
-        self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
 
         return ret
 

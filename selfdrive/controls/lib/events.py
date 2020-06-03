@@ -305,7 +305,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Lane Departure Detected",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., 2., 3.),
   },
 
   EventName.canErrorPersistent: {
@@ -415,7 +415,7 @@ EVENTS = {
       "Steer Left to Start Lane Change",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
   },
 
   EventName.preLaneChangeRight: {
@@ -423,7 +423,7 @@ EVENTS = {
       "Steer Right to Start Lane Change",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
   },
 
   EventName.laneChange: {
@@ -431,7 +431,7 @@ EVENTS = {
       "Changing Lane",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
   },
 
   EventName.steerSaturated: {
@@ -439,7 +439,39 @@ EVENTS = {
       "TAKE CONTROL",
       "Turn Exceeds Steering Limit",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
+  },
+
+  EventName.rightlanebsm: {
+    ET.WARNING: Alert(
+      "Waiting for right Lane to clear",
+      "Monitor Other Vehicles",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+  },
+
+  EventName.leftlanebsm: {
+    ET.WARNING: Alert(
+      "Waiting for right Lane to clear",
+      "Monitor Other Vehicles",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+  },
+
+  EventName.preventlanechange: {
+    ET.WARNING: Alert(
+      "TAKE CONTROL",
+      "Lane Change Cancelled, Lane Unsafe",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
+  },
+
+  EventName.lkasButtonoff: {
+    ET.WARNING: Alert(
+      "LKAS button off",
+      "",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .1),
   },
 
   # ********** events that affect controls state transitions **********

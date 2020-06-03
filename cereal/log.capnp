@@ -798,6 +798,7 @@ struct PathPlan {
   desire @17 :Desire;
   laneChangeState @18 :LaneChangeState;
   laneChangeDirection @19 :LaneChangeDirection;
+  laneChangeBSM @20 :LaneChangeBSM;
 
   enum Desire {
     none @0;
@@ -869,6 +870,12 @@ struct LiveLocationKalman {
     value @0 : List(Float64);
     std @1 : List(Float64);
     valid @2 : Bool;
+  }
+
+  enum LaneChangeBSM {
+    off @0;
+    left @1;
+    right @2;
   }
 }
 
