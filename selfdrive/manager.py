@@ -207,7 +207,7 @@ unkillable_processes = ['camerad']
 interrupt_processes: List[str] = []
 
 # processes to end with SIGKILL instead of SIGTERM
-kill_processes = ['sensord', 'paramsd']
+kill_processes = ['sensord']
 
 # processes to end if thermal conditions exceed Green parameters
 green_temp_processes = ['uploader']
@@ -224,6 +224,7 @@ if ANDROID:
     'logcatd',
     'tombstoned',
     'updated',
+    'deleter',
   ]
 
 car_started_processes = [
@@ -252,7 +253,6 @@ if ANDROID:
     'clocksd',
     'gpsd',
     'dmonitoringmodeld',
-    'deleter',
   ]
 
 def register_managed_process(name, desc, car_started=False):

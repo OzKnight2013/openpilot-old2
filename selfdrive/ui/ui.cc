@@ -6,8 +6,6 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
-
-#include <json.h>
 #include <czmq.h>
 
 #include "common/util.h"
@@ -18,7 +16,6 @@
 #include "common/params.h"
 
 #include "ui.hpp"
-#include "sound.hpp"
 #include "dashcam.h"
 
 
