@@ -822,6 +822,11 @@ struct PathPlan {
     left @1;
     right @2;
   }
+  enum LaneChangeBSM {
+    off @0;
+    left @1;
+    right @2;
+  }
 }
 
 struct LiveLocationKalman {
@@ -870,12 +875,6 @@ struct LiveLocationKalman {
     value @0 : List(Float64);
     std @1 : List(Float64);
     valid @2 : Bool;
-  }
-
-  enum LaneChangeBSM {
-    off @0;
-    left @1;
-    right @2;
   }
 }
 
