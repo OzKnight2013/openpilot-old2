@@ -15,7 +15,7 @@ class CarInterface(CarInterfaceBase):
     return float(accel) / 4.0
 
   @staticmethod
-  def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
+  def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):  # pylint: disable=dangerous-default-value
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint, has_relay)
 
     ret.carName = "mazda"
@@ -77,7 +77,7 @@ class CarInterface(CarInterfaceBase):
     events = self.create_common_events(ret)
 
     if self.CS.low_speed_lockout:
-      events.add(EventName.speedTooLow)
+      events.add(EventName.belowEngageSpeed)
 
     if self.CS.low_speed_alert:
       events.add(EventName.belowSteerSpeed)
