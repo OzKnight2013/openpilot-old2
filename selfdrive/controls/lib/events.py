@@ -169,6 +169,13 @@ def below_steer_speed_alert(CP, sm, metric):
     AlertStatus.userPrompt, AlertSize.mid,
     Priority.MID, VisualAlert.steerRequired, AudibleAlert.none, 0., 0.4, .3)
 
+def lkas_button_off_alert():
+  return Alert(
+    "Press Lkas Switch To Enable",
+    "",
+    AlertStatus.userPrompt, AlertSize.mid,
+    Priority.MID, VisualAlert.none, AudibleAlert.none, 0., 0.4, .3)
+
 def calibration_incomplete_alert(CP, sm, metric):
   speed = int(Filter.MIN_SPEED * (CV.MS_TO_KPH if metric else CV.MS_TO_MPH))
   unit = "kph" if metric else "mph"
@@ -467,11 +474,7 @@ EVENTS = {
   #},
 
   EventName.lkasButtonoff: {
-    ET.WARNING: Alert(
-      "LKAS button off",
-      "",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .1),
+    ET.WARNING: lkas_button_off_alert,
   },
 
   # ********** events that affect controls state transitions **********
