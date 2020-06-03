@@ -72,7 +72,7 @@ class CarController():
         self.last_lead_distance = 0
         self.turning_signal_timer = 0
         self.lkas_button_on = True
-        self.lkas_button_on_last = False
+        self.lkas_button_on_last = True
         self.longcontrol = False
         self.fs_error = False
         self.update_live = False
@@ -95,9 +95,9 @@ class CarController():
         self.steer_rate_limited = new_steer != apply_steer
 
         # LKAS button to temporarily disable steering
-        if not CS.lkas_error:
-          if CS.lkas_button_on != self.lkas_button_on_last:
-          self.lkas_button_on = not self.lkas_button_on
+
+        if CS.lkas_button_on != self.lkas_button_on_last:
+            self.lkas_button_on = not self.lkas_button_on
         self.lkas_button_on_last = CS.lkas_button_on
 
         # temporarily disable steering when LKAS button off
