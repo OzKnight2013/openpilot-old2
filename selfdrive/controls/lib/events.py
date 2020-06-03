@@ -178,7 +178,7 @@ def calibration_incomplete_alert(CP, sm, metric):
 EVENTS = {
   # ********** events with no alerts **********
 
-  EventName.gasPressed: {ET.PRE_ENABLE: None},
+  #EventName.gasPressed: {ET.PRE_ENABLE: None},
 
   # ********** events only containing alerts displayed in all states **********
 
@@ -639,8 +639,8 @@ EVENTS = {
   },
 
   EventName.reverseGear: {
-    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Reverse Gear"),
-    ET.NO_ENTRY: NoEntryAlert("Reverse Gear"),
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.NO_ENTRY: NoEntryAlert("Shift Gear to Drive"),
   },
 
   EventName.cruiseDisabled: {

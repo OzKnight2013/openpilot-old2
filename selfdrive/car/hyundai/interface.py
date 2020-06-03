@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 from cereal import car
 from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.drive_helpers import EventTypes as ET, create_event
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, \
     gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 
-GearShifter = car.CarState.GearShifter
+#GearShifter = car.CarState.GearShifter
 
 
 class CarInterface(CarInterfaceBase):
@@ -87,7 +86,6 @@ class CarInterface(CarInterfaceBase):
             ret.steerRatio = 11.8
             ret.lateralTuning.pid.kiBP, ret.lateralTuning.pid.kpBP = [[0.], [0.]]
             ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15], [0.06]]
-            ret.minSteerSpeed = 57 * CV.KPH_TO_MS
         elif candidate in [CAR.GENESIS_G90, CAR.GENESIS_G80]:
             ret.mass = 2200
             ret.wheelbase = 3.15
@@ -245,48 +243,48 @@ class CarInterface(CarInterfaceBase):
         # events = self.create_common_events(ret)
         # TODO: addd abs(self.CS.angle_steers) > 90 to 'steerTempUnavailable' event
 
-        events = []
+        events = self.create_common_events(ret)
         #   if not ret.gearShifter == GearShifter.drive:
         #      events.append(create_event('wrongGear', [ET.NO_ENTRY, ET.USER_DISABLE]))
-        if ret.doorOpen:
-            events.append(create_event('doorOpen', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
+        #if ret.doorOpen:
+        #    events.append(create_event('doorOpen', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
         #    if ret.seatbeltUnlatched:
         #      events.append(create_event('seatbeltNotLatched', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-        if ret.espDisabled:
-            events.append(create_event('espDisabled', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-        if not ret.cruiseState.available:
-            events.append(create_event('wrongCarMode', [ET.NO_ENTRY, ET.USER_DISABLE]))
-        if ret.gearShifter == GearShifter.reverse:
-            events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.USER_DISABLE]))
-        if ret.steerWarning:
-            events.append(create_event('steerTempUnavailable', [ET.NO_ENTRY, ET.WARNING]))
+        #if ret.espDisabled:
+        #    events.append(create_event('espDisabled', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
+        #if not ret.cruiseState.available:
+        #    events.append(create_event('wrongCarMode', [ET.NO_ENTRY, ET.USER_DISABLE]))
+        #if ret.gearShifter == GearShifter.reverse:
+        #    events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.USER_DISABLE]))
+        #if ret.steerWarning:
+        #    events.append(create_event('steerTempUnavailable', [ET.NO_ENTRY, ET.WARNING]))
 
-        if ret.cruiseState.enabled and not self.CS.out.cruiseState.enabled:
-            events.append(create_event('pcmEnable', [ET.ENABLE]))
-        elif not ret.cruiseState.enabled:
-            events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
+        #if ret.cruiseState.enabled and not self.CS.out.cruiseState.enabled:
+        #    events.append(create_event('pcmEnable', [ET.ENABLE]))
+        #elif not ret.cruiseState.enabled:
+        #    events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
 
         # disable on pedals rising edge or when brake is pressed and speed isn't zero
-        if ((ret.gasPressed and not self.CS.out.gasPressed) or \
-            (ret.brakePressed and (not self.CS.out.brakePressed or ret.vEgoRaw > 0.1))) and self.CC.longcontrol:
-            events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
+        #if ((ret.gasPressed and not self.CS.out.gasPressed) or \
+        #    (ret.brakePressed and (not self.CS.out.brakePressed or ret.vEgoRaw > 0.1))) and self.CC.longcontrol:
+        #    events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
 
-        if ret.gasPressed and self.CC.longcontrol:
-            events.append(create_event('pedalPressed', [ET.PRE_ENABLE]))
+        #if ret.gasPressed and self.CC.longcontrol:
+        #    events.append(create_event('pedalPressed', [ET.PRE_ENABLE]))
 
-        if self.low_speed_alert and not self.CS.mdps_bus:
-            events.append(create_event('belowSteerSpeed', [ET.WARNING]))
-        if self.turning_indicator_alert:
-            events.append(create_event('turningIndicatorOn', [ET.WARNING]))
-        if self.lkas_button_alert:
-            events.append(create_event('lkasButtonOff', [ET.WARNING]))
+        if self.low_speed_alert:
+            events.add(car.CarEvent.EventName.belowSteerSpeed)
+#        if self.turning_indicator_alert:
+#           events.append(create_event('turningIndicatorOn', [ET.WARNING]))
+#        if self.lkas_button_alert:
+#            events.append(create_event('lkasButtonOff', [ET.WARNING]))
         # TODO Varible for min Speed for LCA
-        if ret.rightBlinker and ret.rightBlindspot and ret.vEgo > (15 * CV.MPH_TO_MS):
-            events.append(create_event('rightLCAbsm', [ET.WARNING]))
-        if ret.leftBlinker and ret.leftBlindspot and ret.vEgo > (15 * CV.MPH_TO_MS):
-            events.append(create_event('leftLCAbsm', [ET.WARNING]))
+#        if ret.rightBlinker and ret.rightBlindspot and ret.vEgo > (15 * CV.MPH_TO_MS):
+#            events.append(create_event('rightLCAbsm', [ET.WARNING]))
+#        if ret.leftBlinker and ret.leftBlindspot and ret.vEgo > (15 * CV.MPH_TO_MS):
+#            events.append(create_event('leftLCAbsm', [ET.WARNING]))
 
-        ret.events = events
+        ret.events = events.to_msg()
 
         self.CS.out = ret.as_reader()
         return self.CS.out
