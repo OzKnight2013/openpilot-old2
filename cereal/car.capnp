@@ -171,14 +171,14 @@ struct CarState {
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
 
-  lcaLeft @36 :Bool;
-  lcaRight @37 :Bool;
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
 
   # blindspot sensors
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
+  lcaLeft @36 :Bool;
+  lcaRight @37 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
