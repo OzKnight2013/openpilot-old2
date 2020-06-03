@@ -177,8 +177,6 @@ struct CarState {
   # blindspot sensors
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
-  lcaLeft @36 :Bool;
-  lcaRight @37 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
