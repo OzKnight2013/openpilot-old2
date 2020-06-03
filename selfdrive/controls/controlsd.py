@@ -189,10 +189,10 @@ class Controls:
                                         LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
     #bsm alerts
-    if sm['pathPlan'].laneChangeBSM == LaneChangeBSM.left:
-        self.events.add(EventName.leftlanebsm)
-    if sm['pathPlan'].laneChangeBSM == LaneChangeBSM.right:
-        self.events.add(EventName.rightlanebsm)
+    if self.sm['pathPlan'].laneChangeBSM == LaneChangeBSM.left:
+        self.events.add(EventName.leftLCAbsm)
+    if self.sm['pathPlan'].laneChangeBSM == LaneChangeBSM.right:
+        self.events.add(EventName.rightLCAbsm)
 
     if self.can_rcv_error or (not CS.canValid and self.sm.frame > 5 / DT_CTRL):
       self.events.add(EventName.canError)

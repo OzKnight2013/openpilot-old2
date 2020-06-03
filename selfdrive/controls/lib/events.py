@@ -442,7 +442,7 @@ EVENTS = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
-  EventName.rightlanebsm: {
+  EventName.rightLCAbsm: {
     ET.WARNING: Alert(
       "Waiting for right Lane to clear",
       "Monitor Other Vehicles",
@@ -450,7 +450,7 @@ EVENTS = {
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
   },
 
-  EventName.leftlanebsm: {
+  EventName.leftLCAbsm: {
     ET.WARNING: Alert(
       "Waiting for right Lane to clear",
       "Monitor Other Vehicles",
