@@ -1,6 +1,8 @@
 #ifndef _UI_H
 #define _UI_H
 
+#include "messaging.hpp"
+
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
 #define NANOVG_GL3_IMPLEMENTATION
@@ -11,9 +13,8 @@
 #define NANOVG_GLES3_IMPLEMENTATION
 #define nvgCreate nvgCreateGLES3
 #endif
-
+#include <atomic>
 #include <pthread.h>
-
 #include "nanovg.h"
 
 #include "common/mat.h"
@@ -21,10 +22,6 @@
 #include "common/visionimg.h"
 #include "common/framebuffer.h"
 #include "common/modeldata.h"
-#include "messaging.hpp"
-
-#include "cereal/gen/c/log.capnp.h"
-
 #include "sound.hpp"
 
 #define STATUS_STOPPED 0
