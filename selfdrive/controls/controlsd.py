@@ -181,9 +181,6 @@ class Controls:
                 self.events.add(EventName.calibrationInvalid)
 
         # Handle lane change
-        if self.CC.lkas_button_alert:
-            self.events.add(EventName.lkasButtonOff)
-
         if self.sm['pathPlan'].laneChangeState == LaneChangeState.preLaneChange:
             if self.sm['pathPlan'].laneChangeDirection == LaneChangeDirection.left:
                 self.events.add(EventName.preLaneChangeLeft)
