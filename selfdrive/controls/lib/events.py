@@ -458,13 +458,13 @@ EVENTS = {
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
   },
 
-  EventName.preventlanechange: {
-    ET.WARNING: Alert(
-      "TAKE CONTROL",
-      "Lane Change Cancelled, Lane Unsafe",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
-  },
+  #EventName.preventlanechange: {
+  #  ET.WARNING: Alert(
+  #    "TAKE CONTROL",
+  #    "Lane Change Cancelled, Lane Unsafe",
+  #    AlertStatus.userPrompt, AlertSize.mid,
+  #    Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
+  #},
 
   EventName.lkasButtonoff: {
     ET.WARNING: Alert(
