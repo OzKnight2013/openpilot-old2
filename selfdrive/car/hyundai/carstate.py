@@ -187,8 +187,8 @@ class CarState(CarStateBase):
 
         # Blind Spot Detection and Lane Change Assist signals
         self.lca_state = cp.vl["LCA11"]["CF_Lca_Stat"]
-        ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"]
-        ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"]
+        ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] == 0
+        ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] == 0
 
         # save the entire LKAS11, CLU11, SCC12 and MDPS12
         self.lkas11 = cp_cam.vl["LKAS11"]
