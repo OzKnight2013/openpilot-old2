@@ -96,10 +96,6 @@ class CarController():
 
         # LKAS button to temporarily disable steering
 
-        if CS.lkas_button_on != self.lkas_button_on_last:
-            self.lkas_button_on = not self.lkas_button_on
-        self.lkas_button_on_last = CS.lkas_button_on
-
         # temporarily disable steering when LKAS button off
         lkas_active = enabled and abs(CS.out.steeringAngle) < 90. and self.lkas_button_on
 
