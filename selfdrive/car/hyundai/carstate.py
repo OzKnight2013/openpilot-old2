@@ -71,21 +71,21 @@ class CarState(CarStateBase):
         ret.rightBlinker = self.right_blinker_on
 
         # make blinker flash to be continuous
-        if self.v_ego > 17.5 and not self.left_blinker_on:
+        if ret.vEgo > 17.5 and not self.left_blinker_on:
             self.left_blinker_flash_cnt = 300 if cp.vl["CGW1"]['CF_Gway_TurnSigLh'] else max(
                 self.left_blinker_flash_cnt - 1, 0)
             self.left_blinker_flash = self.left_blinker_flash_cnt > 0
-        elif self.v_ego > 17.5 and self.left_blinker_on:
+        elif ret.vEgo > 17.5 and self.left_blinker_on:
             self.left_blinker_flash_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TurnSigLh'] else max(
                 self.left_blinker_flash_cnt - 1, 0)
             self.left_blinker_flash = self.left_blinker_flash_cnt > 0
         else:
             self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
-        if self.v_ego > 17.5 and not self.right_blinker_on:
+        if ret.vEgo > 17.5 and not self.right_blinker_on:
             self.right_blinker_flash_cnt = 300 if cp.vl["CGW1"]['CF_Gway_TurnSigRh'] else max(
                 self.right_blinker_flash_cnt - 1, 0)
             self.right_blinker_flash = self.right_blinker_flash_cnt > 0
-        elif self.v_ego > 17.5 and self.right_blinker_on:
+        elif ret.vEgo > 17.5 and self.right_blinker_on:
             self.right_blinker_flash_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TurnSigRh'] else max(
                 self.right_blinker_flash_cnt - 1, 0)
             self.right_blinker_flash = self.right_blinker_flash_cnt > 0
