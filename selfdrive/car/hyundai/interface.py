@@ -277,7 +277,7 @@ class CarInterface(CarInterfaceBase):
 #        if self.turning_indicator_alert:
 #           events.append(create_event('turningIndicatorOn', [ET.WARNING]))
         if self.lkas_button_alert:
-            events.add(car.CarEvent.EventName.lkasButtonOff)
+            events.add(car.CarEvent.EventName.lkasButtonoff)
         # TODO Varible for min Speed for LCA
 #        if ret.rightBlinker and ret.rightBlindspot and ret.vEgo > (15 * CV.MPH_TO_MS):
 #            events.append(create_event('rightLCAbsm', [ET.WARNING]))
