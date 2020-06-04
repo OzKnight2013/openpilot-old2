@@ -55,8 +55,7 @@ const int vwp_h = 1080;
 const int nav_w = 640;
 const int nav_ww= 760;
 const int sbr_w = 300;
-const int bdr_s = 30; 
-const int bdr_is = 30;
+const int bdr_s = 30;
 const int box_x = sbr_w+bdr_s;
 const int box_y = bdr_s;
 const int box_w = vwp_w-sbr_w-(bdr_s*2);
@@ -112,16 +111,8 @@ typedef struct UIScene {
   bool decel_for_model;
 
   float speedlimit;
-  float angleSteers;
-  float speedlimitaheaddistance;
-  bool speedlimitahead_valid;
   bool speedlimit_valid;
   bool map_valid;
-  bool brakeLights;
-
-  bool leftBlinker;
-  bool rightBlinker;
-  int blinker_blinkingrate;
 
   float curvature;
   int engaged;
@@ -156,23 +147,9 @@ typedef struct UIScene {
 
   float awareness_status;
 
-  bool recording;
-
-  // pathcoloring
-  float output_scale;
-  bool steerOverride;
-
   // Used to show gps planner status
   bool gps_planner_active;
 
-  // dev ui
-  uint16_t maxCpuTemp;
-  uint32_t maxBatTemp;
-  uint64_t started_ts;
-  float angleSteersDes;
-  float pa0;
-  float freeSpace;
-  float gpsAccuracy;
   cereal::ThermalData::NetworkType networkType;
   cereal::ThermalData::NetworkStrength networkStrength;
   int batteryPercent;
@@ -202,7 +179,6 @@ typedef struct {
 
 typedef struct UIState {
   pthread_mutex_t lock;
-  pthread_cond_t bg_cond;
 
   // framebuffer
   FramebufferState *fb;
@@ -225,23 +201,8 @@ typedef struct UIState {
   int img_battery;
   int img_battery_charging;
   int img_network[6];
-  int img_brake;
 
   // sockets
-  Context *ctx;
-  SubSocket *model_sock;
-  SubSocket *controlsstate_sock;
-  SubSocket *livecalibration_sock;
-  SubSocket *radarstate_sock;
-  SubSocket *map_data_sock;
-  SubSocket *uilayout_sock;
-  SubSocket *carstate_sock;
-  SubSocket *gpslocation_sock;
-  SubSocket *gpslocationexternal_sock;
-  SubSocket *livempc_sock;
-  Poller * poller;
-
-  int active_app;
   SubMaster *sm;
   PubMaster *pm;
 
@@ -322,9 +283,6 @@ typedef struct UIState {
   model_path_vertices_data model_path_vertices[MODEL_LANE_PATH_CNT * 2];
 
   track_vertices_data track_vertices[2];
-
-  // dev ui
-  SubSocket *thermal_sock;
 } UIState;
 
 // API
