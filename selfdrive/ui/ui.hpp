@@ -89,7 +89,7 @@ const uint8_t bg_colors[][4] = {
   [STATUS_WARNING] = {0xDA, 0x6F, 0x25, 0xff},
   [STATUS_ALERT] = {0xC9, 0x22, 0x31, 0xff},
 };
-
+ 
 
 typedef struct UIScene {
   int frontview;
