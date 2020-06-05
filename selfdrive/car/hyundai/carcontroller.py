@@ -62,7 +62,6 @@ class CarController():
         self.car_fingerprint = CP.carFingerprint
         self.packer = CANPacker(dbc_name)
         self.accel_steady = 0
-        self.apply_accel_last = 0
         self.apply_steer_last = 0
         self.steer_rate_limited = False
         self.lkas11_cnt = 0
@@ -71,8 +70,6 @@ class CarController():
         self.last_resume_frame = 0
         self.last_lead_distance = 0
         self.turning_signal_timer = 0
-        self.lkas_button_on = True
-        self.lkas_button_on_last = True
         self.longcontrol = False
         self.fs_error = False
         self.update_live = False
@@ -96,18 +93,12 @@ class CarController():
 
         # LKAS button to temporarily disable steering
 
-        # temporarily disable steering when LKAS button off
-        lkas_active = enabled and abs(CS.out.steeringAngle) < 90. and self.lkas_button_on
+        # disable if steer angle reach 90 deg, otherwise mdps fault in some models
+        lkas_active = enabled and abs(CS.out.steeringAngle) < 90.
 
         # fix for Genesis hard fault at low speed
-        if CS.out.vEgo < 15.5 and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdps_bus:
+        if CS.out.vEgo < 16.7 and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdps_bus:
             self.turning_signal_timer = 100
-
-        # Disable steering while turning blinker on and speed below 60 kph
-        if ((CS.out.leftBlinker or CS.out.rightBlinker) and (CS.out.steeringPressed or
-                                                             abs(CS.out.steeringAngle) > 10.) and CS.out.vEgo < 6.7):
-            # Disable steering when blinker on and below ALC speed
-            self.turning_signal_timer = 100  # Disable for 1.0 Seconds after blinker turned off
 
         if self.turning_signal_timer:
             lkas_active = 0
@@ -116,7 +107,6 @@ class CarController():
         if not lkas_active:
             apply_steer = 0
 
-        self.apply_accel_last = apply_accel
         self.apply_steer_last = apply_steer
 
         if self.update_live or (CS.lkas11["CF_Lkas_FusionState"] == 0):
@@ -125,8 +115,7 @@ class CarController():
 
         sys_warning, sys_state, left_lane_warning, right_lane_warning = \
             process_hud_alert(lkas_active, self.car_fingerprint, visual_alert,
-                              left_lane, right_lane, left_lane_depart, right_lane_depart,
-                              self.lkas_button_on)
+                              left_lane, right_lane, left_lane_depart, right_lane_depart)
 
         can_sends = []
 

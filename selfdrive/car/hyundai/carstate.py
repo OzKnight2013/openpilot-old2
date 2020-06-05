@@ -58,17 +58,14 @@ class CarState(CarStateBase):
 
         ret.standstill = ret.vEgoRaw < 0.1
 
-        ret.steeringAngle = cp.vl["SAS11"]['SAS_Angle']
-        ret.steeringRate = cp.vl["SAS11"]['SAS_Speed']
+        ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle']
+        ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
         ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
 
         self.left_blinker_on_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TSigLHSw'] else max(self.left_blinker_on_cnt - 1, 0)
         self.left_blinker_on = self.left_blinker_on_cnt > 0
         self.right_blinker_on_cnt = 50 if cp.vl["CGW1"]['CF_Gway_TSigRHSw'] else max(self.right_blinker_on_cnt - 1, 0)
         self.right_blinker_on = self.right_blinker_on_cnt > 0
-
-        ret.leftBlinker = self.left_blinker_on
-        ret.rightBlinker = self.right_blinker_on
 
         # make blinker flash to be continuous
         if ret.vEgo > 17.5 and not self.left_blinker_on:
@@ -92,13 +89,13 @@ class CarState(CarStateBase):
         else:
             self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
 
-        # ret.leftBlinkerflash = self.right_blinker_flash
-        # ret.rightBlinkerflash = self.right_blinker_flash
+        # ret.leftBlinker = self.right_blinker_flash or self.right_blinker_on
+        # ret.rightBlinker = self.right_blinker_flash or self.left_blinker_on
 
-        ret.steeringTorque = cp.vl["MDPS12"]['CR_Mdps_StrColTq']
-        ret.steeringTorqueEps = cp.vl["MDPS12"]['CR_Mdps_OutTq']
+        ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
+        ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
         ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
-        ret.steerWarning = cp.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
+        ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
         # cruise state
         ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
@@ -187,8 +184,9 @@ class CarState(CarStateBase):
 
         # Blind Spot Detection and Lane Change Assist signals
         self.lca_state = cp.vl["LCA11"]["CF_Lca_Stat"]
-        ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] == 0
-        ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] == 0
+        ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
+        ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
+        ret.autoLcaEnabled = True
 
         # save the entire LKAS11, CLU11, SCC12 and MDPS12
         self.lkas11 = cp_cam.vl["LKAS11"]
@@ -196,8 +194,8 @@ class CarState(CarStateBase):
         self.scc12 = cp_scc.vl["SCC12"]
         self.mdps12 = cp_mdps.vl["MDPS12"]
         self.park_brake = cp.vl["CGW1"]['CF_Gway_ParkBrakeSw']
-        self.steer_state = cp.vl["MDPS12"]['CF_Mdps_ToiActive']  # 0 NOT ACTIVE, 1 ACTIVE
-        self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
+        self.steer_state = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiActive']  # 0 NOT ACTIVE, 1 ACTIVE
+        self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist'] if not self.no_radar else 0
 
         self.lkas_error = cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] == 7
         if not self.lkas_error:
