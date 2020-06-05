@@ -186,7 +186,6 @@ class CarState(CarStateBase):
         self.lca_state = cp.vl["LCA11"]["CF_Lca_Stat"]
         ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
         ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
-        ret.autoLcaEnabled = True
 
         # save the entire LKAS11, CLU11, SCC12 and MDPS12
         self.lkas11 = cp_cam.vl["LKAS11"]
