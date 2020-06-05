@@ -70,6 +70,7 @@ class CarController():
         self.last_resume_frame = 0
         self.last_lead_distance = 0
         self.turning_signal_timer = 0
+        self.lkas_button_on = True
         self.longcontrol = False
         self.fs_error = False
         self.update_live = False
@@ -115,7 +116,8 @@ class CarController():
 
         sys_warning, sys_state, left_lane_warning, right_lane_warning = \
             process_hud_alert(lkas_active, self.car_fingerprint, visual_alert,
-                              left_lane, right_lane, left_lane_depart, right_lane_depart)
+                              left_lane, right_lane, left_lane_depart, right_lane_depart,
+                              self.lkas_button_on)
 
         can_sends = []
 
