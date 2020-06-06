@@ -71,7 +71,7 @@ class CarController():
         self.last_lead_distance = 0
         self.turning_signal_timer = 0
         self.lkas_button_on = True
-        self.longcontrol = True
+        self.longcontrol = False
         self.fs_error = False
         self.update_live = False
 
