@@ -81,7 +81,7 @@ class CarController():
         # *** compute control surfaces ***
 
         # gas and brake
-        apply_accel = actuators.gas - (actuators.brake * 10.)
+        apply_accel = actuators.gas - actuators.brake
 
         apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
         apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
@@ -144,8 +144,8 @@ class CarController():
         if CS.mdps_bus:  # send clu11 to mdps if it is not on bus 0
             can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-        if pcm_cancel_cmd and self.longcontrol:
-            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+      #  if pcm_cancel_cmd and self.longcontrol:
+      #      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
         elif CS.mdps_bus:  # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
             can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
