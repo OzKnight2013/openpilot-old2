@@ -107,10 +107,11 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupWhitePanda @82;
     canErrorPersistent @83;
     belowEngageSpeed @84;
-    lkasButtonoff @85;
-    rightLCAbsm @86;
-    leftLCAbsm @87;
-    preventLCA @88;
+    preventLaneChange @85;
+    leftBlindspot @86;
+    rightBlindspot @87;
+    turningIndicatorOn @88;
+    lkasButtonOff @89;
   }
 }
 
