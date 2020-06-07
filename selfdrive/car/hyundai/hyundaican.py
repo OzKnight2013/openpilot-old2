@@ -68,9 +68,9 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
 
 def create_scc12(packer, apply_accel, enabled, cnt, scc12):
     values = scc12
-    if enabled and scc12["ACCMode"] == 1:
-        values["aReqMax"] = apply_accel
-        values["aReqMin"] = apply_accel
+#    if enabled and scc12["ACCMode"] == 1 || scc12["ACCMode"] == 2:
+#        values["aReqMax"] = apply_accel
+#        values["aReqMin"] = apply_accel
     values["CR_VSM_Alive"] = cnt
     values["CR_VSM_ChkSum"] = 0
 
