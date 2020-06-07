@@ -155,7 +155,7 @@ class CarController():
 
         # send scc12 to car if SCC not on bus 0 and long control enabled
         if CS.scc_bus and self.longcontrol and frame % 2:
-            can_sends.append(create_scc12(self.packer, apply_accel, enabled, self.scc12_cnt, CS.scc12))
+            can_sends.append(create_scc12(self.packer, apply_accel, (enabled or CS.belowspeedenable), self.scc12_cnt, CS.scc12))
             self.scc12_cnt += 1
 
         if CS.out.cruiseState.standstill:

@@ -29,7 +29,7 @@ class CarState(CarStateBase):
         self.is_set_speed_in_mph = 0
         self.lkas_button_on = 1
         self.lkas_error = 0
-        self.belowspeedenable = 0
+        self.belowspeedenable = False
         self.cruiseStatespeed = 0
 
     def update(self, cp, cp2, cp_cam):
@@ -115,10 +115,10 @@ class CarState(CarStateBase):
         if ret.cruiseState.enabled and cp.vl["CLU11"]["CF_Clu_Vanz"] >= 20:
             ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                 (cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv)
-            self.belowspeedenable = 0
+            self.belowspeedenable = False
         elif cp.vl["CLU11"]["CF_Clu_Vanz"] < 20 and not ret.doorOpen and ret.cruiseState.available \
                 and (not ret.brakePressed or cp.vl["CLU11"]["CF_Clu_Vanz"] <= 1) \
-                and ((cp.vl["CLU11"]["CF_Clu_CruiseSwState"] != 0) or (self.belowspeedenable > 0))\
+                and ((cp.vl["CLU11"]["CF_Clu_CruiseSwState"] != 0) or self.belowspeedenable)\
                 and (ret.gearShifter == GearShifter.drive):
             if cp.vl["CLU11"]["CF_Clu_CruiseSwState"] == 1 or 2:
                 self.cruiseStatespeed = cp.vl["CLU11"]["CF_Clu_Vanz"]
@@ -129,12 +129,10 @@ class CarState(CarStateBase):
             self.cruiseStatespeed = self.cruiseStatespeed * speed_conv
             ret.cruiseState.speed = self.cruiseStatespeed
             ret.cruiseState.enabled = True
-            self.belowspeedenable += 1
-            if self.belowspeedenable > 5000:
-                self.belowspeedenable = 0
+            self.belowspeedenable = True
         else:
             ret.cruiseState.speed = 0
-            self.belowspeedenable = 0
+            self.belowspeedenable = False
 
         ret.brake = 0
         ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
