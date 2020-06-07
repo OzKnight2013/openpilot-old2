@@ -115,19 +115,26 @@ class CarState(CarStateBase):
         if ret.cruiseState.enabled and cp.vl["clu11"]["CF_Clu_Vanz"] >= 20:
             ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                 (cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv)
+            self.belowspeedenable = 0
         elif cp.vl["clu11"]["CF_Clu_Vanz"] < 20 and not ret.doorOpen and ret.cruiseState.available \
-                and (not ret.brakePressed or cp.vl["clu11"]["CF_Clu_Vanz"] <= 2) \
-                and ((cp.vl["clu11"]["CF_Clu_CruiseSwState"] == 2) or self.belowspeedenable)\
+                and (not ret.brakePressed or cp.vl["clu11"]["CF_Clu_Vanz"] <= 1) \
+                and ((cp.vl["clu11"]["CF_Clu_CruiseSwState"] != 0) or (self.belowspeedenable > 0))\
                 and (ret.gearShifter == GearShifter.drive):
-            if cp.vl["clu11"]["CF_Clu_CruiseSwState"] != 0:
+            if cp.vl["clu11"]["CF_Clu_CruiseSwState"] == 1 or 2:
                 self.cruiseState.speed = cp.vl["clu11"]["CF_Clu_Vanz"]
+                ret.cruiseState.enabled = True
+            elif cp.vl["clu11"]["CF_Clu_CruiseSwState"] == 3:
+                ret.cruiseState.enabled = False
             self.cruiseState.speed = max(self.cruiseState.speed, 5)
             self.cruiseState.speed = self.cruiseState.speed * speed_conv
             ret.cruiseState.speed = self.cruiseState.speed
             ret.cruiseState.enabled = True
-            self.belowspeedenable = True
+            self.belowspeedenable += 1
+            if self.belowspeedenable > 5:
+                self.belowspeedenable = 0
         else:
             ret.cruiseState.speed = 0
+            self.belowspeedenable = 0
 
         ret.brake = 0
         ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
