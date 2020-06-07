@@ -29,6 +29,7 @@ class CarState(CarStateBase):
         self.is_set_speed_in_mph = 0
         self.lkas_button_on = 1
         self.lkas_error = 0
+        self.cruiseState.enabled = False
         self.belowspeedenable = False
         self.cruiseStatespeed = 0
 
@@ -100,7 +101,7 @@ class CarState(CarStateBase):
         ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
         # cruise state
-        ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
+        self.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
             (cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0)
 
         ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
@@ -112,9 +113,10 @@ class CarState(CarStateBase):
 
         speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
 
-        if ret.cruiseState.enabled and cp.vl["CLU11"]["CF_Clu_Vanz"] >= 20:
+        if self.cruiseState.enabled and cp.vl["CLU11"]["CF_Clu_Vanz"] >= 20:
             ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                 (cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv)
+            ret.cruiseState.enabled = True
             self.belowspeedenable = False
         elif cp.vl["CLU11"]["CF_Clu_Vanz"] <= 20 and ret.cruiseState.available \
                 and ((cp.vl["CLU11"]["CF_Clu_CruiseSwState"] != 0) or self.belowspeedenable):
@@ -126,7 +128,6 @@ class CarState(CarStateBase):
             self.cruiseStatespeed = max(self.cruiseStatespeed, 5)
             self.cruiseStatespeed = self.cruiseStatespeed * speed_conv
             ret.cruiseState.speed = self.cruiseStatespeed
-            ret.cruiseState.enabled = True
             self.belowspeedenable = True
         else:
             ret.cruiseState.speed = 0
