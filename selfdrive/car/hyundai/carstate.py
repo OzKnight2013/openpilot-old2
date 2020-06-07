@@ -313,10 +313,8 @@ class CarState(CarStateBase):
                 ("ACCMode", "SCC12", 0),
                 ("StopReq", "SCC12", 0),
                 ("CR_VSM_DecCmd", "SCC12", 0),
-                ("aReqMax", "SCC12", 0),
                 ("TakeOverReq", "SCC12", 0),
                 ("PreFill", "SCC12", 0),
-                ("aReqMin", "SCC12", 0),
                 ("CF_VSM_ConfMode", "SCC12", 0),
                 ("AEB_Failinfo", "SCC12", 0),
                 ("AEB_Status", "SCC12", 0),
@@ -324,6 +322,8 @@ class CarState(CarStateBase):
                 ("AEB_StopReq", "SCC12", 0),
                 ("CR_VSM_Alive", "SCC12", 0),
                 ("CR_VSM_ChkSum", "SCC12", 0),
+                ("aReqValue", "SCC12", 0),
+                ("aReqRaw", "SCC12", 0)
             ]
             checks += [
                 ("SCC11", 50),
@@ -416,17 +416,17 @@ class CarState(CarStateBase):
                 ("ACCMode", "SCC12", 0),
                 ("StopReq", "SCC12", 0),
                 ("CR_VSM_DecCmd", "SCC12", 0),
-                ("aReqMax", "SCC12", 0),
                 ("TakeOverReq", "SCC12", 0),
                 ("PreFill", "SCC12", 0),
-                ("aReqMin", "SCC12", 0),
                 ("CF_VSM_ConfMode", "SCC12", 0),
                 ("AEB_Failinfo", "SCC12", 0),
                 ("AEB_Status", "SCC12", 0),
                 ("AEB_CmdAct", "SCC12", 0),
                 ("AEB_StopReq", "SCC12", 0),
                 ("CR_VSM_Alive", "SCC12", 0),
-                ("CR_VSM_ChkSum", "SCC12", 0)
+                ("CR_VSM_ChkSum", "SCC12", 0),
+                ("aReqValue", "SCC12", 0),
+                ("aReqRaw", "SCC12", 0)
             ]
             checks += [
                 ("SCC11", 50),
@@ -477,10 +477,8 @@ class CarState(CarStateBase):
                 ("ACCMode", "SCC12", 0),
                 ("StopReq", "SCC12", 0),
                 ("CR_VSM_DecCmd", "SCC12", 0),
-                ("aReqMax", "SCC12", 0),
                 ("TakeOverReq", "SCC12", 0),
                 ("PreFill", "SCC12", 0),
-                ("aReqMin", "SCC12", 0),
                 ("CF_VSM_ConfMode", "SCC12", 0),
                 ("AEB_Failinfo", "SCC12", 0),
                 ("AEB_Status", "SCC12", 0),
@@ -488,6 +486,8 @@ class CarState(CarStateBase):
                 ("AEB_StopReq", "SCC12", 0),
                 ("CR_VSM_Alive", "SCC12", 0),
                 ("CR_VSM_ChkSum", "SCC12", 0),
+                ("aReqValue", "SCC12", 0),
+                ("aReqRaw", "SCC12", 0)
             ]
             checks += [
                 ("SCC11", 50),
