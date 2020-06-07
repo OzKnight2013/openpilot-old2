@@ -130,7 +130,7 @@ class CarState(CarStateBase):
             ret.cruiseState.speed = self.cruiseStatespeed
             ret.cruiseState.enabled = True
             self.belowspeedenable += 1
-            if self.belowspeedenable > 5:
+            if self.belowspeedenable > 50:
                 self.belowspeedenable = 0
         else:
             ret.cruiseState.speed = 0
