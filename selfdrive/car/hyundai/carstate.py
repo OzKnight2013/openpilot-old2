@@ -30,7 +30,7 @@ class CarState(CarStateBase):
         self.lkas_button_on = 1
         self.lkas_error = 0
         self.belowspeedenable = 0
-        self.cruiseState.speed = 0
+        self.cruiseStatespeed = 0
 
     def update(self, cp, cp2, cp_cam):
         cp_mdps = cp2 if self.mdps_bus else cp
@@ -121,13 +121,13 @@ class CarState(CarStateBase):
                 and ((cp.vl["clu11"]["CF_Clu_CruiseSwState"] != 0) or (self.belowspeedenable > 0))\
                 and (ret.gearShifter == GearShifter.drive):
             if cp.vl["clu11"]["CF_Clu_CruiseSwState"] == 1 or 2:
-                self.cruiseState.speed = cp.vl["clu11"]["CF_Clu_Vanz"]
+                self.cruiseStatespeed = cp.vl["clu11"]["CF_Clu_Vanz"]
                 ret.cruiseState.enabled = True
             elif cp.vl["clu11"]["CF_Clu_CruiseSwState"] == 3:
                 ret.cruiseState.enabled = False
-            self.cruiseState.speed = max(self.cruiseState.speed, 5)
-            self.cruiseState.speed = self.cruiseState.speed * speed_conv
-            ret.cruiseState.speed = self.cruiseState.speed
+            self.cruiseStatespeed = max(self.cruiseStatespeed, 5)
+            self.cruiseStatespeed = self.cruiseStatespeed * speed_conv
+            ret.cruiseState.speed = self.cruiseStatespeed
             ret.cruiseState.enabled = True
             self.belowspeedenable += 1
             if self.belowspeedenable > 5:
