@@ -143,7 +143,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-    if ((addr == 1056) && (!OP_SCC_live) && ((bus != 1) || (!hyundai_LCAN_on_bus1))) { // for cars without long control
+    if ((addr == 1056) && (OP_SCC_live) && ((bus != 1) || (!hyundai_LCAN_on_bus1))) { // for cars without long control
       hyundai_has_scc = true;
       // 2 bits: 13-14
       int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
