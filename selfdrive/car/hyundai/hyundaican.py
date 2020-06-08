@@ -66,11 +66,13 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
     return packer.make_can_msg("CLU11", bus, values)
 
 
-def create_scc12(packer, apply_accel, enabled, cnt, scc12):
+def create_scc12(packer, apply_accel, enabled, enabled2, cnt, scc12):
     values = scc12
     if enabled:
         values["aReqValue"] = apply_accel
         values["aReqRaw"] = apply_accel
+        if enabled2:
+            values["ACCMode"] = 1
     values["CR_VSM_Alive"] = cnt
     values["CR_VSM_ChkSum"] = 0
 
