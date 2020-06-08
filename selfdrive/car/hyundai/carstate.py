@@ -134,7 +134,7 @@ class CarState(CarStateBase):
             self.cruiseStatespeed = 0
             self.cruiseStateenabled2 = False
 
-        ret.cruiseState.enabled = self.cruiseStateenabled1 or self.cruiseStateenabled2
+        ret.cruiseState.enabled = bool(self.cruiseStateenabled1 or self.cruiseStateenabled2)
         ret.cruiseState.speed = self.cruiseStatespeed
 
         ret.brake = 0

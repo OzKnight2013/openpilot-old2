@@ -215,7 +215,7 @@ class CarInterface(CarInterfaceBase):
         ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
         # most HKG cars has no long control, it is safer and easier to engage by main on
-        ret.cruiseState.enabled = ret.cruiseState.available if not self.CC.longcontrol else ret.cruiseState.enabled
+        ret.cruiseState.enabled = ret.cruiseState.available  # if not self.CC.longcontrol else ret.cruiseState.enabled
         # some Optima only has blinker flash signal
         if self.CP.carFingerprint == CAR.KIA_OPTIMA:
           ret.leftBlinker = self.CS.left_blinker_flash or self.CS.prev_left_blinker and self.CC.turning_signal_timer
