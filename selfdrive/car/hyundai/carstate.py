@@ -29,7 +29,8 @@ class CarState(CarStateBase):
         self.is_set_speed_in_mph = 0
         self.lkas_button_on = 1
         self.lkas_error = 0
-        self.cruiseStateenabled = False
+        self.cruiseStateenabled1 = False
+        self.cruiseStateenabled2 = False
         self.belowspeedenable = False
         self.cruiseStatespeed = 0
 
@@ -101,7 +102,7 @@ class CarState(CarStateBase):
         ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
         # cruise state
-        self.cruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
+        self.cruiseStateenabled1 = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
             (cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0)
 
         ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
@@ -113,25 +114,28 @@ class CarState(CarStateBase):
 
         speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
 
-        if self.cruiseStateenabled and cp.vl["CLU11"]["CF_Clu_Vanz"] >= 20:
+        if self.cruiseStateenabled1:
             ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                 (cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv)
-            ret.cruiseState.enabled = True
             self.belowspeedenable = False
+            self.cruiseStateenabled2 = False
         elif cp.vl["CLU11"]["CF_Clu_Vanz"] <= 20 and ret.cruiseState.available \
                 and ((cp.vl["CLU11"]["CF_Clu_CruiseSwState"] != 0) or self.belowspeedenable):
             if cp.vl["CLU11"]["CF_Clu_CruiseSwState"] == 1 or 2:
                 self.cruiseStatespeed = cp.vl["CLU11"]["CF_Clu_Vanz"]
-                ret.cruiseState.enabled = True
+                self.cruiseStateenabled2 = True
             elif cp.vl["CLU11"]["CF_Clu_CruiseSwState"] == 3:
-                ret.cruiseState.enabled = False
+                self.cruiseStateenabled2 = False
             self.cruiseStatespeed = max(self.cruiseStatespeed, 5)
             self.cruiseStatespeed = self.cruiseStatespeed * speed_conv
-            ret.cruiseState.speed = self.cruiseStatespeed
             self.belowspeedenable = True
         else:
-            ret.cruiseState.speed = 0
             self.belowspeedenable = False
+            self.cruiseStatespeed = 0
+            self.cruiseStateenabled2 = False
+
+        ret.cruiseState.enabled = self.cruiseStateenabled1 or self.cruiseStateenabled2
+        ret.cruiseState.speed = self.cruiseStatespeed
 
         ret.brake = 0
         ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0

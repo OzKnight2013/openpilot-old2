@@ -145,14 +145,14 @@ class CarController():
         if CS.mdps_bus:  # send clu11 to mdps if it is not on bus 0
             can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-      #  if pcm_cancel_cmd and self.longcontrol:
-      #      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+        if pcm_cancel_cmd and self.longcontrol:
+            can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
         elif CS.mdps_bus:  # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
             can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
         # send scc12 to car if SCC not on bus 0 and long control enabled
         if CS.scc_bus and self.longcontrol and frame % 2:
-            can_sends.append(create_scc12(self.packer, apply_accel, (enabled or CS.belowspeedenable), self.scc12_cnt, CS.scc12))
+            can_sends.append(create_scc12(self.packer, apply_accel, enabled, self.scc12_cnt, CS.scc12))
             self.scc12_cnt += 1
 
         if CS.out.cruiseState.standstill:
