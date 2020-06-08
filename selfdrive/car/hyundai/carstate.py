@@ -133,7 +133,7 @@ class CarState(CarStateBase):
             else:
                 self.cruiseStatespeed = self.cruiseStatespeed
             self.belowspeedenable = True
-            self.cruiseStateenabled2 = True
+            self.cruiseStateenabled2 = False
             self.cruiseStateenabled1 = False
         else:
             self.belowspeedenable = False
