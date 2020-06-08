@@ -115,7 +115,7 @@ class CarState(CarStateBase):
         speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
 
         if self.cruiseStateenabled1:
-            ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
+            self.cruiseStatespeed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                 (cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv)
             self.belowspeedenable = False
             self.cruiseStateenabled2 = False
