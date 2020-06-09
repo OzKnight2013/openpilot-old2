@@ -63,8 +63,8 @@ class CarState(CarStateBase):
     ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
     # cruise state
-    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
-                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
+    ret.cruiseState.enabled = 1==1#(cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
+                                   #   cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
     ret.cruiseState.available = 1==1#(cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) if not self.no_radar else \
                                     #  cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
