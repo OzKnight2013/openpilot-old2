@@ -11,8 +11,10 @@ const CanMsg HYUNDAI_TX_MSGS[] = {
   {1265, 0, 4}, // CLU11 Bus 0
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
   {832, 1, 8},{1265, 1, 4}, {1265, 2, 4}, {593, 2, 8}, {1057, 0, 8}, {790, 1, 8}, {912, 0, 7}, {912,1, 7}, {1268, 0, 8}, {1268,1, 8},
-  // {1056, 0, 8}, //   SCC11,  Bus 0
-  {1057, 0, 8}, //   SCC12,  Bus 0
+  {1056, 1, 8}, //   SCC11,  Bus 0
+  {1057, 1, 8}, //   SCC12,  Bus 0
+  {1056, 0, 8}, //   SCC11,  Bus 1
+  {1057, 0, 8}, //   SCC12,  Bus 1
   // {1290, 0, 8}, //   SCC13,  Bus 0
   // {905, 0, 8},  //   SCC14,  Bus 0
   // {1186, 0, 8}  //   4a2SCC, Bus 0
@@ -287,12 +289,8 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 1 && hyundai_forward_bus1) {
       if (!OP_MDPS_live || addr != 593) {
-        if (!OP_SCC_live || addr != 1056 || addr != 1057 || addr != 1290 || addr != 905) {
           bus_fwd = 20;
-        } else {
-          bus_fwd = 2;  // EON create SCC11 SCC12 SCC13 SCC14 for Car
-          OP_SCC_live -= 1;
-        }
+
       } else {
         bus_fwd = 0;  // EON create MDPS for LKAS
         OP_MDPS_live -= 1;
@@ -300,16 +298,10 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 2) {
       if (addr != 832 || !OP_LKAS_live || !OP_SCC_live || addr != 1056 || addr != 1057 || addr != 1290 || addr != 905){
-
           bus_fwd = hyundai_forward_bus1 ? 10 : 0;
-
-      } else if (!hyundai_mdps_bus) {
-        bus_fwd = fwd_to_bus1; // EON create LKAS for Car
-        OP_LKAS_live -= 1;
-        OP_SCC_live -= 1; // EON create SCC12 SCC11 for Car
       } else {
         OP_LKAS_live -= 1; // EON create LKAS for Car and MDPS
-        OP_SCC_live -= 1; // EON create SCC12 SCC11 for Car
+        OP_SCC_live -= 1;
       }
     }
   } else {
