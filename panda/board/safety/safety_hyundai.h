@@ -316,7 +316,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
         if ((addr != 1056) || (addr != 1057) || (!OP_SCC_live)) {
           bus_fwd = hyundai_forward_bus1 ? 10 : 0;
         } else {
-          bus_fwd = fwd_to_bus1;  // EON create SCC12 for Car
+          //bus_fwd = fwd_to_bus1;  // EON create SCC12 for Car
           OP_SCC_live -= 1;
         }
       } else if (!hyundai_mdps_bus) {
