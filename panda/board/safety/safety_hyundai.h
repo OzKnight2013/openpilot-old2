@@ -8,11 +8,14 @@ const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
 const int HYUNDAI_STANDSTILL_THRSLD = 30;  // ~1kph
 const CanMsg HYUNDAI_TX_MSGS[] = {
   {832, 0, 8},  // LKAS11 Bus 0
+  {832, 1, 8},  // LKAS11 Bus 1
   {1265, 0, 4}, // CLU11 Bus 0
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
-  {832, 1, 8},{1265, 1, 4}, {1265, 2, 4}, {593, 2, 8}, {1057, 0, 8}, {790, 1, 8}, {912, 0, 7}, {912,1, 7}, {1268, 0, 8}, {1268,1, 8},
-  {1056, 0, 8}, //   SCC11,  Bus 0
-  //{1057, 0, 8}, //   SCC12,  Bus 0
+  {1265, 1, 4}, // CLU11 Bus 1
+  {1265, 2, 4}, // CLU11 Bus 2
+  {593, 2, 8},  // MDPS12 Bus 2
+  {1057, 0, 8},  // SCC12 Bus 0
+  // {1056, 0, 8}, //   SCC11,  Bus 0
   // {1290, 0, 8}, //   SCC13,  Bus 0
   // {905, 0, 8},  //   SCC14,  Bus 0
   // {1186, 0, 8}  //   4a2SCC, Bus 0
@@ -22,12 +25,12 @@ const CanMsg HYUNDAI_TX_MSGS[] = {
 //       wheel speeds stuck at 0 and we don't disengage on brake press
 // TODO: refactor addr check to cleanly re-enable commented out checks for cars that have them
 AddrCheckStruct hyundai_rx_checks[] = {
-  {.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}}},
+  //{.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U}}},
   // TODO: older hyundai models don't populate the counter bits in 902
   //{.msg = {{902, 0, 8, .max_counter = 15U,  .expected_timestep = 10000U}}},
-  {.msg = {{902, 0, 8, .max_counter = 0U,  .expected_timestep = 10000U}}},
+  //{.msg = {{902, 0, 8, .max_counter = 0U,  .expected_timestep = 10000U}}},
   //{.msg = {{916, 0, 8, .check_checksum = true, .max_counter = 7U, .expected_timestep = 10000U}}},
-  {.msg = {{916, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}}},
+  //{.msg = {{916, 0, 8, .check_checksum = false, .max_counter = 0U, .expected_timestep = 10000U}}},
   {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
 };
 const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_checks[0]);
@@ -49,6 +52,15 @@ static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   }
   return cnt;
 }
+
+bool hyundai_has_scc = false;
+int OP_LKAS_live = 0;
+int OP_MDPS_live = 0;
+int OP_CLU_live = 0;
+int OP_SCC_live = 0;
+int hyundai_mdps_bus = 0;
+bool hyundai_LCAN_on_bus1 = false;
+bool hyundai_forward_bus1 = false;
 
 static uint8_t hyundai_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
@@ -80,16 +92,6 @@ static uint8_t hyundai_compute_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
   }
   return (16U - (chksum %  16U)) % 16U;
 }
-
-bool hyundai_has_scc = false;
-int OP_LKAS_live = 0;
-int OP_MDPS_live = 0;
-int OP_CLU_live = 0;
-int OP_SCC_live = 0;
-int hyundai_mdps_bus = 0;
-bool hyundai_LCAN_on_bus1 = false;
-bool hyundai_forward_bus1 = false;
-
 
 static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
@@ -268,7 +270,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   if (addr == 593) {OP_MDPS_live = 20;}
   if ((addr == 1265) && (GET_BYTES_04(to_send) & 0x7) == 0) {OP_CLU_live = 20;} // only count non-button msg
-  if ((addr == 1057) || addr == 1056)) {OP_SCC_live = 20;}
+  if (addr == 1057) {OP_SCC_live = 20;}
 
   // 1 allows the message through
   return tx;
@@ -298,7 +300,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 1 && hyundai_forward_bus1) {
       if (!OP_MDPS_live || addr != 593) {
-        if (!OP_SCC_live || addr != 1056 || addr != 1057){
+        if (!OP_SCC_live || addr != 1057) {
           bus_fwd = 20;
         } else {
           bus_fwd = 2;  // EON create SCC11 SCC12 for Car
@@ -311,7 +313,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 2) {
       if (addr != 832 || !OP_LKAS_live) {
-        if ((addr != 1056) || (addr != 1057) || (!OP_SCC_live)) {
+        if ((addr != 1057) || (!OP_SCC_live)) {
           bus_fwd = hyundai_forward_bus1 ? 10 : 0;
         } else {
           bus_fwd = fwd_to_bus1;  // EON create SCC12 for Car
