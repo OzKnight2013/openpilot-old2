@@ -237,7 +237,7 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
-    ret.openpilotLongitudinalControl = True if not self.CP.brakePressed else False
+    ret.openpilotLongitudinalControl = True if not ret.brakePressed else False
     self.CP.enableCruise = True
     # most HKG cars has no long control, it is safer and easier to engage by main on
     ret.cruiseState.enabled = ret.cruiseState.available
