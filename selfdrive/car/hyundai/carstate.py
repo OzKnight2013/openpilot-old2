@@ -78,11 +78,11 @@ class CarState(CarStateBase):
                                       cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
-    if ret.cruiseState.enabled:
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
-                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
-    elif ret.cruiseState.available:
+#    if ret.cruiseState.enabled:
+#      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+#      ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
+#                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
+    if ret.cruiseState.available:
       if self.cruise_buttons == 1 or 2:
          if self.cruise_buttons_prev != self.cruise_buttons:
             if self.cruisespeed == 0: 
