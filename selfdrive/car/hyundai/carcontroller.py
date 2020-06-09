@@ -10,7 +10,7 @@ from opendbc.can.packer import CANPacker
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 # Accel limits
-ACCEL_HYST_GAP = 0.1  # don't change accel command for small oscillations within this value
+ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
 ACCEL_MAX = 1.5  # 1.5 m/s2
 ACCEL_MIN = -3.0 # 3   m/s2
 ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
@@ -72,7 +72,6 @@ class CarController():
     self.longcontrol = True #TODO: make auto
     self.fs_error = False
     self.update_live = False
-    self.scc_live = CP.sccBus == 0
 
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
@@ -128,20 +127,6 @@ class CarController():
     if frame == 0: # initialize counts from last received count signals
       self.lkas11_cnt = CS.lkas11["CF_Lkas_MsgCount"]
       self.scc12_cnt = CS.scc12["CR_VSM_Alive"] + 1 if not CS.no_radar else 0
-      self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-      self.scc_update_frame = frame
-
-    # check if SCC on bus 0 is live
-    if frame % 7 == 0 and CS.scc_bus == 0:
-      if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
-        if frame - self.scc_update_frame > 15 and self.scc_live:
-          self.scc_live = False
-      else:
-        self.scc_live = True
-        self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-        self.scc_update_frame = frame
-
-    self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
 
     self.lkas11_cnt = (self.lkas11_cnt + 1) % 0x10
     self.scc12_cnt %= 0xF
@@ -163,10 +148,9 @@ class CarController():
     elif CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
-    # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
+    if CS.scc_bus and self.longcontrol and frame % 2 == 0: # send scc12 to car if SCC not on bus 0 and longcontrol enabled
       can_sends.append(create_scc12(self.packer, apply_accel, enabled, self.scc12_cnt, CS.scc12))
-      #can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, lead_visible, CS.scc11))
+      can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, lead_visible, CS.scc11))
       if CS.has_scc13 and frame % 20 == 0:
         can_sends.append(create_scc13(self.packer, CS.scc13))
       if CS.has_scc14:
