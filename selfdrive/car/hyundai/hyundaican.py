@@ -10,8 +10,8 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
                   left_lane, right_lane,
                   left_lane_depart, right_lane_depart, fs_error, bus):
   values = lkas11
-  values["CF_Lkas_LdwsSysState"] = sys_state
-  values["CF_Lkas_SysWarning"] = 3 if sys_warning else 0
+  values["CF_Lkas_LdwsSysState"] = if steer_req else sys_state
+  values["CF_Lkas_SysWarning"] = sys_warning
   values["CF_Lkas_LdwsLHWarning"] = left_lane_depart
   values["CF_Lkas_LdwsRHWarning"] = right_lane_depart
   values["CR_Lkas_StrToqReq"] = apply_steer
@@ -67,8 +67,8 @@ def create_scc12(packer, apply_accel, enabled, cnt, scc12):
   values = scc12
   if enabled:
     values["ACCMode"] = 1
-    values["aReqRaw"] = apply_accel #aReqMax
-    values["aReqValue"] = apply_accel #aReqMin
+    values["aReqValue"] = apply_accel #aReqMax
+    values["aReqRaw"] = apply_accel #aReqMin
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
 
@@ -118,20 +118,5 @@ def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values["ACC_ObjStatus"] = lead_visible
 
   return packer.make_can_msg("SCC11", 0, values)
-
-def create_scc13(packer, scc13):
-  values = scc13
-  return packer.make_can_msg("SCC13", 0, values)
-
-def create_scc14(packer, enabled, scc14):
-  values = scc14
-  if enabled:
-    values["JerkUpperLimit"] = 3.2
-    values["JerkLowerLimit"] = 0.1
-    values["SCCMode"] = 1
-    values["ComfortBandUpper"] = 0.24
-    values["ComfortBandLower"] = 0.24
-
-  return packer.make_can_msg("SCC14", 0, values)
   
   

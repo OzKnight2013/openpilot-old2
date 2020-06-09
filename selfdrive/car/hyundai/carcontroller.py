@@ -2,8 +2,8 @@ from cereal import car
 from common.numpy_fast import clip
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
-                                             create_scc11, create_scc12, create_mdps12, \
-                                             create_scc13, create_scc14
+                                             create_scc11, create_scc12, create_mdps12
+
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR
 from opendbc.can.packer import CANPacker
 
@@ -29,6 +29,8 @@ def accel_hysteresis(accel, accel_steady):
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart, button_on):
   sys_warning = (visual_alert == VisualAlert.steerRequired)
+  if sys_warning:
+      sys_warning = 4 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 3
 
   # initialize to no lane visible
   sys_state = 1
@@ -148,13 +150,8 @@ class CarController():
     elif CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
-    if CS.scc_bus and self.longcontrol and frame % 2 == 0: # send scc12 to car if SCC not on bus 0 and longcontrol enabled
+    if CS.scc_bus and self.longcontrol and frame % 2: # send scc12 to car if SCC not on bus 0 and longcontrol enabled
       can_sends.append(create_scc12(self.packer, apply_accel, enabled, self.scc12_cnt, CS.scc12))
-      can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, lead_visible, CS.scc11))
-      if CS.has_scc13 and frame % 20 == 0:
-        can_sends.append(create_scc13(self.packer, CS.scc13))
-      if CS.has_scc14:
-        can_sends.append(create_scc14(self.packer, enabled, CS.scc14))
       self.scc12_cnt += 1
 
     if CS.out.cruiseState.standstill:
