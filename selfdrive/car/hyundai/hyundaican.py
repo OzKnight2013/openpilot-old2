@@ -110,11 +110,11 @@ def create_lfa_mfa(packer, frame, enabled):
 
 def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values = scc11
-  values["MainMode_ACC"] = 1 if enabled else 0
+  #values["MainMode_ACC"] = 1 if enabled else 0
   values["AliveCounterACC"] = frame % 0x10
   values["VSetDis"] = set_speed * CV.MS_TO_MPH
-  values["ObjValid"] = lead_visible
-  values["ACC_ObjStatus"] = lead_visible
+  #values["ObjValid"] = lead_visible
+  #values["ACC_ObjStatus"] = lead_visible
 
   return packer.make_can_msg("SCC11", 0, values)
 
