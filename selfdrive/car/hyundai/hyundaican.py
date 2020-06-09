@@ -65,7 +65,7 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
 
 def create_scc12(packer, apply_accel, enabled, cnt, scc12):
   values = scc12
-  if enabled:
+  if 1==1:
     values["ACCMode"] = 1
     values["aReqRaw"] = apply_accel #aReqMax
     values["aReqValue"] = apply_accel #aReqMin
