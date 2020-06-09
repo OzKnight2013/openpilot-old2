@@ -114,7 +114,7 @@ def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values = scc11
   values["MainMode_ACC"] = 1
   values["AliveCounterACC"] = frame % 0x10
-  values["VSetDis"] = set_speed
+  values["VSetDis"] = set_speed * CV.MS_TO_MPH
   values["ObjValid"] = lead_visible
   values["ACC_ObjStatus"] = lead_visible
 

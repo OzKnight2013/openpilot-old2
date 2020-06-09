@@ -190,6 +190,8 @@ if (valid && ((bus == 0) || (bus == 1) || (bus == 2))) {
     if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (bus == 0) && (addr == 832)) {
       relay_malfunction_set();
     }
+
+    controls_allowed = 1;
   }
   return valid;
 }
