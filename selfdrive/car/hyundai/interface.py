@@ -22,7 +22,6 @@ class CarInterface(CarInterfaceBase):
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint, has_relay)
-
     ret.carName = "hyundai"
     ret.safetyModel = car.CarParams.SafetyModel.hyundai
 
@@ -224,7 +223,7 @@ class CarInterface(CarInterfaceBase):
     ret.sccBus = 0 if 1056 in fingerprint[0] else 1 if 1056 in fingerprint[1] and 1296 not in fingerprint[1] \
                                                                      else 2 if 1056 in fingerprint[2] else -1
     ret.radarOffCan = ret.sccBus == -1
-    ret.openpilotLongitudinalControl = True if not cs_out.brakePressed else False
+    ret.openpilotLongitudinalControl = True
     ret.enableCruise = not ret.radarOffCan or ret.sccBus != 0
     ret.autoLcaEnabled = False
 
