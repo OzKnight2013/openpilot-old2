@@ -67,8 +67,9 @@ def create_scc12(packer, apply_accel, enabled, cnt, scc12):
   values = scc12
   if enabled:
     values["ACCMode"] = 1
-    values["aReqValue"] = apply_accel #aReqMax
-    values["aReqRaw"] = apply_accel #aReqMin
+  values["ACCMode"] = 1 if enabled else 0
+  values["aReqValue"] = apply_accel if enabled else 0
+  values["aReqRaw"] = apply_accel if enabled else 0
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
 
@@ -113,10 +114,24 @@ def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values = scc11
   values["MainMode_ACC"] = 1 if enabled else 0
   values["AliveCounterACC"] = frame % 0x10
-  values["VSetDis"] = set_speed * CV.MS_TO_MPH
-  values["ObjValid"] = lead_visible
-  values["ACC_ObjStatus"] = lead_visible
+  values["VSetDis"] = set_speed if enabled else 150
+  values["ObjValid"] = 1 if enabled else 0
 
   return packer.make_can_msg("SCC11", 0, values)
+
+def create_scc13(packer, scc13):
+  values = scc13
+  return packer.make_can_msg("SCC13", 0, values)
+
+def create_scc14(packer, enabled, scc14):
+  values = scc14
+  if enabled:
+    values["JerkUpperLimit"] = 3.2
+    values["JerkLowerLimit"] = 0.1
+    values["SCCMode"] = 1
+    values["ComfortBandUpper"] = 0.24
+    values["ComfortBandLower"] = 0.24
+
+  return packer.make_can_msg("SCC14", 0, values)
   
   

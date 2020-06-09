@@ -40,7 +40,7 @@ class RadarInterface(RadarInterfaceBase):
     self.updated_messages.update(vls)
 
     if self.trigger_msg not in self.updated_messages:
-      return None
+      return car.RadarData.new_message()
 
     rr = self._update(self.updated_messages)
     self.updated_messages.clear()
@@ -71,3 +71,4 @@ class RadarInterface(RadarInterfaceBase):
 
     ret.points = list(self.pts.values())
     return ret
+
