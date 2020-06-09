@@ -25,7 +25,6 @@ class CarState(CarStateBase):
     self.has_scc14 = CP.carFingerprint in FEATURES["has_scc14"]
     self.cruise_main_button = 0
     self.cruisespeed = 0
-    self.cruise_buttons = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -68,7 +67,6 @@ class CarState(CarStateBase):
     ret.brake = 0
     ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
-    self.cruise_buttons_prev = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
     # cruise state
@@ -83,17 +81,22 @@ class CarState(CarStateBase):
 #      ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
 #                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
     if ret.cruiseState.available:
-      if self.cruise_buttons == 1 or 2:
+      if self.cruise_buttons == 1 or self.cruise_buttons == 2:
          if self.cruise_buttons_prev != self.cruise_buttons:
             if self.cruisespeed == 0: 
               self.cruisespeed = cp.vl["CLU11"]["CF_Clu_Vanz"]
             else:
               self.cruisespeed = (self.cruisespeed + 1) if self.cruise_buttons == 1 else (self.cruisespeed - 1)
+         else:
+           self.cruisespeed = self.cruisespeed
+      else:
+        self.cruisespeed = self.cruisespeed
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
       ret.cruiseState.speed = self.cruisespeed * speed_conv if not self.no_radar else \
                                          cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
     else:
       ret.cruiseState.speed = 0
+    self.cruise_buttons_prev = self.cruise_buttons
 
 
 
