@@ -222,7 +222,7 @@ class CarState(CarStateBase):
       ("CF_Lca_IndLeft", "LCA11", 0),
       ("CF_Lca_IndRight", "LCA11", 0),
 
-      ("MainMode_ACC", "SCC11", 1),
+      ("MainMode_ACC", "SCC11", 0),
       ("SCCInfoDisplay", "SCC11", 0),
       ("AliveCounterACC", "SCC11", 0),
       ("VSetDis", "SCC11", 0),
@@ -393,7 +393,7 @@ class CarState(CarStateBase):
       ]
     if CP.sccBus == 1:
       signals += [
-        ("MainMode_ACC", "SCC11", 1),
+        ("MainMode_ACC", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
         ("AliveCounterACC", "SCC11", 0),
         ("VSetDis", "SCC11", 0),
@@ -476,7 +476,7 @@ class CarState(CarStateBase):
     checks = []
     if CP.sccBus == 2:
       signals += [
-        ("MainMode_ACC", "SCC11", 1),
+        ("MainMode_ACC", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
         ("AliveCounterACC", "SCC11", 0),
         ("VSetDis", "SCC11", 0),
