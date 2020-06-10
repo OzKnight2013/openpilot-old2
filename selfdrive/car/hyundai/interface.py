@@ -220,6 +220,7 @@ class CarInterface(CarInterfaceBase):
                                                                      else 2 if 1056 in fingerprint[2] else -1
     ret.radarOffCan = ret.sccBus == -1
     ret.openpilotLongitudinalControl = bool(ret.sccBus and not ret.radarOffCan)
+    ret.autoLcaEnabled = False
 
     return ret
 
@@ -258,6 +259,7 @@ class CarInterface(CarInterfaceBase):
 
         # TODO: button presses
     ret.buttonEvents = []
+    events = self.create_common_events(ret)
 
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
       events.add(EventName.steerTempUnavailable)
