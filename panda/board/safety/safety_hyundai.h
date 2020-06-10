@@ -102,29 +102,28 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
 
-  // check if we have a LCAN on Bus1
-  if (bus == 1 && (addr == 1296 || addr == 524)) {
-    if (hyundai_forward_bus1 || !hyundai_LCAN_on_bus1) {
-      hyundai_LCAN_on_bus1 = true;
-      hyundai_forward_bus1 = false;
+  if (valid && ((bus == 0) || (bus == 1) || (bus == 2))) {
+    // check if we have a LCAN on Bus1
+    if ((bus == 1) && (addr == 1296 || addr == 524)) {
+      if (hyundai_forward_bus1 || !hyundai_LCAN_on_bus1) {
+        hyundai_LCAN_on_bus1 = true;
+        hyundai_forward_bus1 = false;
+      }
     }
-  }
-  // check if we have a MDPS on Bus1 and LCAN not on the bus
-  if (bus == 1 && (addr == 593 || addr == 897) && !hyundai_LCAN_on_bus1) {
-    if (!hyundai_forward_bus1) {
-      hyundai_mdps_bus = bus;
-      hyundai_forward_bus1 = true;
+    // check if we have a MDPS on Bus1 and LCAN not on the bus
+    if ((bus == 1) && (addr == 593 || addr == 897) && (!hyundai_LCAN_on_bus1)) {
+       if ((hyundai_mdps_bus != bus) || (!hyundai_forward_bus1)) {
+        hyundai_mdps_bus = bus;
+        hyundai_forward_bus1 = true;
+      }
     }
-  }
-  // check if we have a SCC on Bus1 and LCAN not on the bus
-  if (bus == 1 && addr == 1057 && !hyundai_LCAN_on_bus1) {
-    if (!hyundai_forward_bus1) {
-      hyundai_forward_bus1 = true;
+    // check if we have a SCC on Bus1 and LCAN not on the bus
+    if ((bus == 1) && (addr == 1057) && (!hyundai_LCAN_on_bus1)) {
+      if (!hyundai_forward_bus1) {
+        hyundai_forward_bus1 = true;
+      }
     }
-  }
-
-  if (valid) {
-    if (addr == 593 && bus == hyundai_mdps_bus) {
+    if ((addr == 593) && (bus == hyundai_mdps_bus)) {
       int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ff) * 0.79) - 808; // scale down new driver torque signal to match previous one
       // update array of samples
       update_sample(&torque_driver, torque_driver_new);
@@ -134,8 +133,8 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     if (addr == 1056) && (bus != 1 || !hyundai_LCAN_on_bus1) {
       hyundai_has_scc = true;
       car_SCC_live = 50;
-      int cruise_engaged;
-      cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+      // 2 bits: 13-14
+      int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
       }
@@ -144,9 +143,19 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-
     // cruise control for car without SCC
-    if (addr == 608 && bus == 0 && !hyundai_has_scc && !OP_SCC_live) {
+    if ((addr == 871) && (!hyundai_has_scc) && (OP_SCC_live) && (bus == 0)) {
+      // first byte
+      int cruise_engaged = (GET_BYTES_04(to_push) & 0xFF);
+      if (cruise_engaged && !cruise_engaged_prev) {
+        controls_allowed = 1;
+      }
+      if (!cruise_engaged) {
+        controls_allowed = 0;
+      }
+      cruise_engaged_prev = cruise_engaged;
+    }
+    if ((addr == 608) && (!hyundai_has_scc) && (!OP_SCC_live) && (bus == 0)) {
       // bit 25
       int cruise_engaged = (GET_BYTES_04(to_push) >> 25 & 0x1); // ACC main_on signal
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -157,23 +166,9 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-    // engage for Cruise control disabled car
-    if (addr == 1265 && bus == 0 && OP_SCC_live && !car_SCC_live) {
-      // first byte
-      int cruise_button = (GET_BYTES_04(to_push) & 0x7);
-      // enable on both accel and decel buttons falling edge
-      if (!cruise_button && (cruise_engaged_prev == 1 || cruise_engaged_prev == 2)) {
-        controls_allowed = 1;
-      }
-      // disable on cancel rising edge
-      if (cruise_button == 4) {
-        controls_allowed = 0;
-      }
-      cruise_engaged_prev = cruise_button;
-    }
 
     // sample subaru wheel speed, averaging opposite corners
-    if (addr == 902 && bus == 0) {
+    if ((addr == 902) && (bus == 0)) {
       int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
       hyundai_speed += (GET_BYTES_48(to_push) >> 16) & 0x3FFF;  // RL
       hyundai_speed /= 2;
@@ -182,7 +177,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
 
     // check if stock camera ECU is on bus 0
-    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && bus == 0 && addr == 832) {
+    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (bus == 0) && (addr == 832)) {
       relay_malfunction_set();
     }
   }
@@ -255,7 +250,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // ensuring that only the cancel button press is sent (VAL 4) when controls are off.
   // This avoids unintended engagements while still allowing resume spam
   //allow clu11 to be sent to MDPS if MDPS is not on bus0
-  if (addr == 1265 && !controls_allowed && (bus != hyundai_mdps_bus || !hyundai_mdps_bus)) { 
+  if ((addr == 1265) && (!controls_allowed) && ((bus != hyundai_mdps_bus) || (!hyundai_mdps_bus))) { 
     if ((GET_BYTES_04(to_send) & 0x7) != 4) {
       tx = 0;
     }
