@@ -1,5 +1,4 @@
 import crcmod
-from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import CAR, CHECKSUM
 
 hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
@@ -21,7 +20,7 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   values["CF_Lkas_FusionState"] = fs_error
   values["CF_Lkas_Chksum"] = 0
 
-  if car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_H]:
+  if car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_H, CAR.SANTA_FE]:
     values["CF_Lkas_Bca_R"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
 
@@ -65,11 +64,9 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
 
 def create_scc12(packer, apply_accel, enabled, cnt, scc12):
   values = scc12
-  if enabled:
-    values["ACCMode"] = 1
-  values["ACCMode"] = 1 if enabled else 0
-  values["aReqValue"] = apply_accel if enabled else 0
-  values["aReqRaw"] = apply_accel if enabled else 0
+  values["ACCMode"] = 1  if enabled else 0
+  values["aReqRaw"] = apply_accel if enabled else 0 #aReqMax
+  values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
 
@@ -112,10 +109,11 @@ def create_lfa_mfa(packer, frame, enabled):
 
 def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values = scc11
-  values["MainMode_ACC"] = 1 if enabled else 0
+  values["MainMode_ACC"] = 1
   values["AliveCounterACC"] = frame % 0x10
   values["VSetDis"] = set_speed if enabled else 150
   values["ObjValid"] = 1 if enabled else 0
+#  values["ACC_ObjStatus"] = lead_visible
 
   return packer.make_can_msg("SCC11", 0, values)
 

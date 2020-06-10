@@ -2,8 +2,8 @@ from cereal import car
 from common.numpy_fast import clip
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
-                                             create_scc11, create_scc12, create_mdps12
-
+                                             create_scc11, create_scc12, create_mdps12, \
+                                             create_scc13, create_scc14
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR
 from opendbc.can.packer import CANPacker
 
@@ -71,7 +71,7 @@ class CarController():
     self.last_lead_distance = 0
     self.turning_signal_timer = 0
     self.lkas_button_on = True
-    self.longcontrol = False #TODO: make auto
+    self.longcontrol = True #TODO: make auto
     self.fs_error = False
     self.update_live = False
     self.scc_live = not CP.radarOffCan
@@ -135,7 +135,7 @@ class CarController():
     # check if SCC on bus 0 is live
     if frame % 7 == 0 and not CS.no_radar:
       if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
-        if frame - self.scc_update_frame > 15 and self.scc_live:
+        if frame - self.scc_update_frame > 20 and self.scc_live:
           self.scc_live = False
       else:
         self.scc_live = True
@@ -165,7 +165,7 @@ class CarController():
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if self.longcontrol and (CS.scc_bus or not self.scc_live): #and frame % 2 == 0: 
+    if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled, self.scc12_cnt, CS.scc12))
       can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, lead_visible, CS.scc11))
       if CS.has_scc13 and frame % 20 == 0:
@@ -193,7 +193,7 @@ class CarController():
       self.last_lead_distance = 0  
 
     # 20 Hz LFA MFA message
-    if frame % 5 == 0 and self.car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_H]:
+    if frame % 5 == 0 and self.car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.SONATA_H, CAR.SANTA_FE]:
       can_sends.append(create_lfa_mfa(self.packer, frame, enabled))
 
     return can_sends
