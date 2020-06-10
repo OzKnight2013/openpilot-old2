@@ -35,7 +35,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
 
   else:
     if long_control_state == LongCtrlState.off:
-      if active:
+      if active and (not brake_pressed):
         long_control_state = LongCtrlState.pid
 
     elif long_control_state == LongCtrlState.pid:
