@@ -8,14 +8,17 @@ const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
 const int HYUNDAI_STANDSTILL_THRSLD = 30;  // ~1kph
 const CanMsg HYUNDAI_TX_MSGS[] = {
   {832, 0, 8},  // LKAS11 Bus 0
+  {832, 1, 8},  // LKAS11 Bus 1
   {1265, 0, 4}, // CLU11 Bus 0
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
-  {832, 1, 8},{1265, 1, 4}, {1265, 2, 4}, {593, 2, 8}, {1057, 0, 8}, {790, 1, 8}, {912, 0, 7}, {912,1, 7}, {1268, 0, 8}, {1268,1, 8},
-  {1056, 0, 8}, //   SCC11,  Bus 0
-  {1057, 0, 8}, //   SCC12,  Bus 0
-  {1290, 0, 8}, //   SCC13,  Bus 0
-  {905, 0, 8},  //   SCC14,  Bus 0
-  {1186, 0, 8}  //   4a2SCC, Bus 0
+  {1265, 1, 4}, // CLU11 Bus 1
+  {1265, 2, 4}, // CLU11 Bus 2
+  {593, 2, 8},  // MDPS12 Bus 2
+  {1057, 0, 8},  // SCC12 Bus 0
+  {1056, 0, 8},  //   SCC11, Bus 0
+  // {1290, 0, 8}, //   SCC13,  Bus 0
+  // {905, 0, 8},  //   SCC14,  Bus 0
+  // {1186, 0, 8}  //   4a2SCC, Bus 0
  };
 
 // TODO: missing checksum for wheel speeds message,worst failure case is
@@ -50,6 +53,15 @@ static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   return cnt;
 }
 
+bool hyundai_has_scc = false;
+int OP_LKAS_live = 0;
+int OP_MDPS_live = 0;
+int OP_CLU_live = 0;
+int OP_SCC_live = 0;
+int hyundai_mdps_bus = 0;
+bool hyundai_LCAN_on_bus1 = false;
+bool hyundai_forward_bus1 = false;
+
 static uint8_t hyundai_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
 
@@ -80,17 +92,6 @@ static uint8_t hyundai_compute_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
   }
   return (16U - (chksum %  16U)) % 16U;
 }
-
-bool hyundai_has_scc = false;
-int OP_LKAS_live = 0;
-int OP_MDPS_live = 0;
-int OP_CLU_live = 0;
-int OP_SCC_live = 0;
-int car_SCC_live = 0;
-int hyundai_mdps_bus = 0;
-bool hyundai_LCAN_on_bus1 = false;
-bool hyundai_forward_bus1 = false;
-
 
 static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
@@ -130,9 +131,20 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if ((addr == 1056) && (bus != 1 || !hyundai_LCAN_on_bus1)) {
+    if ((addr == 1057) && (OP_SCC_live) && ((bus != 1) || (!hyundai_LCAN_on_bus1))) { // for cars with long control
       hyundai_has_scc = true;
-      car_SCC_live = 50;
+      // 2 bits: 13-14
+      int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
+      if (cruise_engaged && !cruise_engaged_prev) {
+        controls_allowed = 1;
+      }
+      if (!cruise_engaged) {
+        controls_allowed = 0;
+      }
+      cruise_engaged_prev = cruise_engaged;
+    }
+    if ((addr == 1056) && (!OP_SCC_live) && ((bus != 1) || (!hyundai_LCAN_on_bus1))) { // for cars without long control
+      hyundai_has_scc = true;
       // 2 bits: 13-14
       int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -258,7 +270,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   if (addr == 593) {OP_MDPS_live = 20;}
   if ((addr == 1265) && bus == 1) {OP_CLU_live = 20;} // only count mesage to mdps
-  if (addr == 1057) {OP_SCC_live = 20; if (car_SCC_live > 0) {car_SCC_live -= 1;}}
+  if (addr == 1057) {OP_SCC_live = 20;}
 
   // 1 allows the message through
   return tx;
@@ -288,10 +300,10 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 1 && hyundai_forward_bus1) {
       if (!OP_MDPS_live || addr != 593) {
-        if (!OP_SCC_live || addr != 1056 || addr != 1057 || addr != 1290 || addr != 905) {
+        if (!OP_SCC_live || addr != 1057) {
           bus_fwd = 20;
         } else {
-          bus_fwd = 2;  // EON create SCC11 SCC12 SCC13 SCC14 for Car
+          bus_fwd = 2;  // EON create SCC12 for Car
           OP_SCC_live -= 1;
         }
       } else {
@@ -301,7 +313,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     }
     if (bus_num == 2) {
       if (addr != 832 || !OP_LKAS_live) {
-        if (!OP_SCC_live || addr != 1056 || addr != 1057 || addr != 1290 || addr != 905) {
+        if ((addr != 1057) || (!OP_SCC_live)) {
           bus_fwd = hyundai_forward_bus1 ? 10 : 0;
         } else {
           bus_fwd = fwd_to_bus1;  // EON create SCC12 for Car
