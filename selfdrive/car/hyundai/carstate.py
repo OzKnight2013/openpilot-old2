@@ -281,10 +281,10 @@ class CarState(CarStateBase):
       ]
     elif not CP.sccBus:
       signals += [
-      ("MainMode_ACC", "SCC11", 1),
+      ("MainMode_ACC", "SCC11", 0),
       ("SCCInfoDisplay", "SCC11", 0),
       ("AliveCounterACC", "SCC11", 0),
-      ("VSetDis", "SCC11", 0),
+      ("VSetDis", "SCC11", 5),
       ("ObjValid", "SCC11", 0),
       ("DriverAlertDisplay", "SCC11", 0),
       ("TauGapSet", "SCC11", 4),
@@ -395,7 +395,7 @@ class CarState(CarStateBase):
       ]
     if CP.sccBus == 1:
       signals += [
-        ("MainMode_ACC", "SCC11", 1),
+        ("MainMode_ACC", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
         ("AliveCounterACC", "SCC11", 0),
         ("VSetDis", "SCC11", 5),
@@ -478,7 +478,7 @@ class CarState(CarStateBase):
     checks = []
     if CP.sccBus == 2:
       signals += [
-        ("MainMode_ACC", "SCC11", 1),
+        ("MainMode_ACC", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
         ("AliveCounterACC", "SCC11", 0),
         ("VSetDis", "SCC11", 5),
