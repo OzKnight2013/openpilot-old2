@@ -193,9 +193,9 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 35.]
-    ret.longitudinalTuning.kpV = [0.6, 0.4, 0.2]
+    ret.longitudinalTuning.kpV = [0.2, 0.1, 0.05]
     ret.longitudinalTuning.kiBP = [0., 35.]
-    ret.longitudinalTuning.kiV = [0.02, 0.01]
+    ret.longitudinalTuning.kiV = [0.01, 0.005]
     ret.longitudinalTuning.deadzoneBP = [0.]
     ret.longitudinalTuning.deadzoneV = [0.2]
 
@@ -219,7 +219,8 @@ class CarInterface(CarInterfaceBase):
     ret.sccBus = 0 if 1056 in fingerprint[0] else 1 if 1056 in fingerprint[1] and 1296 not in fingerprint[1] \
                                                                      else 2 if 1056 in fingerprint[2] else -1
     ret.radarOffCan = ret.sccBus == -1
-    ret.openpilotLongitudinalControl = bool(ret.sccBus and not ret.radarOffCan)
+    ret.openpilotLongitudinalControl = True
+    ret.enableCruise = not ret.radarOffCan or ret.sccBus != 0
     ret.autoLcaEnabled = False
 
     return ret
@@ -232,6 +233,10 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
+    if self.CP.enableCruise and not self.CC.scc_live:
+      self.CP.enableCruise = False
+    elif self.CC.scc_live and not self.CP.enableCruise:
+      self.CP.enableCruise = True
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
     ret.cruiseState.enabled = ret.cruiseState.available
@@ -257,8 +262,29 @@ class CarInterface(CarInterfaceBase):
     if ret.vEgo > (self.CP.minSteerSpeed + 0.7):
       self.low_speed_alert = False
 
-        # TODO: button presses
-    ret.buttonEvents = []
+    buttonEvents = []
+    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
+      be = car.CarState.ButtonEvent.new_message()
+      be.pressed = self.CS.cruise_buttons != 0 
+      but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
+      if but == Buttons.RES_ACCEL:
+        be.type = ButtonType.accelCruise
+      elif but == Buttons.SET_DECEL:
+        be.type = ButtonType.decelCruise
+      elif but == Buttons.GAP_DIST:
+        be.type = ButtonType.gapAdjustCruise
+      elif but == Buttons.CANCEL:
+        be.type = ButtonType.cancel
+      else:
+        be.type = ButtonType.unknown
+      buttonEvents.append(be)
+    if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.altButton3
+      be.pressed = bool(self.CS.cruise_main_button)
+      buttonEvents.append(be)
+    ret.buttonEvents = buttonEvents
+
     events = self.create_common_events(ret)
 
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
