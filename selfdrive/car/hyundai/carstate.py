@@ -76,25 +76,25 @@ class CarState(CarStateBase):
                                       cp.vl['EMS16']['CRUISE_LAMP_M'] != 0
     ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
-#    if ret.cruiseState.enabled:
-#      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-#      ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
-#                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
-    if ret.cruiseState.available and (not ret.brakePressed):
-      if (self.cruise_buttons == 1 or self.cruise_buttons == 2) and \
-              (self.cruise_buttons != self.prev_cruise_buttons):
-        self.cruisespeed = (self.cruisespeed + 1) if self.cruise_buttons == 1 else (self.cruisespeed - 1)
-        self.cruisespeed = max(5, self.cruisespeed)
-        if self.cruisespeed == 0:
-          self.cruisespeed = cp.vl["CLU11"]["CF_Clu_Vanz"]
-        else:
-          self.cruisespeed = self.cruisespeed
-      else:
-        self.cruisespeed = self.cruisespeed
-
+    if ret.cruiseState.enabled:
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = self.cruisespeed * speed_conv if not self.no_radar else \
+      ret.cruiseState.speed = cp_scc.vl["SCC11"]['VSetDis'] * speed_conv if not self.no_radar else \
                                          cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
+#    if ret.cruiseState.available and (not ret.brakePressed):
+#      if (self.cruise_buttons == 1 or self.cruise_buttons == 2) and \
+#              (self.cruise_buttons != self.prev_cruise_buttons):
+#        self.cruisespeed = (self.cruisespeed + 1) if self.cruise_buttons == 1 else (self.cruisespeed - 1)
+#        self.cruisespeed = max(5, self.cruisespeed)
+#        if self.cruisespeed == 0:
+#          self.cruisespeed = cp.vl["CLU11"]["CF_Clu_Vanz"]
+#        else:
+#          self.cruisespeed = self.cruisespeed
+#      else:
+#        self.cruisespeed = self.cruisespeed
+
+#      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+#      ret.cruiseState.speed = self.cruisespeed * speed_conv if not self.no_radar else \
+#                                         cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
     else:
       ret.cruiseState.speed = 0
 

@@ -193,11 +193,11 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 35.]
-    ret.longitudinalTuning.kpV = [0.2, 0.1, 0.05]
+    ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
     ret.longitudinalTuning.kiBP = [0., 35.]
-    ret.longitudinalTuning.kiV = [0.01, 0.005]
+    ret.longitudinalTuning.kiV = [0.18, 0.12]
     ret.longitudinalTuning.deadzoneBP = [0.]
-    ret.longitudinalTuning.deadzoneV = [0.2]
+    ret.longitudinalTuning.deadzoneV = [0.]
 
 
     # steer, gas, brake limitations VS speed
@@ -239,7 +239,8 @@ class CarInterface(CarInterfaceBase):
       self.CP.enableCruise = True
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
-    ret.cruiseState.enabled = ret.cruiseState.available
+    if not self.CC.longcontrol:
+      ret.cruiseState.enabled = ret.cruiseState.available
     # some Optima only has blinker flash signal
     if self.CP.carFingerprint == CAR.KIA_OPTIMA:
       ret.leftBlinker = self.CS.left_blinker_flash or self.CS.prev_left_blinker and self.CC.turning_signal_timer
