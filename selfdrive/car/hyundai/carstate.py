@@ -237,7 +237,50 @@ class CarState(CarStateBase):
       ("CF_Lca_Stat", "LCA11", 0),
       ("CF_Lca_IndLeft", "LCA11", 0),
       ("CF_Lca_IndRight", "LCA11", 0),
+    ]
 
+    checks = [
+      # address, frequency
+      ("TCS13", 50),
+      ("TCS15", 10),
+      ("CLU11", 50),
+      ("ESP12", 100),
+      ("CGW1", 10),
+      ("CGW4", 5),
+      ("WHL_SPD11", 50),
+      ]
+    if not CP.mdpsBus:
+      signals += [
+        ("CR_Mdps_StrColTq", "MDPS12", 0),
+        ("CF_Mdps_Def", "MDPS12", 0),
+        ("CF_Mdps_ToiActive", "MDPS12", 0),
+        ("CF_Mdps_ToiUnavail", "MDPS12", 0),
+        ("CF_Mdps_MsgCount2", "MDPS12", 0),
+        ("CF_Mdps_Chksum2", "MDPS12", 0),
+        ("CF_Mdps_ToiFlt", "MDPS12", 0),
+        ("CF_Mdps_SErr", "MDPS12", 0),
+        ("CR_Mdps_StrTq", "MDPS12", 0),
+        ("CF_Mdps_FailStat", "MDPS12", 0),
+        ("CR_Mdps_OutTq", "MDPS12", 0)
+      ]
+      checks += [
+        ("MDPS12", 50)
+      ]
+    if not CP.sasBus:
+      signals += [
+        ("SAS_Angle", "SAS11", 0),
+        ("SAS_Speed", "SAS11", 0),
+      ]
+      checks += [
+        ("SAS11", 100)
+      ]
+    if CP.sccBus == -1:
+      signals += [
+        ("CRUISE_LAMP_M", "EMS16", 0),
+        ("CF_Lvr_CruiseSet", "LVR12", 0),
+      ]
+    elif not CP.sccBus:
+      signals += [
       ("MainMode_ACC", "SCC11", 1),
       ("SCCInfoDisplay", "SCC11", 0),
       ("AliveCounterACC", "SCC11", 0),
@@ -277,65 +320,6 @@ class CarState(CarStateBase):
       ("CR_VSM_ChkSum", "SCC12", 0),
       ("aReqValue", "SCC12", 0), #aReqMin
       ("aReqRaw", "SCC12", 0), #aReqMax
-
-      ("SCCDrvModeRValue", "SCC13", 2),
-      ("SCC_Equip", "SCC13", 1),
-      ("AebDrvSetStatus", "SCC13", 0),
-
-      ("JerkUpperLimit", "SCC14", 0),
-      ("JerkLowerLimit", "SCC14", 0),
-      ("SCCMode2", "SCC14", 0),
-      ("ComfortBandUpper", "SCC14", 0),
-      ("ComfortBandLower", "SCC14", 0),
-    ]
-
-    checks = [
-      # address, frequency
-      ("TCS13", 50),
-      ("TCS15", 10),
-      ("CLU11", 50),
-      ("ESP12", 100),
-      ("CGW1", 10),
-      ("CGW4", 5),
-      ("WHL_SPD11", 50),
-    ]
-    if CP.sccBus == 0 and CP.enableCruise:
-      checks += [
-        ("SCC11", 50),
-        ("SCC12", 50),
-      ]
-    if not CP.mdpsBus:
-      signals += [
-        ("CR_Mdps_StrColTq", "MDPS12", 0),
-        ("CF_Mdps_Def", "MDPS12", 0),
-        ("CF_Mdps_ToiActive", "MDPS12", 0),
-        ("CF_Mdps_ToiUnavail", "MDPS12", 0),
-        ("CF_Mdps_MsgCount2", "MDPS12", 0),
-        ("CF_Mdps_Chksum2", "MDPS12", 0),
-        ("CF_Mdps_ToiFlt", "MDPS12", 0),
-        ("CF_Mdps_SErr", "MDPS12", 0),
-        ("CR_Mdps_StrTq", "MDPS12", 0),
-        ("CF_Mdps_FailStat", "MDPS12", 0),
-        ("CR_Mdps_OutTq", "MDPS12", 0)
-      ]
-      checks += [
-        ("MDPS12", 50)
-      ]
-    if not CP.sasBus:
-      signals += [
-        ("SAS_Angle", "SAS11", 0),
-        ("SAS_Speed", "SAS11", 0),
-      ]
-      checks += [
-        ("SAS11", 100)
-      ]
-    if CP.sccBus == -1:
-      signals += [
-        ("CRUISE_LAMP_M", "EMS16", 0),
-        ("CF_Lvr_CruiseSet", "LVR12", 0),
-      ]
-    elif not CP.sccBus:
-      signals += [
       ]
       checks += [
         ("SCC11", 50),
