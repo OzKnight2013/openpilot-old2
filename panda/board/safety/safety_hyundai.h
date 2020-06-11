@@ -82,13 +82,12 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if (addr == 1057 && (bus != 1 || !hyundai_LCAN_on_bus1)) {
+    if (addr == 1056 && (bus != 1 || !hyundai_LCAN_on_bus1)) {
       hyundai_has_scc = true;
       car_SCC_live = 50;
       int cruise_engaged;
-      if (OP_SCC_live) { // for cars with long control
-        cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3; // 2 bits: 13-14
-      } else if (!OP_SCC_live) { // for cars without long control
+
+      if (!OP_SCC_live) { // for cars without long control
         cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
       }
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -99,28 +98,20 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-    // cruise control for car without SCC
-    if ((addr == 871) && (!hyundai_has_scc) && (OP_SCC_live) && (bus == 0)) {
+
+    // engage for Cruise control disabled car
+    if ((addr == 1265) && (bus == 0) && OP_SCC_live && cruise_engaged) {
       // first byte
-      int cruise_engaged = (GET_BYTES_04(to_push) & 0xFF);
-      if (cruise_engaged && !cruise_engaged_prev) {
+      int cruise_button = (GET_BYTES_04(to_push) & 0x7);
+      // enable on both accel and decel buttons falling edge
+      if ((!controls_allowed) && (!cruise_button) && (cruise_engaged_prev == 1 || cruise_engaged_prev == 2)) {
         controls_allowed = 1;
       }
-      if (!cruise_engaged) {
+      // disable on cancel rising edge
+      if (cruise_button == 4) {
         controls_allowed = 0;
       }
-      cruise_engaged_prev = cruise_engaged;
-    }
-    if ((addr == 608) && (!hyundai_has_scc) && (!OP_SCC_live) && (bus == 0)) {
-      // bit 25
-      int cruise_engaged = (GET_BYTES_04(to_push) >> 25 & 0x1); // ACC main_on signal
-      if (cruise_engaged && !cruise_engaged_prev) {
-        controls_allowed = 1;
-      }
-      if (!cruise_engaged) {
-        controls_allowed = 0;
-      }
-      cruise_engaged_prev = cruise_engaged;
+      cruise_engaged_prev = cruise_button;
     }
 
     // sample subaru wheel speed, averaging opposite corners
@@ -213,7 +204,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   }
 
   if (addr == 593) {OP_MDPS_live = 20;}
-  if ((addr == 1265) && bus == 1) {OP_CLU_live = 20;} // only count mesage to mdps
+  if ((addr == 1265) && (bus == 1)) {OP_CLU_live = 20;} // only count mesage to mdps
   if (addr == 1057) {OP_SCC_live = 20; if (car_SCC_live > 0) {car_SCC_live -= 1;}}
 
   // 1 allows the message through
