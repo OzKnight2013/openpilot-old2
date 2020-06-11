@@ -42,6 +42,9 @@ int car_SCC_live = 0;
 int hyundai_mdps_bus = 0;
 bool hyundai_LCAN_on_bus1 = false;
 bool hyundai_forward_bus1 = false;
+int cruise_engaged = 0;
+int cruise_button = 0;
+int cruise_button_prev = 0;
 int cruise_engaged_prev = 0;
 int controls_allowed = 0;
 
@@ -87,7 +90,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       hyundai_has_scc = true;
       car_SCC_live = 50;
 
-      int cruise_engaged = (GET_BYTES_04(to_push) & 0x1); // ACC main_on signal
+      cruise_engaged = (GET_BYTES_04(to_push) & 0x1); // ACC main_on signal
 
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
@@ -101,16 +104,16 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     // engage for Cruise control disabled car
     if ((addr == 1265) && (bus == 0) && OP_SCC_live && cruise_engaged) {
       // first byte
-      int cruise_button = (GET_BYTES_04(to_push) & 0x7);
+      cruise_button = (GET_BYTES_04(to_push) & 0x7);
       // enable on both accel and decel buttons falling edge
-      if ((!cruise_engaged) && (!cruise_button) && (cruise_engaged_prev == 1 || cruise_engaged_prev == 2)) {
+      if ((!cruise_engaged) && (!cruise_button) && ((cruise_button_prev == 1) || (cruise_button_prev == 2))) {
         controls_allowed = 1;
       }
       // disable on cancel rising edge
       if (cruise_button == 4) {
         controls_allowed = 0;
       }
-      cruise_engaged_prev = cruise_button;
+      cruise_button_prev = cruise_button;
     }
 
 
