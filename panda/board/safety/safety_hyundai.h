@@ -42,7 +42,8 @@ int car_SCC_live = 0;
 int hyundai_mdps_bus = 0;
 bool hyundai_LCAN_on_bus1 = false;
 bool hyundai_forward_bus1 = false;
-
+int cruise_engaged_prev = 0;
+bool controls_allowed = 0;
 
 static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
@@ -82,14 +83,12 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if (addr == 1056 && (bus != 1 || !hyundai_LCAN_on_bus1)) {
+    if ((addr == 1056) && (bus == 2)) {
       hyundai_has_scc = true;
       car_SCC_live = 50;
-      int cruise_engaged;
 
-      if (!OP_SCC_live) { // for cars without long control
-        cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
-      }
+      int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
+
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
       }
@@ -112,14 +111,6 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
         controls_allowed = 0;
       }
       cruise_engaged_prev = cruise_button;
-    }
-
-    // sample subaru wheel speed, averaging opposite corners
-    if ((addr == 902) && (bus == 0)) {
-      int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
-      hyundai_speed += (GET_BYTES_48(to_push) >> 16) & 0x3FFF;  // RL
-      hyundai_speed /= 2;
-      vehicle_moving = hyundai_speed > HYUNDAI_STANDSTILL_THRSLD;
     }
 
 
