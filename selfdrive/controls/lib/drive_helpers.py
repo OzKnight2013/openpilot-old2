@@ -4,8 +4,8 @@ from cereal import car
 
 # kph
 V_CRUISE_MAX = 144
-V_CRUISE_MIN = 1.6
-V_CRUISE_DELTA = 1.6
+V_CRUISE_MIN = 2
+V_CRUISE_DELTA = 2
 V_CRUISE_ENABLE_MIN = 8
 
 
@@ -17,7 +17,7 @@ class MPC_COST_LAT:
 
 
 class MPC_COST_LONG:
-  TTC = 5.0
+  TTC = 3.0
   DISTANCE = 0.1
   ACCELERATION = 10.0
   JERK = 20.0
