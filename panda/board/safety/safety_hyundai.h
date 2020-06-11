@@ -5,7 +5,6 @@ const int HYUNDAI_MAX_RATE_UP = 3;
 const int HYUNDAI_MAX_RATE_DOWN = 7;
 const int HYUNDAI_DRIVER_TORQUE_ALLOWANCE = 50;
 const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
-const int HYUNDAI_STANDSTILL_THRSLD = 30;  // ~1kph
 const CanMsg HYUNDAI_TX_MSGS[] = {
   {832, 0, 8},  // LKAS11 Bus 0
   {1265, 0, 4}, // CLU11 Bus 0
@@ -33,12 +32,10 @@ AddrCheckStruct hyundai_rx_checks[] = {
 const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_checks[0]);
 
 
-bool hyundai_has_scc = false;
 int OP_LKAS_live = 0;
 int OP_MDPS_live = 0;
 int OP_CLU_live = 0;
 int OP_SCC_live = 0;
-int car_SCC_live = 0;
 int hyundai_mdps_bus = 0;
 bool hyundai_LCAN_on_bus1 = false;
 bool hyundai_forward_bus1 = false;
@@ -87,8 +84,6 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     // enter controls on rising edge of ACC, exit controls on ACC off
     if ((addr == 1056) && (bus == 2)) {
-      hyundai_has_scc = true;
-      car_SCC_live = 50;
 
       cruise_engaged = (GET_BYTES_04(to_push) & 0x1); // ACC main_on signal
 
@@ -102,7 +97,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // engage for Cruise control disabled car
-    if ((addr == 1265) && (bus == 0) && OP_SCC_live && cruise_engaged) {
+    if ((addr == 1265) && (bus == 0) && cruise_engaged) {
       // first byte
       cruise_button = (GET_BYTES_04(to_push) & 0x7);
       // enable on both accel and decel buttons falling edge
@@ -199,7 +194,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   if (addr == 593) {OP_MDPS_live = 20;}
   if ((addr == 1265) && (bus == 1)) {OP_CLU_live = 20;} // only count mesage to mdps
-  if (addr == 1057) {OP_SCC_live = 20; if (car_SCC_live > 0) {car_SCC_live -= 1;}}
+  if (addr == 1057) {OP_SCC_live = 20;
 
   // 1 allows the message through
   return tx;
