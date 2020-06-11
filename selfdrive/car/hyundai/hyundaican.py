@@ -112,11 +112,12 @@ def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   
   #values["MainMode_ACC"] = 1 # let radar handle this
   values["AliveCounterACC"] = frame // 2 % 0x10
-  values["VSetDis"] = set_speed if enabled else 0
-  values["ObjValid"] = 1 if enabled else 0
+  if enabled:
+    values["VSetDis"] = set_speed
+    values["ObjValid"] = 1
   values["SCCInfoDisplay"] = 0
   values["DriverAlertDisplay"] = 0
-#  values["ACC_ObjStatus"] = lead_visible
+  values["ACC_ObjStatus"] = lead_visible
 
   return packer.make_can_msg("SCC11", 0, values)
 
