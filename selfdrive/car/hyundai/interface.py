@@ -239,9 +239,9 @@ class CarInterface(CarInterfaceBase):
 #      self.CP.enableCruise = True
     self.CP.enableCruise = True
     # most HKG cars has no long control, it is safer and easier to engage by main on
-#    if not self.CC.longcontrol:
-#      ret.cruiseState.enabled = ret.cruiseState.available
-    ret.cruiseState.enabled = ret.cruiseState.available
+    if not self.CC.longcontrol:
+      ret.cruiseState.enabled = ret.cruiseState.available
+#    ret.cruiseState.enabled = ret.cruiseState.available
     # some Optima only has blinker flash signal
     if self.CP.carFingerprint == CAR.KIA_OPTIMA:
       ret.leftBlinker = self.CS.left_blinker_flash or self.CS.prev_left_blinker and self.CC.turning_signal_timer
