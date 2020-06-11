@@ -204,7 +204,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.0]
     ret.gasMaxBP = [0., 10., 40.]
-    ret.gasMaxV = [0.3, 0.4, 0.5]
+    ret.gasMaxV = [0.5, 0.5, 0.5]
     ret.brakeMaxBP = [0., 20.]
     ret.brakeMaxV = [1., 0.8]
 
@@ -292,7 +292,7 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
-    if abs(ret.steeringAngle) > 120. and EventName.steerTempUnavailable not in events.events:
+    if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
       events.add(EventName.steerTempUnavailable)
     if self.low_speed_alert and not self.CS.mdps_bus:
       events.add(EventName.belowSteerSpeed)
