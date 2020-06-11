@@ -106,7 +106,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       // first byte
       cruise_button = (GET_BYTES_04(to_push) & 0x7);
       // enable on both accel and decel buttons falling edge
-      if ((!cruise_engaged) && (!cruise_button) && ((cruise_button_prev == 1) || (cruise_button_prev == 2))) {
+      if ((!cruise_button) && ((cruise_button_prev == 1) || (cruise_button_prev == 2))) {
         controls_allowed = 1;
       }
       // disable on cancel rising edge
