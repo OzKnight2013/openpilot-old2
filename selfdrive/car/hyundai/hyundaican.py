@@ -64,7 +64,7 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
 
 def create_scc12(packer, apply_accel, enabled, cnt, scc12):
   values = scc12
-  values["ACCMode"] = 1  #if enabled else 0
+  values["ACCMode"] = 1  if enabled else 0
   values["aReqRaw"] = apply_accel if enabled else 0 #aReqMax
   values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
   values["CR_VSM_Alive"] = cnt
@@ -109,7 +109,8 @@ def create_lfa_mfa(packer, frame, enabled):
 
 def create_scc11(packer, frame, enabled, set_speed, lead_visible, scc11):
   values = scc11
-  values["MainMode_ACC"] = 1 if enabled else 0
+  
+  #values["MainMode_ACC"] = 1 # let radar handle this
   values["AliveCounterACC"] = frame // 2 % 0x10
   values["VSetDis"] = set_speed if enabled else 0
   values["ObjValid"] = 1 if enabled else 0
