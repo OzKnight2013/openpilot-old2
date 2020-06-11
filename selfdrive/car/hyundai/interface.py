@@ -220,7 +220,7 @@ class CarInterface(CarInterfaceBase):
                                                                      else 2 if 1056 in fingerprint[2] else -1
     ret.radarOffCan = ret.sccBus == -1
     ret.openpilotLongitudinalControl = True #TODO make ui toggle
-    ret.enableCruise = True  #not ret.radarOffCan
+    ret.enableCruise = not ret.radarOffCan
     ret.autoLcaEnabled = True
 
     return ret
@@ -238,7 +238,7 @@ class CarInterface(CarInterfaceBase):
 #    elif self.CC.scc_live and not self.CP.enableCruise:
 #      self.CP.enableCruise = True
 
-    self.CP.enableCruise = True
+    self.CP.enableCruise = False
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
 #    if not self.CP.openpilotLongitudinalControl:
