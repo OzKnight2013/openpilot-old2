@@ -27,6 +27,8 @@ class CarState(CarStateBase):
     self.cruisespeed = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
+    self.brakePressed = 0
+    self.gasPressed = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -67,7 +69,10 @@ class CarState(CarStateBase):
 
     # TODO: Find brake pressure
     ret.brake = 0
-    ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
+    self.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
+
+    ret.brakePressed = (self.brakePressed != 0)
+
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
@@ -103,8 +108,10 @@ class CarState(CarStateBase):
     ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100 if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
                 cp.vl["E_EMS11"]['Accel_Pedal_Pos'] / 100
 
-    ret.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"]) if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
+    self.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"]) if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
                 cp.vl["E_EMS11"]['Accel_Pedal_Pos'] > 5
+
+    ret.gasPressed = (self.gasPressed != 0)
 
     ret.espDisabled = cp.vl["TCS15"]['ESC_Off_Step'] != 0
 
