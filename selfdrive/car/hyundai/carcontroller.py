@@ -100,11 +100,11 @@ class CarController():
     elif abs(self.apply_accel_last) > 2.:
       accel_rate_gain = 1.5
     elif abs(self.apply_accel_last) > 2.5:
-      accel_rate_gain = 2
+      accel_rate_gain = 2.
     elif abs(self.apply_accel_last) > 3.:
-      accel_rate_gain = 3
+      accel_rate_gain = 3.
     else:
-      accel_rate_gain = 1
+      accel_rate_gain = 1.
 
     if apply_accel <= 0:
       if CS.gasPressed:
