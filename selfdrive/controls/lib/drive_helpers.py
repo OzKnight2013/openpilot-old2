@@ -43,6 +43,8 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, update_debounce=0):
       elif b.type == car.CarState.ButtonEvent.Type.decelCruise and update_debounce == 0:
         v_cruise_kph -= V_CRUISE_DELTA - ((V_CRUISE_DELTA - v_cruise_kph) % V_CRUISE_DELTA)
         update_debounce = 1
+      else:
+        update_debounce = 0
       v_cruise_kph = clip(v_cruise_kph, V_CRUISE_MIN, V_CRUISE_MAX)
 
       if update_debounce > 50 or update_debounce == 0:

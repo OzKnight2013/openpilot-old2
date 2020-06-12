@@ -318,7 +318,7 @@ class CarInterface(CarInterfaceBase):
         events.events.remove(EventName.pcmDisable)
 
     if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
-      events.add(EventName.buttonCancel)
+      events.add(EventName.pcmDisable)
 
     ret.events = events.to_msg()
 
