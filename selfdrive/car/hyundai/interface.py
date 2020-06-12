@@ -80,6 +80,7 @@ class CarInterface(CarInterfaceBase):
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.lateralTuning.pid.kf = 0.00005
+      ret.steerActuatorDelay = 0.3
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
@@ -292,6 +293,9 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
+    if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
+      events.add(EventName.pcmDisable)
+
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
       events.add(EventName.steerTempUnavailable)
     if self.low_speed_alert and not self.CS.mdps_bus:
@@ -316,9 +320,6 @@ class CarInterface(CarInterfaceBase):
         events.events.remove(EventName.wrongCarMode)
       if EventName.pcmDisable in events.events:
         events.events.remove(EventName.pcmDisable)
-
-    if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
-      events.add(EventName.pcmDisable)
 
     ret.events = events.to_msg()
 
