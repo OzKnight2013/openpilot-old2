@@ -194,9 +194,9 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.04, 0.03, 0.03]
-    ret.longitudinalTuning.kiBP = [0., 5., 30., 40.]
-    ret.longitudinalTuning.kiV = [0.0015, 0.0015, 0.00115, 0.00115]
+    ret.longitudinalTuning.kpV = [0.04, 0.04, 0.04]
+    ret.longitudinalTuning.kiBP = [0.]
+    ret.longitudinalTuning.kiV = [0.004]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -278,8 +278,8 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-      elif but == Buttons.CANCEL:
-        be.type = ButtonType.cancel
+#      elif but == Buttons.CANCEL:
+#        be.type = ButtonType.cancel
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)

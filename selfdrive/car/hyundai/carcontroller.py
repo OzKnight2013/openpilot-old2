@@ -14,7 +14,9 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
 ACCEL_MAX = 1.5  # 1.5 m/s2
 ACCEL_MIN = -10.0 # 3   m/s2
-GAS_OVERRIDE_RATE = 0.05
+BRAKE_APPLY_RATE = 0.01  #1m/s2/s
+GAS_APPLY_RATE = 0.005  #0.5m/s2/s
+GAS_OVERRIDE_RATE = 0.05 #5m/s2/s
 ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 def accel_hysteresis(accel, accel_steady):
@@ -91,8 +93,26 @@ class CarController():
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
-    if CS.gasPressed and apply_accel <= 0:
-      apply_accel = min(apply_accel, self.apply_accel_last + GAS_OVERRIDE_RATE)
+    # TODO make a interp function
+    if abs(self.apply_accel_last) > 1.:
+      accel_rate_gain = 1.2
+    elif abs(self.apply_accel_last) > 2.:
+      accel_rate_gain = 1.5
+    elif abs(self.apply_accel_last) > 2.5:
+      accel_rate_gain = 2
+    elif abs(self.apply_accel_last) > 3.:
+      accel_rate_gain = 3
+    else:
+      accel_rate_gain = 1
+
+    if apply_accel <= 0:
+      if CS.gasPressed:
+        apply_accel = min(apply_accel, self.apply_accel_last + (GAS_OVERRIDE_RATE * accel_rate_gain))
+      else:
+        apply_accel = max(apply_accel, self.apply_accel_last - (BRAKE_APPLY_RATE * accel_rate_gain))
+    else:
+      apply_accel = min(apply_accel, self.apply_accel_last + (GAS_APPLY_RATE * accel_rate_gain))
+
 
     # Steering Torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX
