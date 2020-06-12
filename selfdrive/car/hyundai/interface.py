@@ -193,9 +193,9 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.15, 0.12, 0.08]
+    ret.longitudinalTuning.kpV = [0.13, 0.12, 0.08]
     ret.longitudinalTuning.kiBP = [0., 5., 30., 40.]
-    ret.longitudinalTuning.kiV = [0.003, 0.003, 0.003, 0.003]
+    ret.longitudinalTuning.kiV = [0.00115, 0.00115, 0.00115, 0.00115]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -204,7 +204,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.0]
     ret.gasMaxBP = [0., 0.1, 1., 2., 40.]
-    ret.gasMaxV = [0.4, 0.35, 0.4, 0.45, 0.5]
+    ret.gasMaxV = [0.35, 0.37, 0.4, 0.45, 0.5]
     ret.brakeMaxBP = [0., 5, 5.1]
     ret.brakeMaxV = [1., 1., 0.5]
 
