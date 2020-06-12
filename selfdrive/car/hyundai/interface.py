@@ -80,7 +80,7 @@ class CarInterface(CarInterfaceBase):
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.lateralTuning.pid.kf = 0.00005
-      ret.steerActuatorDelay = 0.3
+      ret.steerActuatorDelay = 0.4
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
@@ -194,9 +194,9 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.08, 0.08, 0.06]
+    ret.longitudinalTuning.kpV = [0.04, 0.03, 0.03]
     ret.longitudinalTuning.kiBP = [0., 5., 30., 40.]
-    ret.longitudinalTuning.kiV = [0.0085, 0.00085, 0.00085, 0.00085]
+    ret.longitudinalTuning.kiV = [0.0015, 0.0015, 0.00115, 0.00115]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -204,8 +204,8 @@ class CarInterface(CarInterfaceBase):
     # steer, gas, brake limitations VS speed
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.0]
-    ret.gasMaxBP = [0., 0.1, 1., 2., 40.]
-    ret.gasMaxV = [0.35, 0.37, 0.4, 0.45, 0.5]
+    ret.gasMaxBP = [0., 0.2, 1., 2., 40.]
+    ret.gasMaxV = [0.30, 0.35, 0.4, 0.45, 0.5]
     ret.brakeMaxBP = [0., 5, 5.1]
     ret.brakeMaxV = [1., 1., 0.5]
 
