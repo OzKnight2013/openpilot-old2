@@ -29,6 +29,7 @@ class CarState(CarStateBase):
     self.prev_cruiseStateavailable = 0
     self.brakePressed = 0
     self.gasPressed = 0
+    self.cruiseStatestandstill = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -92,7 +93,10 @@ class CarState(CarStateBase):
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
 
-    ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
+    self.cruiseStatestandstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
+
+    ret.cruiseState.standstill = self.cruiseStatestandstill != 0
+
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
 #    if ret.cruiseState.enabled:
 #      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS

@@ -14,6 +14,7 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
 ACCEL_MAX = 1.5  # 1.5 m/s2
 ACCEL_MIN = -3.0 # 3   m/s2
+GAS_OVERRIDE_RATE = 0.02
 ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 def accel_hysteresis(accel, accel_steady):
@@ -76,6 +77,7 @@ class CarController():
     self.fs_error = False
     self.update_live = False
     self.scc_live = not CP.radarOffCan
+    self.lead_visible = False
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
@@ -87,6 +89,9 @@ class CarController():
 
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
+
+    if CS.gasPressed and apply_accel < 0:
+      apply_accel = min(apply_accel, self.apply_accel_last + GAS_OVERRIDE_RATE)
 
     # Steering Torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX
@@ -174,10 +179,19 @@ class CarController():
     elif CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
+    if lead_visible:
+      self.lead_visible = True
+      self.lead_debounce = 100
+    elif self.lead_debounce > 0:
+      self.lead_debounce -= 1
+    else:
+      self.lead_visible = lead_visible
+
+
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
     if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled, CS.brakePressed, CS.gasPressed, self.scc12_cnt, CS.scc12))
-      can_sends.append(create_scc11(self.packer, frame, enabled, self.op_set_speed, lead_visible, CS.scc11))
+      can_sends.append(create_scc11(self.packer, frame, enabled, self.op_set_speed, self.lead_visible, CS.cruiseStatestandstill, CS.scc11))
 
       if CS.has_scc13 and frame % 20 == 0:
         can_sends.append(create_scc13(self.packer, CS.scc13))
