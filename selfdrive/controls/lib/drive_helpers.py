@@ -4,8 +4,8 @@ from cereal import car
 
 # kph
 V_CRUISE_MAX = 144
-V_CRUISE_MIN = 2
-V_CRUISE_DELTA = 2
+V_CRUISE_MIN = 3.3
+V_CRUISE_DELTA = 1.6
 V_CRUISE_ENABLE_MIN = 8
 
 
@@ -31,26 +31,17 @@ def get_steer_max(CP, v_ego):
   return interp(v_ego, CP.steerMaxBP, CP.steerMaxV)
 
 
-def update_v_cruise(v_cruise_kph, buttonEvents, enabled, update_debounce=0):
+def update_v_cruise(v_cruise_kph, buttonEvents, enabled):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
 
   for b in buttonEvents:
     if enabled and not b.pressed:
-      if b.type == car.CarState.ButtonEvent.Type.accelCruise and update_debounce == 0:
-        v_cruise_kph += V_CRUISE_DELTA - (v_cruise_kph % V_CRUISE_DELTA)
-        update_debounce = 1
-      elif b.type == car.CarState.ButtonEvent.Type.decelCruise and update_debounce == 0:
-        v_cruise_kph -= V_CRUISE_DELTA - ((V_CRUISE_DELTA - v_cruise_kph) % V_CRUISE_DELTA)
-        update_debounce = 1
-      else:
-        update_debounce = 0
+      if b.type == car.CarState.ButtonEvent.Type.accelCruise:
+        v_cruise_kph += V_CRUISE_DELTA  #- (v_cruise_kph % V_CRUISE_DELTA)
+      elif b.type == car.CarState.ButtonEvent.Type.decelCruise:
+        v_cruise_kph -= V_CRUISE_DELTA  #- ((V_CRUISE_DELTA - v_cruise_kph) % V_CRUISE_DELTA)
       v_cruise_kph = clip(v_cruise_kph, V_CRUISE_MIN, V_CRUISE_MAX)
-
-      if update_debounce > 50 or update_debounce == 0:
-        update_debounce = 0
-      else:
-        update_debounce += 1
 
   return v_cruise_kph
 

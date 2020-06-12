@@ -117,6 +117,7 @@ class Controls:
     self.soft_disable_timer = 0
     self.v_cruise_kph = 255
     self.v_cruise_kph_last = 0
+    self.v_cruise_update_debounce = 500
     self.mismatch_counter = 0
     self.can_error_counter = 0
     self.consecutive_can_error_count = 0
@@ -263,11 +264,21 @@ class Controls:
   def state_transition(self, CS):
     """Compute conditional state transitions and execute actions on state transitions"""
 
-    self.v_cruise_kph_last = self.v_cruise_kph
     # if stock cruise is completely disabled, then we can use our own set speed logic
     self.CP.enableCruise = self.CI.CP.enableCruise
     if not self.CP.enableCruise:
-      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled)
+      if self.v_cruise_update_debounce == 500:
+        self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled)
+        self.v_cruise_update_debounce = 0
+      elif self.v_cruise_kph_last == self.v_cruise_kph:
+        self.v_cruise_update_debounce = 20
+        self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled)
+      else:
+        if self.v_cruise_update_debounce > 0:
+          self.v_cruise_update_debounce -= 1
+          self.v_cruise_update_debounce = max(self.v_cruise_update_debounce, 0)
+        else:
+          self.v_cruise_kph_last == self.v_cruise_kph
     elif self.CP.enableCruise and CS.cruiseState.enabled:
       self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
