@@ -194,7 +194,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.04, 0.04, 0.04]
+    ret.longitudinalTuning.kpV = [0.08, 0.06, 0.04]
     ret.longitudinalTuning.kiBP = [0.]
     ret.longitudinalTuning.kiV = [0.004]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
@@ -204,9 +204,9 @@ class CarInterface(CarInterfaceBase):
     # steer, gas, brake limitations VS speed
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.0]
-    ret.gasMaxBP = [0., 0.2, 1., 2., 40.]
-    ret.gasMaxV = [0.30, 0.35, 0.4, 0.45, 0.5]
-    ret.brakeMaxBP = [0., 5, 5.1]
+    ret.gasMaxBP = [0.]
+    ret.gasMaxV = [0.5]
+    ret.brakeMaxBP = [0., 5., 5.1]
     ret.brakeMaxV = [1., 1., 0.5]
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
