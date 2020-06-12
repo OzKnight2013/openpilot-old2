@@ -91,7 +91,7 @@ class CarController():
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
-    if CS.gasPressed and apply_accel < 0:
+    if CS.gasPressed and apply_accel <= 0:
       apply_accel = min(apply_accel, self.apply_accel_last + GAS_OVERRIDE_RATE)
 
     # Steering Torque
