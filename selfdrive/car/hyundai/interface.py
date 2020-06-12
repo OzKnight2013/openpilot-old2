@@ -193,11 +193,11 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 15., 40.]
-    ret.longitudinalTuning.kpV = [1.0, 0.6, 0.2]
+    ret.longitudinalTuning.kpV = [0.4, 0.3, 0.2]
     ret.longitudinalTuning.kiBP = [0., 15., 30., 40.]
     ret.longitudinalTuning.kiV = [0.08, 0.04, 0.01, 0.005]
-    ret.longitudinalTuning.deadzoneBP = [0., 40]
-    ret.longitudinalTuning.deadzoneV = [0., 0.02]
+    ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
+    ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
 
     # steer, gas, brake limitations VS speed

@@ -66,7 +66,7 @@ def create_scc12(packer, apply_accel, enabled, brake, gas, cnt, scc12):
   values = scc12
   if enabled and (not brake):
     values["ACCMode"] = 1
-    if gas:
+    if gas and (apply_accel >= 0):
       values["ACCMode"] = 2
   else:
     values["ACCMode"] = 0
