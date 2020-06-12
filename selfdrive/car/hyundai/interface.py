@@ -194,8 +194,8 @@ class CarInterface(CarInterfaceBase):
 
     ret.longitudinalTuning.kpBP = [0., 15., 40.]
     ret.longitudinalTuning.kpV = [0.25, 0.22, 0.2]
-    ret.longitudinalTuning.kiBP = [0., 15., 30., 40.]
-    ret.longitudinalTuning.kiV = [0.05, 0.04, 0.01, 0.005]
+    ret.longitudinalTuning.kiBP = [0., 5., 30., 40.]
+    ret.longitudinalTuning.kiV = [0.03, 0.02, 0.01, 0.005]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -205,8 +205,8 @@ class CarInterface(CarInterfaceBase):
     ret.steerMaxV = [1.0]
     ret.gasMaxBP = [0., 0.1, 1., 2., 40.]
     ret.gasMaxV = [0.4, 0.35, 0.4, 0.45, 0.5]
-    ret.brakeMaxBP = [0., 20.]
-    ret.brakeMaxV = [1., 0.8]
+    ret.brakeMaxBP = [0., 5, 5.1]
+    ret.brakeMaxV = [1., 1., 0.5]
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
 
