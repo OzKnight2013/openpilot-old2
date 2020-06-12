@@ -264,7 +264,6 @@ class Controls:
     """Compute conditional state transitions and execute actions on state transitions"""
 
     self.v_cruise_kph_last = self.v_cruise_kph
-
     # if stock cruise is completely disabled, then we can use our own set speed logic
     self.CP.enableCruise = self.CI.CP.enableCruise
     if not self.CP.enableCruise:
