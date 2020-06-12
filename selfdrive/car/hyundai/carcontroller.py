@@ -78,6 +78,7 @@ class CarController():
     self.update_live = False
     self.scc_live = not CP.radarOffCan
     self.lead_visible = False
+    self.lead_debounce = 0
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
