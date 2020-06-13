@@ -296,6 +296,12 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(be)
     ret.buttonEvents = buttonEvents
 
+    self.interfaceloopcounter += 1
+    if(self.interfaceloopcounter > 100):
+      self.interfaceloopsinsecond += 1
+      self.interfaceloopcounter = 0
+      print("interfaceloopsinsecond", self.interfaceloopsinsecond)
+
     events = self.create_common_events(ret)
 
     if not ret.cruiseState.enabled and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):

@@ -205,8 +205,14 @@ class CarState(CarStateBase):
     self.prev_right_blinker = self.rightBlinker
     self.prev_lkas_button_on = self.lkas_button_on
 
+    self.loopcounter += 1
+    if(self.loopcounter > 100):
+      self.loopsinsecond += 1
+      self.loopcounter = 0
+      print("loopsinsecond", self.loopsinsecond)
+
     print("currentswitchstate", self.cruise_buttons)
-    print("currentswitchstate", self.prev_cruise_buttons)
+    print("prev_currentswitchstate", self.prev_cruise_buttons)
 
     return ret
 
