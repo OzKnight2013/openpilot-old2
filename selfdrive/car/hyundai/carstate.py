@@ -30,11 +30,13 @@ class CarState(CarStateBase):
     self.brakePressed = 0
     self.gasPressed = 0
     self.cruiseStatestandstill = 0
-    self.cruise_buttons = 0
+    self.cruise_buttons = 6
     self.loopcounter = 0
     self.interfaceloopcounter = 0
     self.loopsinsecond = 0
     self.interfaceloopsinsecond = 0
+    #self.prev_cruise_buttons = 0
+    self.button_counter = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -81,6 +83,14 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
+
+#    if self.cruise_buttons == 0:
+#      self.button_counter += 1
+#      if self.button_counter < 5:  #50msec loop to avoid toggling seen during devel
+#        self.cruise_buttons = self.prev_cruise_buttons
+#      else:
+#        self.button_counter = 0
+
 
     if self.cruise_buttons == 1:
       print(" SW: ACCEL")
