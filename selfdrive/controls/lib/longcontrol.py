@@ -7,12 +7,12 @@ LongCtrlState = log.ControlsState.LongControlState
 STOPPING_EGO_SPEED = 0.32
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
-STARTING_TARGET_SPEED = 0.2
+STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
-BRAKE_STOPPING_TARGET = 0.15  # apply at least this amount of brake to maintain the vehicle stationary
+STOPPING_BRAKE_RATE = 0.15  # brake_travel/s while trying to stop
+STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
+BRAKE_STOPPING_TARGET = 0.35  # apply at least this amount of brake to maintain the vehicle stationary
 
 _MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
 _MAX_SPEED_ERROR_V = [.4, .4]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp

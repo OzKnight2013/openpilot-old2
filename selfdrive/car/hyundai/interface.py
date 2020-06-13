@@ -193,8 +193,8 @@ class CarInterface(CarInterfaceBase):
     ret.steerRatioRear = 0.
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
-    ret.longitudinalTuning.kpBP = [ 0., 1.2,   5.,  20., 40.]
-    ret.longitudinalTuning.kpV = [0.05, 0.2, 0.12, 0.10, 0.06]
+    ret.longitudinalTuning.kpBP = [0.  , 0.5,   5., 20., 40.]
+    ret.longitudinalTuning.kpV =  [0.1 , 0.2, 0.12, 0.1, 0.06]
     ret.longitudinalTuning.kiBP = [0.]
     ret.longitudinalTuning.kiV = [0.001]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
