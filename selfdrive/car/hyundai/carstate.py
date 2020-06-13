@@ -31,11 +31,7 @@ class CarState(CarStateBase):
     self.gasPressed = 0
     self.cruiseStatestandstill = 0
     self.cruise_buttons = 0
-    self.loopcounter = 0
-    self.interfaceloopcounter = 0
-    self.loopsinsecond = 0
-    self.interfaceloopsinsecond = 0
-    #self.prev_cruise_buttons = 0
+    self.prev_cruise_buttons = 0
     self.button_counter = 0
 
   def update(self, cp, cp2, cp_cam):
@@ -84,24 +80,6 @@ class CarState(CarStateBase):
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
 
-#    if self.cruise_buttons == 0:
-#      self.button_counter += 1
-#      if self.button_counter < 5:  #50msec loop to avoid toggling seen during devel
-#        self.cruise_buttons = self.prev_cruise_buttons
-#      else:
-#        self.button_counter = 0
-
-
-    if self.cruise_buttons == 1:
-      print(" SW: ACCEL")
-    elif self.cruise_buttons == 2:
-      print(" SW: DECEL")
-    elif self.cruise_buttons == 3:
-      print(" SW: GAP")
-    elif self.cruise_buttons == 4:
-      print(" SW: CANCEL")
-    else:
-      print(" SW: UNK", self.cruise_buttons)
     # cruise state
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
 #                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
@@ -219,16 +197,6 @@ class CarState(CarStateBase):
       self.scc13 = cp_scc.vl["SCC13"]
     if self.has_scc14:
       self.scc14 = cp_scc.vl["SCC14"]
-
-    self.loopcounter += 1
-    if(self.loopcounter > 100):
-      self.loopsinsecond += 1
-      if (self.loopcounter > 10000):
-        self.loopsinsecond = 0
-      self.loopcounter = 0
-
-    print("currentswitchstate", self.cruise_buttons)
-    print("prev_currentswitchstate", self.prev_cruise_buttons)
 
     return ret
 

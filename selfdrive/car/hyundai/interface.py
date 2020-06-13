@@ -194,9 +194,9 @@ class CarInterface(CarInterfaceBase):
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.08, 0.06, 0.04]
+    ret.longitudinalTuning.kpV = [0.1, 0.08, 0.06]
     ret.longitudinalTuning.kiBP = [0.]
-    ret.longitudinalTuning.kiV = [0.004]
+    ret.longitudinalTuning.kiV = [0.002]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -272,21 +272,16 @@ class CarInterface(CarInterfaceBase):
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = self.CS.cruise_buttons != 0 
       but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
-      if but == Buttons.RES_ACCEL:
+      if but == Buttons.RES_ACCEL and self.CC.resume_cnt == 0:    # avoid speed increase when stopped behind target
         be.type = ButtonType.accelCruise
-        print(" *********************cruise_switch: ACCEL")
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
-        print(" *********************cruise_switch: DECEL")
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-        print(" *********************cruise_switch: GAP")
-      elif but == Buttons.CANCEL:
-        be.type = ButtonType.cancel
-        print(" *********************cruise_switch: CANCEL")
+#      elif but == Buttons.CANCEL:
+#        be.type = ButtonType.cancel
       else:
         be.type = ButtonType.unknown
-        print(" *********************cruise_switch: UNKNOWN")
       buttonEvents.append(be)
 
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
@@ -296,19 +291,9 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(be)
     ret.buttonEvents = buttonEvents
 
-    self.CS.interfaceloopcounter += 1
-    if(self.CS.interfaceloopcounter > 100):
-      self.CS.interfaceloopsinsecond += 1
-      if self.CS.interfaceloopsinsecond > 10000:
-         self.CS.interfaceloopsinsecond = 0
-      self.CS.interfaceloopcounter = 0
-    print("****************************************************interfaceloopsinsecond", self.CS.interfaceloopcounter)
-    print("***************************************loopsinsecond", self.CS.loopcounter)
-
     events = self.create_common_events(ret)
 
-    if not ret.cruiseState.enabled and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
-      print("cruise enable :", ret.cruiseState.enabled)
+    if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
       events.add(EventName.pcmDisable)
 
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
