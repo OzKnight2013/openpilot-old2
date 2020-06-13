@@ -299,7 +299,8 @@ class CarInterface(CarInterfaceBase):
     self.CS.interfaceloopcounter += 1
     if(self.CS.interfaceloopcounter > 100):
       self.CS.interfaceloopsinsecond += 1
-      self.CS.interfaceloopsinsecond = max(100000, self.CS.interfaceloopsinsecond)
+      if self.CS.interfaceloopsinsecond > 10000:
+         self.CS.interfaceloopsinsecond = 0
       self.CS.interfaceloopcounter = 0
       print("interfaceloopsinsecond", self.CS.interfaceloopsinsecond)
 

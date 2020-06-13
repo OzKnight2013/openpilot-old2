@@ -212,7 +212,8 @@ class CarState(CarStateBase):
     self.loopcounter += 1
     if(self.loopcounter > 100):
       self.loopsinsecond += 1
-      self.loopsinsecond = max(100000, self.loopsinsecond)
+      if (self.loopcounter > 10000):
+        self.loopsinsecond = 0
       self.loopcounter = 0
       print("loopsinsecond", self.loopsinsecond)
 
