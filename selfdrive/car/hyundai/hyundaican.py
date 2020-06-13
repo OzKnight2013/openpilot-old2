@@ -122,7 +122,7 @@ def create_scc11(packer, frame, enabled, set_speed, lead_visible, standstill, sc
   values["AliveCounterACC"] = frame // 2 % 0x10
   if enabled:
     values["VSetDis"] = set_speed
-  values["SCCInfoDisplay"] = 4 if standstill else 0
+#  values["SCCInfoDisplay"] = 4 if standstill  else 0 tie to long control state = stopping
   values["DriverAlertDisplay"] = 0
   values["ObjValid"] = lead_visible
   values["ACC_ObjStatus"] = lead_visible
