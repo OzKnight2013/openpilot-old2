@@ -302,8 +302,8 @@ class CarInterface(CarInterfaceBase):
       if self.CS.interfaceloopsinsecond > 10000:
          self.CS.interfaceloopsinsecond = 0
       self.CS.interfaceloopcounter = 0
-      print("interfaceloopsinsecond", self.CS.interfaceloopcounter)
-      print("interfaceloopsinsecond", self.CS.interfaceloopsinsecond)
+    print("interfaceloopsinsecond", self.CS.interfaceloopcounter)
+    print("interfaceloopsinsecond", self.CS.interfaceloopsinsecond)
 
     events = self.create_common_events(ret)
 
