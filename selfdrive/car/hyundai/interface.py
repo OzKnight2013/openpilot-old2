@@ -274,14 +274,19 @@ class CarInterface(CarInterfaceBase):
       but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
       if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
+        print(" cruise_switch: ACCEL")
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
+        print(" cruise_switch: DECEL")
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
+        print(" cruise_switch: GAP")
 #      elif but == Buttons.CANCEL:
 #        be.type = ButtonType.cancel
+#        print(" cruise_switch: CANCEL")
       else:
         be.type = ButtonType.unknown
+        print(" cruise_switch: UNKNOWN")
       buttonEvents.append(be)
 
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
