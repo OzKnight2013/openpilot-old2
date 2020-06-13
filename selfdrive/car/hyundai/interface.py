@@ -281,9 +281,9 @@ class CarInterface(CarInterfaceBase):
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
         print(" cruise_switch: GAP")
-      elif but == Buttons.CANCEL:
-        be.type = ButtonType.cancel
-        print(" cruise_switch: CANCEL")
+#      elif but == Buttons.CANCEL:
+#        be.type = ButtonType.cancel
+#        print(" cruise_switch: CANCEL")
       else:
         be.type = ButtonType.unknown
         print(" cruise_switch: UNKNOWN")

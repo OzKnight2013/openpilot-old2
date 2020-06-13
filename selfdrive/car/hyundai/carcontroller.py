@@ -202,7 +202,7 @@ class CarController():
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
     if pcm_cancel_cmd and self.longcontrol:
-      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+#      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
     elif CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
