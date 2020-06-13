@@ -197,8 +197,6 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kpV = [0.2, 0.18, 0.12, 0.1, 0.06]
     ret.longitudinalTuning.kiBP = [0.]
     ret.longitudinalTuning.kiV = [0.002]
-    ret.longitudinalTuning.kfBP = [0., 5., 10., 15., 40.]
-    ret.longitudinalTuning.kfV = [1.02, 1., 0.8, 0.75, 0.70]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -280,8 +278,8 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.decelCruise
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-#      elif but == Buttons.CANCEL:
-#        be.type = ButtonType.cancel
+      elif but == Buttons.CANCEL:
+        be.type = ButtonType.cancel
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
@@ -316,8 +314,8 @@ class CarInterface(CarInterfaceBase):
         if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed and self.CS.cruiseStateavailable:
           events.add(EventName.buttonEnable)
         # do disable on button down
-        #if b.type == ButtonType.cancel and b.pressed:
-        #  events.add(EventName.buttonCancel)
+        if b.type == ButtonType.cancel and b.pressed:
+          events.add(EventName.buttonCancel)
       if EventName.wrongCarMode in events.events:
         events.events.remove(EventName.wrongCarMode)
       if EventName.pcmDisable in events.events:

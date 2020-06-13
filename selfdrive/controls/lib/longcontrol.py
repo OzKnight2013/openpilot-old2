@@ -4,7 +4,7 @@ from selfdrive.controls.lib.pid import PIController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 0.35
+STOPPING_EGO_SPEED = 1.6
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.5
@@ -12,7 +12,7 @@ BRAKE_THRESHOLD_TO_PID = 0.2
 
 STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
 STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
-BRAKE_STOPPING_TARGET = 0.2  # apply at least this amount of brake to maintain the vehicle stationary
+BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
 
 _MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
 _MAX_SPEED_ERROR_V = [.8, .2]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
@@ -21,16 +21,16 @@ RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, gas_pressed, cruise_standstill):
+                             output_gb, brake_pressed, cruise_standstill):
   """Update longitudinal control state machine"""
   stopping_condition = (v_ego < 2.0 and cruise_standstill) or \
                        (v_ego < STOPPING_EGO_SPEED and
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
                         brake_pressed))
 
-  starting_condition = v_target > STARTING_TARGET_SPEED and not cruise_standstill
+  starting_condition = v_target > STARTING_TARGET_SPEED # and not cruise_standstill
 
-  if (not active) or gas_pressed or brake_pressed:
+  if (not active) or brake_pressed:
     long_control_state = LongCtrlState.off
 
   else:
@@ -60,7 +60,6 @@ class LongControl():
     self.long_control_state = LongCtrlState.off  # initialized to off
     self.pid = PIController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                             (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                            (CP.longitudinalTuning.kfBP, CP.longitudinalTuning.kfV),
                             rate=RATE,
                             sat_limit=0.8,
                             convert=compute_gb)
@@ -82,7 +81,7 @@ class LongControl():
     output_gb = self.last_output_gb
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.gasPressed, CS.cruiseState.standstill)
+                                                       CS.brakePressed, CS.cruiseState.standstill)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
