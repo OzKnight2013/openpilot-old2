@@ -37,6 +37,12 @@ class CarState(CarStateBase):
     cp_sas = cp2 if self.sas_bus else cp
     cp_scc = cp2 if self.scc_bus == 1 else cp_cam if self.scc_bus == 2 else cp
 
+    self.prev_cruise_buttons = self.cruise_buttons
+    self.prev_cruise_main_button = self.cruise_main_button
+    self.prev_left_blinker = self.leftBlinker
+    self.prev_right_blinker = self.rightBlinker
+    self.prev_lkas_button_on = self.lkas_button_on
+
     ret = car.CarState.new_message()
 
     ret.doorOpen = any([cp.vl["CGW1"]['CF_Gway_DrvDrSw'], cp.vl["CGW1"]['CF_Gway_AstDrSw'],
@@ -198,12 +204,6 @@ class CarState(CarStateBase):
       self.scc13 = cp_scc.vl["SCC13"]
     if self.has_scc14:
       self.scc14 = cp_scc.vl["SCC14"]
-
-    self.prev_cruise_buttons = self.cruise_buttons
-    self.prev_cruise_main_button = self.cruise_main_button
-    self.prev_left_blinker = self.leftBlinker
-    self.prev_right_blinker = self.rightBlinker
-    self.prev_lkas_button_on = self.lkas_button_on
 
     self.loopcounter += 1
     if(self.loopcounter > 100):
