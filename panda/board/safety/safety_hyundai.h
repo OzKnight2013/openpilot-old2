@@ -39,55 +39,6 @@ const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeo
 
 bool hyundai_legacy = false;
 
-static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
-  int addr = GET_ADDR(to_push);
-
-  uint8_t cnt;
-  if (addr == 608) {
-    cnt = (GET_BYTE(to_push, 7) >> 4) & 0x3;
-  } else if (addr == 902) {
-    cnt = ((GET_BYTE(to_push, 3) >> 6) << 2) | (GET_BYTE(to_push, 1) >> 6);
-  } else if (addr == 916) {
-    cnt = (GET_BYTE(to_push, 1) >> 5) & 0x7;
-  } else if (addr == 1057) {
-    cnt = GET_BYTE(to_push, 7) & 0xF;
-  } else {
-    cnt = 0;
-  }
-  return cnt;
-}
-
-static uint8_t hyundai_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
-  int addr = GET_ADDR(to_push);
-
-  uint8_t chksum;
-  if (addr == 608) {
-    chksum = GET_BYTE(to_push, 7) & 0xF;
-  } else if (addr == 916) {
-    chksum = GET_BYTE(to_push, 6) & 0xF;
-  } else if (addr == 1057) {
-    chksum = GET_BYTE(to_push, 7) >> 4;
-  } else {
-    chksum = 0;
-  }
-  return chksum;
-}
-
-static uint8_t hyundai_compute_checksum(CAN_FIFOMailBox_TypeDef *to_push) {
-  int addr = GET_ADDR(to_push);
-
-  uint8_t chksum = 0;
-  // same algorithm, but checksum is in a different place
-  for (int i = 0; i < 8; i++) {
-    uint8_t b = GET_BYTE(to_push, i);
-    if (((addr == 608) && (i == 7)) || ((addr == 916) && (i == 6)) || ((addr == 1057) && (i == 7))) {
-      b &= (addr == 1057) ? 0x0FU : 0xF0U; // remove checksum
-    }
-    chksum += (b % 16U) + (b / 16U);
-  }
-  return (16U - (chksum %  16U)) % 16U;
-}
-
 bool hyundai_has_scc = false;
 int OP_LKAS_live = 0;
 int OP_MDPS_live = 0;
