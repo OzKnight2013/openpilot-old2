@@ -274,19 +274,19 @@ class CarInterface(CarInterfaceBase):
       but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
       if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
-        print(" cruise_switch: ACCEL")
+        print(" *********************cruise_switch: ACCEL")
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
-        print(" cruise_switch: DECEL")
+        print(" *********************cruise_switch: DECEL")
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
-        print(" cruise_switch: GAP")
+        print(" *********************cruise_switch: GAP")
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
-        print(" cruise_switch: CANCEL")
+        print(" *********************cruise_switch: CANCEL")
       else:
         be.type = ButtonType.unknown
-        print(" cruise_switch: UNKNOWN")
+        print(" *********************cruise_switch: UNKNOWN")
       buttonEvents.append(be)
 
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
@@ -302,8 +302,8 @@ class CarInterface(CarInterfaceBase):
       if self.CS.interfaceloopsinsecond > 10000:
          self.CS.interfaceloopsinsecond = 0
       self.CS.interfaceloopcounter = 0
-    print("interfaceloopsinsecond", self.CS.interfaceloopcounter)
-    print("interfaceloopsinsecond", self.CS.interfaceloopsinsecond)
+    print("****************************************************interfaceloopsinsecond", self.CS.interfaceloopcounter)
+    print("***************************************loopsinsecond", self.CS.loopcounter)
 
     events = self.create_common_events(ret)
 
