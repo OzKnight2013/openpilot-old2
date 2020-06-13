@@ -11,7 +11,7 @@ from selfdrive.config import Conversions as CV
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 # Accel limits
-ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
+ACCEL_HYST_GAP = 0.01  # don't change accel command for small oscilalitons within this value
 ACCEL_MAX = 1.5  # 1.5 m/s2
 ACCEL_MIN = -10.0  # 10   m/s2
 BRAKE_APPLY_RATE = 0.015  #1m/s2/s
@@ -95,7 +95,7 @@ class CarController():
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
     # TODO make a interp function
-    if abs(self.apply_accel_last) > 1.:
+    if abs(self.apply_accel_last) > 1.5:
       accel_rate_gain = 1.2
     elif abs(self.apply_accel_last) > 2.:
       accel_rate_gain = 1.5

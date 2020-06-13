@@ -193,10 +193,10 @@ class CarInterface(CarInterfaceBase):
     ret.steerRatioRear = 0.
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
-    ret.longitudinalTuning.kpBP = [0., 5., 40.]
-    ret.longitudinalTuning.kpV = [0.1, 0.08, 0.06]
+    ret.longitudinalTuning.kpBP = [0., 5., 20., 40.]
+    ret.longitudinalTuning.kpV = [0.14, 0.12, 0.10, 0.06]
     ret.longitudinalTuning.kiBP = [0.]
-    ret.longitudinalTuning.kiV = [0.002]
+    ret.longitudinalTuning.kiV = [0.001]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
     ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
 
@@ -272,7 +272,7 @@ class CarInterface(CarInterfaceBase):
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = self.CS.cruise_buttons != 0 
       but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
-      if but == Buttons.RES_ACCEL and self.CC.resume_cnt == 0:    # avoid speed increase when stopped behind target
+      if but == Buttons.RES_ACCEL:    # avoid speed increase dur to res spam when stopped behind target
         be.type = ButtonType.accelCruise
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
