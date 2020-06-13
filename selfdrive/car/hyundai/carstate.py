@@ -30,6 +30,7 @@ class CarState(CarStateBase):
     self.brakePressed = 0
     self.gasPressed = 0
     self.cruiseStatestandstill = 0
+    self.cruise_buttons = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
