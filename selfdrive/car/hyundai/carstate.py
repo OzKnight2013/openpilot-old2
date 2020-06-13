@@ -77,12 +77,12 @@ class CarState(CarStateBase):
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
-    print(" cruise_switch:{}, ACC ON:{}    ".format(self.cruise_buttons, self.cruise_main_button, end='\r')
+    print(" cruise_switch:{}, ACC ON:{}  ".format(self.cruise_buttons, self.cruise_main_button, end='\r'))
 
     # cruise state
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
 #                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
-    self.prev_cruiseStateavailable = self.cruiseStateavailable
+
     self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
     if self.cruiseStateavailable:
@@ -94,6 +94,8 @@ class CarState(CarStateBase):
         self.cruiseStateavailable = 0
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
+
+    self.prev_cruiseStateavailable = self.cruiseStateavailable
 
     self.cruiseStatestandstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4. if not self.no_radar else False
 
