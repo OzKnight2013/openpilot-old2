@@ -90,7 +90,8 @@ class CarState(CarStateBase):
       print(" SW: GAP")
     elif self.cruise_buttons == 4:
       print(" SW: CANCEL")
-
+    else:
+      print(" SW: UNK", self.cruise_buttons)
     # cruise state
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
 #                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
