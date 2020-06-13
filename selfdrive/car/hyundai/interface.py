@@ -275,18 +275,28 @@ class CarInterface(CarInterfaceBase):
       if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
         print(" cruise_switch: ACCEL")
+        print("currentswitchstate", self.CS.cruise_buttons)
+        print("currentswitchstate", self.CS.prev_cruise_buttons)
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
         print(" cruise_switch: DECEL")
+        print("currentswitchstate", self.CS.cruise_buttons)
+        print("currentswitchstate", self.CS.prev_cruise_buttons)
       elif but == Buttons.GAP_DIST:
         be.type = ButtonType.gapAdjustCruise
         print(" cruise_switch: GAP")
+        print("currentswitchstate", self.CS.cruise_buttons)
+        print("currentswitchstate", self.CS.prev_cruise_buttons)
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
         print(" cruise_switch: CANCEL")
+        print("currentswitchstate", self.CS.cruise_buttons)
+        print("currentswitchstate", self.CS.prev_cruise_buttons)
       else:
         be.type = ButtonType.unknown
         print(" cruise_switch: UNKNOWN")
+        print("currentswitchstate", self.CS.cruise_buttons)
+        print("currentswitchstate", self.CS.prev_cruise_buttons)
       buttonEvents.append(be)
 
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
@@ -298,7 +308,7 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
-    if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
+    if not ret.cruiseState.enabled and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
       events.add(EventName.pcmDisable)
 
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
