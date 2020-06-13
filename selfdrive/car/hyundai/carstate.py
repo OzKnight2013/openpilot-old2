@@ -23,14 +23,14 @@ class CarState(CarStateBase):
     self.lkas_button_on = True
     self.has_scc13 = CP.carFingerprint in FEATURES["has_scc13"]
     self.has_scc14 = CP.carFingerprint in FEATURES["has_scc14"]
-#    self.cruise_main_button = 0
-#    self.cruisespeed = 0
-#    self.cruiseStateavailable = 0
-#    self.prev_cruiseStateavailable = 0
-#    self.brakePressed = 0
-#    self.gasPressed = 0
-#    self.cruiseStatestandstill = 0
-#    self.cruise_buttons = 0
+    self.cruise_main_button = 0
+    self.cruisespeed = 0
+    self.cruiseStateavailable = 0
+    self.prev_cruiseStateavailable = 0
+    self.brakePressed = 0
+    self.gasPressed = 0
+    self.cruiseStatestandstill = 0
+    self.cruise_buttons = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
