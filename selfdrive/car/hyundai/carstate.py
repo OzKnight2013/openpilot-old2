@@ -77,8 +77,6 @@ class CarState(CarStateBase):
     self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
-    print(" cruise_switch:{}, ACC ON:{}  ".format(self.cruise_buttons, self.cruise_main_button, end='\r'))
-
     # cruise state
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
 #                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
@@ -88,6 +86,7 @@ class CarState(CarStateBase):
     if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
         self.cruiseStateavailable = self.cruiseStateavailable
+        print(" cruise_switch:", self.cruise_buttons, "ACC ON:", self.cruise_main_button)
       elif self.cruise_buttons == 4:
         self.cruiseStateavailable = 0
       elif not self.prev_cruiseStateavailable:
