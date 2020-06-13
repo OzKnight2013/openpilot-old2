@@ -296,11 +296,12 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(be)
     ret.buttonEvents = buttonEvents
 
-    self.interfaceloopcounter += 1
-    if(self.interfaceloopcounter > 100):
-      self.interfaceloopsinsecond += 1
-      self.interfaceloopcounter = 0
-      print("interfaceloopsinsecond", self.interfaceloopsinsecond)
+    self.CS.interfaceloopcounter += 1
+    if(self.CS.interfaceloopcounter > 100):
+      self.CS.interfaceloopsinsecond += 1
+      self.CS.interfaceloopsinsecond = max(100000, self.CS.interfaceloopsinsecond)
+      self.CS.interfaceloopcounter = 0
+      print("interfaceloopsinsecond", self.CS.interfaceloopsinsecond)
 
     events = self.create_common_events(ret)
 

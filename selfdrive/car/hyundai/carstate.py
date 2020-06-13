@@ -31,6 +31,10 @@ class CarState(CarStateBase):
     self.gasPressed = 0
     self.cruiseStatestandstill = 0
     self.cruise_buttons = 0
+    self.loopcounter = 0
+    self.interfaceloopcounter = 0
+    self.loopsinsecond = 0
+    self.interfaceloopsinsecond = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -208,6 +212,7 @@ class CarState(CarStateBase):
     self.loopcounter += 1
     if(self.loopcounter > 100):
       self.loopsinsecond += 1
+      self.loopsinsecond = max(100000, self.loopsinsecond)
       self.loopcounter = 0
       print("loopsinsecond", self.loopsinsecond)
 
