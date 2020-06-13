@@ -17,7 +17,7 @@ class MPC_COST_LAT:
 
 
 class MPC_COST_LONG:
-  TTC = 1.0
+  TTC = 5.0
   DISTANCE = 0.1
   ACCELERATION = 10.0
   JERK = 20.0
@@ -34,7 +34,6 @@ def get_steer_max(CP, v_ego):
 def update_v_cruise(v_cruise_kph, buttonEvents, enabled):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
-
   for b in buttonEvents:
     if enabled and not b.pressed:
       if b.type == car.CarState.ButtonEvent.Type.accelCruise:

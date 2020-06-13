@@ -91,9 +91,6 @@ class CarController():
     # gas and brake
     apply_accel = actuators.gas - actuators.brake
 
-    apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
-    apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
-
     # TODO make a interp function
     if abs(self.apply_accel_last) > 1.:
       accel_rate_gain = 1.2
@@ -120,6 +117,8 @@ class CarController():
       else:
         apply_accel = apply_accel
 
+    apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
+    apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
     # Steering Torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX

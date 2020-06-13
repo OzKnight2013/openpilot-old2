@@ -105,7 +105,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     steerSaturated @80;
     whitePandaUnsupported @81;
     startupWhitePanda @82;
-    canErrorPersistent @83;
+    canErrorPersistentDEPRECATED @83;
     belowEngageSpeed @84;
     preventLaneChange @85;
     leftBlindspot @86;
@@ -476,6 +476,7 @@ struct CarParams {
     hondaBoschHarness @20;
     volkswagenPq @21;
     subaruLegacy @22;  # pre-Global platform
+    hyundaiLegacy @23;
   }
 
   enum SteerControlType {
