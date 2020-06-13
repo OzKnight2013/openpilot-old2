@@ -84,7 +84,7 @@ class CarState(CarStateBase):
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) if not self.no_radar else \
 #                                      cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
 
-    self.cruiseStateavailable = int(cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
     if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
