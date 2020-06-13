@@ -215,6 +215,7 @@ class CarState(CarStateBase):
       if (self.loopcounter > 10000):
         self.loopsinsecond = 0
       self.loopcounter = 0
+      print("loopsinsecond", self.loopcounter)
       print("loopsinsecond", self.loopsinsecond)
 
     print("currentswitchstate", self.cruise_buttons)
