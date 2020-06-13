@@ -30,7 +30,7 @@ class CarState(CarStateBase):
     self.brakePressed = 0
     self.gasPressed = 0
     self.cruiseStatestandstill = 0
-    self.cruise_buttons = 6
+    self.cruise_buttons = 0
     self.loopcounter = 0
     self.interfaceloopcounter = 0
     self.loopsinsecond = 0
