@@ -58,13 +58,13 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
 def create_clu11(packer, frame, bus, clu11, button, speed):
   values = clu11
 
-  if bus != 1:
+  if bus != 1: # not mdps
     values["CF_Clu_CruiseSwState"] = button
   values["CF_Clu_Vanz"] = speed
   values["CF_Clu_AliveCnt1"] = frame // 2 % 0x10
   return packer.make_can_msg("CLU11", bus, values)
 
-def create_scc12(packer, apply_accel, enabled, brake, gas, cnt, scc12):
+def create_scc12(packer, apply_accel, enabled, brake, gas, cnt, scc_live, scc12):
   values = scc12
   if enabled and (not brake):
     values["ACCMode"] = 1
@@ -77,6 +77,8 @@ def create_scc12(packer, apply_accel, enabled, brake, gas, cnt, scc12):
   values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
+  if not scc_live:
+    values["ACCMode"] = 1  if enabled else 0 # 2 if gas padel pressed
 
   dat = packer.make_can_msg("SCC12", 0, values)[2]
   values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
@@ -115,14 +117,16 @@ def create_lfa_mfa(packer, frame, enabled):
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
-def create_scc11(packer, frame, enabled, set_speed, lead_visible, standstill, scc11):
+def create_scc11(packer, frame, enabled, set_speed, lead_visible, standstill, scc_live, scc11):
   values = scc11
   
   #values["MainMode_ACC"] = 1 # let radar handle this
   values["AliveCounterACC"] = frame // 2 % 0x10
-  if enabled:
+  if not scc_live:
+    values["MainMode_ACC"] = 1
+  if enabled or not scc_live:
     values["VSetDis"] = set_speed
-#  values["SCCInfoDisplay"] = 4 if standstill  else 0 tie to long control state = stopping
+  values["SCCInfoDisplay"] = 4 if standstill else 0 #tie to long control state = stopping
   values["DriverAlertDisplay"] = 0
   values["ObjValid"] = lead_visible
   values["ACC_ObjStatus"] = lead_visible

@@ -4,7 +4,7 @@ from selfdrive.controls.lib.pid import PIController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 1.7
+STOPPING_EGO_SPEED = 0.5
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.5
@@ -16,8 +16,8 @@ STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .6, .4]
 BRAKE_STOPPING_TARGET_D = [1.25,  1., .9, .4]  # apply at least this amount of brake to maintain the vehicle stationary
 
-MAX_SPEED_ERROR_BP = [0., 5.]  # speed breakpoints
-MAX_SPEED_ERROR_V = [.3, 1.]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
+MAX_SPEED_ERROR_BP = [0., 5., 10.]  # speed breakpoints
+MAX_SPEED_ERROR_V = [.6, .5, .3]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
 
 RATE = 100.0
 
@@ -30,7 +30,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
                         brake_pressed))
 
-  starting_condition = v_target > STARTING_TARGET_SPEED # and not cruise_standstill
+  starting_condition = v_target > STARTING_TARGET_SPEED and not cruise_standstill
 
   if (not active) or brake_pressed:
     long_control_state = LongCtrlState.off
@@ -117,7 +117,7 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if output_gb > -stop_decel:  #not CS.standstill or # run absolute decel during stop
+      if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
