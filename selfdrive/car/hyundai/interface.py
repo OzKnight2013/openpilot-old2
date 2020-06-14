@@ -17,7 +17,7 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def compute_gb(accel, speed):
-    return float(accel) / 3.0
+    return float(accel) / 10.0
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
@@ -193,12 +193,16 @@ class CarInterface(CarInterfaceBase):
     ret.steerRatioRear = 0.
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
-    ret.longitudinalTuning.kpBP = [0.,  0.5,   5., 20., 40.]
-    ret.longitudinalTuning.kpV = [0.2, 0.18, 0.12, 0.1, 0.06]
-    ret.longitudinalTuning.kiBP = [0.]
-    ret.longitudinalTuning.kiV = [0.002]
+    #ret.longitudinalTuning.kpBP = [0.,  0.5,   5., 20., 40.]
+    #ret.longitudinalTuning.kpV = [0.2, 0.18, 0.12, 0.1, 0.06]
+    #ret.longitudinalTuning.kiBP = [0.]
+    #ret.longitudinalTuning.kiV = [0.002]
+    ret.longitudinalTuning.kpBP = [0., 5., 35.]
+    ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
+    ret.longitudinalTuning.kiBP = [0., 35.]
+    ret.longitudinalTuning.kiV = [0.18, 0.12]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40]
-    ret.longitudinalTuning.deadzoneV = [0.005, 0.01, 0.02]
+    ret.longitudinalTuning.deadzoneV = [0.05, 0.08, 0.12]
 
 
     # steer, gas, brake limitations VS speed
@@ -207,7 +211,7 @@ class CarInterface(CarInterfaceBase):
     ret.gasMaxBP = [0., 0.5]
     ret.gasMaxV = [0.4, 0.5]
     ret.brakeMaxBP = [0., 5., 5.1]
-    ret.brakeMaxV = [1., 1., 0.5]
+    ret.brakeMaxV = [1., 1., 0.5]  # safety limits to stop unintended deceleration
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
 

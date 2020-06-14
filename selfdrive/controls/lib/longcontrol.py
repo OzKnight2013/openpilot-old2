@@ -4,18 +4,20 @@ from selfdrive.controls.lib.pid import PIController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 1.6
+STOPPING_EGO_SPEED = 1.7
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
+STOPPING_BRAKE_RATE = 0.5  # brake_travel/s while trying to stop
 STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
-BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
 
-_MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
-_MAX_SPEED_ERROR_V = [.8, .2]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
+BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, 0.6, 0.4]
+BRAKE_STOPPING_TARGET_D = [1.25, 1.0, .9, .4]  # apply at least this amount of brake to maintain the vehicle stationary
+
+_MAX_SPEED_ERROR_BP = [0., 5.]  # speed breakpoints
+_MAX_SPEED_ERROR_V = [.3, 1.]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
 
 RATE = 100.0
 
@@ -76,6 +78,7 @@ class LongControl():
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
     brake_max = interp(CS.vEgo, CP.brakeMaxBP, CP.brakeMaxV)
+    stop_decel = interp(CS.vEgo, BRAKE_STOPPING_TARGET_BP, BRAKE_STOPPING_TARGET_D)
 
     # Update state machine
     output_gb = self.last_output_gb
@@ -100,6 +103,11 @@ class LongControl():
       # Freeze the integrator so we don't accelerate to compensate, and don't allow positive acceleration
       prevent_overshoot = not CP.stoppingControl and CS.vEgo < 1.5 and v_target_future < 0.7
       deadzone = interp(v_ego_pid, CP.longitudinalTuning.deadzoneBP, CP.longitudinalTuning.deadzoneV)
+      accel_pos_error_max = interp((self.v_pid - v_ego_pid), BRAKE_STOPPING_TARGET_BP, BRAKE_STOPPING_TARGET_D)
+
+      # limit +ve set point to avoid i term windup
+      if self.v_pid - v_ego_pid > accel_pos_error_max:
+        self.v_pid = v_ego_pid + accel_pos_error_max
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot)
 
@@ -109,7 +117,7 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
+      if output_gb > -stop_decel:  #not CS.standstill or # run absolute decel during stop
         output_gb -= STOPPING_BRAKE_RATE / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
