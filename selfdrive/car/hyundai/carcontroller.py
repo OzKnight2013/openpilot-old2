@@ -175,15 +175,15 @@ class CarController():
       # self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
       # self.scc_update_frame = frame
 
-    # check if SCC is alive
-    # if frame % 7 == 0:
-      # if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
-        # if frame - self.scc_update_frame > 20 and self.scc_live:
-          # self.scc_live = False
-      # else:
-        # self.scc_live = True
-        # self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-        # self.scc_update_frame = frame
+     #check if SCC is alive
+    if frame % 7 == 0:
+      if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
+        if frame - self.scc_update_frame > 20 and self.scc_live:
+          self.scc_live = False
+      else:
+        self.scc_live = True
+        self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
+        self.scc_update_frame = frame
 
     self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
 
@@ -217,8 +217,8 @@ class CarController():
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
     if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
-      can_sends.append(create_scc12(self.packer, apply_accel, enabled, CS.brakePressed, CS.gasPressed, self.scc12_cnt, self.scc_live, CS.scc12))
-      can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, self.lead_visible, CS.standstill, self.scc_live, CS.scc11))
+      can_sends.append(create_scc12(self.packer, apply_accel, enabled, CS.brakePressed, CS.gasPressed, self.scc12_cnt, CS.scc12))
+      can_sends.append(create_scc11(self.packer, frame, enabled, set_speed, self.lead_visible, CS.standstill, CS.scc11))
 
       if CS.has_scc13 and frame % 20 == 0:
         can_sends.append(create_scc13(self.packer, CS.scc13))
