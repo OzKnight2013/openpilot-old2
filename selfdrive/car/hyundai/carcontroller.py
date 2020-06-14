@@ -18,11 +18,11 @@ ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 # actuator smoothness params
 DECEL_APPLY_RATE_BP = [0., .2, .8, 1.2, 1.5, 2.,  3., 5.,  11.]
-DECEL_APPLY_RATE_R = [.3,  .6, .9, 1.0, 1.2, 2., 2.5, 10., 30.] / 100
+DECEL_APPLY_RATE_R = [.3,  .6, .9, 1.0, 1.2, 2., 2.5, 10., 30.] / 100.0
 ACCEL_APPLY_RATE_BP = [0., 1.5]
-ACCEL_APPLY_RATE_R = [1.5, .3] / 100
+ACCEL_APPLY_RATE_R = [1.5, .3] / 100.0
 REL_RATE_BP = [0., 11.]
-REL_RATE_R = [1., 5.] / 100
+REL_RATE_R = [1., 5.] / 100.0
 
 def accel_hysteresis(accel, accel_steady):
 
