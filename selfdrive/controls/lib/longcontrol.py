@@ -14,7 +14,7 @@ STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
 STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
 
 BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .6, .4]
-BRAKE_STOPPING_TARGET_D = [1.25,  1., .9, .4]  # apply at least this amount of brake to maintain the vehicle stationary
+BRAKE_STOPPING_TARGET_D = [1.25,  1., .9, .8]  # apply at least this amount of brake to maintain the vehicle stationary
 
 MAX_SPEED_ERROR_BP = [0., 5., 10.]  # speed breakpoints
 MAX_SPEED_ERROR_V = [.6, .5, .3]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp

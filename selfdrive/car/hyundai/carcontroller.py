@@ -18,7 +18,7 @@ ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 # actuator smoothness params
 DECEL_APPLY_RATE_BP = [0., .2, .8, 1.2, 1.5, 2.,  3., 5.,  11.]
-DECEL_APPLY_RATE_R = [.003, .006, .009, .015, .02, .025, .035, .10, .30]
+DECEL_APPLY_RATE_R = [.006, .012, .018, .030, .04, .05, .07, .10, .30]
 ACCEL_APPLY_RATE_BP = [0., 1.5]
 ACCEL_APPLY_RATE_R = [.015, .01]
 REL_RATE_BP = [11., 0.]
