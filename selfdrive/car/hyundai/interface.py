@@ -201,11 +201,11 @@ class CarInterface(CarInterfaceBase):
     #ret.longitudinalTuning.kiBP = [0.]
     #ret.longitudinalTuning.kiV = [0.002]
     ret.longitudinalTuning.kpBP = [0., 5., 35.]
-    ret.longitudinalTuning.kpV = [2., 1.6, 1.]
+    ret.longitudinalTuning.kpV = [1., .8, .5]
     ret.longitudinalTuning.kiBP = [0., 35.]
-    ret.longitudinalTuning.kiV = [0.09, 0.06]
+    ret.longitudinalTuning.kiV = [0.03, 0.02]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40.]
-    ret.longitudinalTuning.deadzoneV = [0.05, 0.08, 0.12]
+    ret.longitudinalTuning.deadzoneV = [0.08, 0.12, 0.15]
 
 
     # steer, gas, brake limitations VS speed
