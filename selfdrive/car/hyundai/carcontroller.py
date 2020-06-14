@@ -9,7 +9,6 @@ from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
-min_set_speed = 8 * CV.KPH_TO_MS
 
 # Accel limits
 ACCEL_HYST_GAP = 0.01  # don't change accel command for small oscilalitons within this value
@@ -142,7 +141,6 @@ class CarController():
       lkas_active = 0
     if self.turning_signal_timer > 0:
       self.turning_signal_timer -= 1
-
     if not lkas_active:
       apply_steer = 0
 
@@ -163,23 +161,18 @@ class CarController():
     if clu11_speed > enabled_speed or not lkas_active:
       enabled_speed = clu11_speed
 
-    if not(min_set_speed < set_speed < 255 * CV.KPH_TO_MS):
-      set_speed = min_set_speed 
-    set_speed *= CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH
+    if CS.is_set_speed_in_mph:
+      set_speed *= CV.MS_TO_MPH
+    else:
+      set_speed *= CV.MS_TO_KPH
 
     if frame == 0: # initialize counts from last received count signals
       self.lkas11_cnt = CS.lkas11["CF_Lkas_MsgCount"]
       self.scc12_cnt = CS.scc12["CR_VSM_Alive"] + 1 if not CS.no_radar else 0
-
-      #TODO: fix this
-      # self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-      # self.scc_update_frame = frame
-
       self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
       self.scc_update_frame = frame
 
     # check if SCC on bus 0 is live
-
     if frame % 7 == 0 and not CS.no_radar:
       if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
         if frame - self.scc_update_frame > 20 and self.scc_live:
@@ -218,6 +211,7 @@ class CarController():
       self.lead_debounce -= 1
     else:
       self.lead_visible = lead_visible
+
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
     if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 

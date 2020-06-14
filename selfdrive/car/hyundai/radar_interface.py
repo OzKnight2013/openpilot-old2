@@ -27,7 +27,7 @@ class RadarInterface(RadarInterfaceBase):
     self.updated_messages = set()
     self.trigger_msg = 0x420
     self.track_id = 0
-    self.radar_off_can = CP.radarOffCan
+    self.radar_off_can = CP.sccBus == -1
 
   def update(self, can_strings):
     if self.radar_off_can:
