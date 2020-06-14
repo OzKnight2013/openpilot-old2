@@ -30,7 +30,7 @@ class CarState(CarStateBase):
     self.cruise_buttons = 0
     self.prev_cruise_buttons = 0
     self.button_counter = 0
-    self.mdps_error_cnt = 0
+    #self.mdps_error_cnt = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -67,8 +67,8 @@ class CarState(CarStateBase):
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
-    self.mdps_error_cnt += 1 if cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0 else -self.mdps_error_cnt
-    ret.steerWarning = self.mdps_error_cnt > 100 #cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0
+    #self.mdps_error_cnt += 1 if cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0 else -self.mdps_error_cnt
+    ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0 #self.mdps_error_cnt > 100
     # TODO: Find brake pressure
     ret.brake = 0
     ret.brakePressed = self.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
