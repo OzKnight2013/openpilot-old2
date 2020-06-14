@@ -4,7 +4,7 @@ from selfdrive.controls.lib.pid import PIController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 1.6
+STOPPING_EGO_SPEED = 0.5
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.5
@@ -14,9 +14,9 @@ STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
 STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
 
 BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .6, .4]
-BRAKE_STOPPING_TARGET_D = [0.95,  0.85, .8, .8]  # apply at least this amount of brake to maintain the vehicle stationary
+BRAKE_STOPPING_TARGET_D = [0.95,  0.85, .8, .4]  # apply at least this amount of brake to maintain the vehicle stationary
 
-MAX_SPEED_ERROR_BP = [0., 5., 10.]  # speed breakpoints
+MAX_SPEED_ERROR_BP = [0., 5., 30.]  # speed breakpoints
 MAX_SPEED_ERROR_V = [1.5, .5, .3]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
 
 RATE = 100.0
@@ -117,7 +117,7 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if not CS.standstill or output_gb > -stop_decel:
+      if output_gb > -stop_decel:   #not CS.standstill or 
         output_gb -= STOPPING_BRAKE_RATE / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 
