@@ -18,7 +18,7 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def compute_gb(accel, speed):
-    return float(accel) / 10.0
+    return float(accel) / 6.0
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
@@ -201,7 +201,7 @@ class CarInterface(CarInterfaceBase):
     #ret.longitudinalTuning.kiBP = [0.]
     #ret.longitudinalTuning.kiV = [0.002]
     ret.longitudinalTuning.kpBP = [0., 5., 35.]
-    ret.longitudinalTuning.kpV = [4., 3.2, 2.]
+    ret.longitudinalTuning.kpV = [2., 1.6, 1.]
     ret.longitudinalTuning.kiBP = [0., 35.]
     ret.longitudinalTuning.kiV = [0.09, 0.06]
     ret.longitudinalTuning.deadzoneBP = [0., 5.,  40.]
