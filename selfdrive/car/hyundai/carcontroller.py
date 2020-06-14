@@ -99,23 +99,23 @@ class CarController():
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
-    accel_apply_rate = interp(apply_accel, ACCEL_APPLY_RATE_BP, ACCEL_APPLY_RATE_R)
-    decel_apply_rate = interp(apply_accel, DECEL_APPLY_RATE_BP, DECEL_APPLY_RATE_R)
-    rel_rate = interp(self.apply_accel_last, REL_RATE_BP, REL_RATE_R)
+#    accel_apply_rate = interp(apply_accel, ACCEL_APPLY_RATE_BP, ACCEL_APPLY_RATE_R)
+#    decel_apply_rate = interp(apply_accel, DECEL_APPLY_RATE_BP, DECEL_APPLY_RATE_R)
+#    rel_rate = interp(self.apply_accel_last, REL_RATE_BP, REL_RATE_R)
 
-    if 0 >= apply_accel:
-      if apply_accel > self.apply_accel_last:
-        if CS.gasPressed:
-          apply_accel = min(apply_accel, self.apply_accel_last + rel_rate)
-        else:
-          apply_accel = min(apply_accel, self.apply_accel_last + rel_rate)
-      else:
-        apply_accel = max(apply_accel, self.apply_accel_last - decel_apply_rate)
-    else:
-      if apply_accel > self.apply_accel_last:
-        apply_accel = min(apply_accel, self.apply_accel_last + accel_apply_rate)
-      else:
-        apply_accel = apply_accel
+#    if 0 >= apply_accel:
+#      if apply_accel > self.apply_accel_last:
+#        if CS.gasPressed:
+#          apply_accel = min(apply_accel, self.apply_accel_last + rel_rate)
+#        else:
+#          apply_accel = min(apply_accel, self.apply_accel_last + rel_rate)
+#      else:
+#        apply_accel = max(apply_accel, self.apply_accel_last - decel_apply_rate)
+#    else:
+#      if apply_accel > self.apply_accel_last:
+#        apply_accel = min(apply_accel, self.apply_accel_last + accel_apply_rate)
+#      else:
+#        apply_accel = apply_accel
 
 
     # Steering Torque
