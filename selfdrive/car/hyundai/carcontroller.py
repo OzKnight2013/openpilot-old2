@@ -175,8 +175,12 @@ class CarController():
       # self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
       # self.scc_update_frame = frame
 
-     #check if SCC is alive
-    if frame % 7 == 0:
+      self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
+      self.scc_update_frame = frame
+
+    # check if SCC on bus 0 is live
+
+    if frame % 7 == 0 and not CS.no_radar:
       if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
         if frame - self.scc_update_frame > 20 and self.scc_live:
           self.scc_live = False
