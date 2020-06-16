@@ -66,14 +66,14 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
         v_cruise_kph -= V_CRUISE_DELTA - -v_cruise_kph % V_CRUISE_DELTA
       ButtonCnt = FIRST_PRESS_TIME
     elif ButtonCnt > SHORT_PRESS_TIME and not LongPressed:
-      if b.type == ButtonType.accelCruise:
+      if ButtonPrev == ButtonType.accelCruise:
         v_cruise_kph += 1 if metric else 1 * CV.MPH_TO_KPH
-      elif b.type == ButtonType.decelCruise:
+      elif ButtonPrev == ButtonType.decelCruise:
         v_cruise_kph -= 1 if metric else 1 * CV.MPH_TO_KPH
     elif ButtonCnt == FIRST_PRESS_TIME and not LongPressed:
-      if b.type == ButtonType.accelCruise:
+      if ButtonPrev == ButtonType.accelCruise:
         v_cruise_kph += 1 if metric else 1 * CV.MPH_TO_KPH
-      elif b.type == ButtonType.decelCruise:
+      elif ButtonPrev == ButtonType.decelCruise:
         v_cruise_kph -= 1 if metric else 1 * CV.MPH_TO_KPH
     v_cruise_kph = clip(v_cruise_kph, V_CRUISE_MIN, V_CRUISE_MAX)
 
