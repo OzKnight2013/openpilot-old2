@@ -8,11 +8,15 @@ ButtonCnt = 0
 LongPressed = False
 
 # kph
+FIRST_PRESS_TIME = 1
+SHORT_PRESS_TIME = 25
+LONG_PRESS_TIME = 50
+
 V_CRUISE_MAX = 144
-V_CRUISE_MIN = 3.3
+V_CRUISE_MIN = 5 * CV.MPH_TO_KPH
 V_CRUISE_DELTA_MI = 5 * CV.MPH_TO_KPH
 V_CRUISE_DELTA_KM = 10
-V_CRUISE_ENABLE_MIN = 8
+V_CRUISE_ENABLE_MIN = 5 * CV.MPH_TO_KPH
 
 
 class MPC_COST_LAT:
@@ -45,34 +49,43 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
     if ButtonCnt:
       ButtonCnt += 1
     for b in buttonEvents:
-      if b.pressed and not ButtonCnt and (b.type == ButtonType.accelCruise or \
+      if b.pressed and not ButtonCnt and (b.type == ButtonType.accelCruise or
                                           b.type == ButtonType.decelCruise):
-        ButtonCnt = 1
+        ButtonCnt = FIRST_PRESS_TIME
         ButtonPrev = b.type
-      elif not b.pressed and ButtonCnt:
-        if not LongPressed and b.type == ButtonType.accelCruise:
-          v_cruise_kph += 1 if metric else 1 * CV.MPH_TO_KPH
-        elif not LongPressed and b.type == ButtonType.decelCruise:
-          v_cruise_kph -= 1 if metric else 1 * CV.MPH_TO_KPH
+      elif not b.pressed:
         LongPressed = False
         ButtonCnt = 0
-    if ButtonCnt > 50:
+          
+    if ButtonCnt > LONG_PRESS_TIME:
       LongPressed = True
       V_CRUISE_DELTA = V_CRUISE_DELTA_KM if metric else V_CRUISE_DELTA_MI
       if ButtonPrev == ButtonType.accelCruise:
         v_cruise_kph += V_CRUISE_DELTA - v_cruise_kph % V_CRUISE_DELTA
       elif ButtonPrev == ButtonType.decelCruise:
         v_cruise_kph -= V_CRUISE_DELTA - -v_cruise_kph % V_CRUISE_DELTA
-      ButtonCnt %= 50
+      ButtonCnt = FIRST_PRESS_TIME
+    elif ButtonCnt > SHORT_PRESS_TIME and not LongPressed:
+      if b.type == ButtonType.accelCruise:
+        v_cruise_kph += 1 if metric else 1 * CV.MPH_TO_KPH
+      elif b.type == ButtonType.decelCruise:
+        v_cruise_kph -= 1 if metric else 1 * CV.MPH_TO_KPH
+    elif ButtonCnt == FIRST_PRESS_TIME and not LongPressed:
+      if b.type == ButtonType.accelCruise:
+        v_cruise_kph += 1 if metric else 1 * CV.MPH_TO_KPH
+      elif b.type == ButtonType.decelCruise:
+        v_cruise_kph -= 1 if metric else 1 * CV.MPH_TO_KPH
     v_cruise_kph = clip(v_cruise_kph, V_CRUISE_MIN, V_CRUISE_MAX)
 
   return v_cruise_kph
 
 
-def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
+def initialize_v_cruise(v_cruise_kph, v_ego, buttonEvents, v_cruise_last):
   for b in buttonEvents:
     # 250kph or above probably means we never had a set speed
     if b.type == ButtonType.accelCruise and v_cruise_last < 250:
-      return v_cruise_last
+      v_cruise_kph = v_cruise_last
+    else:
+      v_cruise_kph = int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
 
-  return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
+  return v_cruise_kph
