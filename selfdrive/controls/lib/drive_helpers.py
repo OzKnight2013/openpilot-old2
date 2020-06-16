@@ -11,8 +11,8 @@ LongPressed = False
 FIRST_PRESS_TIME = 1
 LONG_PRESS_TIME = 50
 
-V_CRUISE_MAX_KPH = 144
-V_CRUISE_MIN_KPH = 8
+V_CRUISE_MAX = 144
+V_CRUISE_MIN = 8
 V_CRUISE_LONG_PRESS_DELTA_MPH = 5
 V_CRUISE_LONG_PRESS_DELTA_KPH = 10
 V_CRUISE_ENABLE_MIN = 5 * CV.KPH_TO_MPH
@@ -74,8 +74,8 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
       elif ButtonPrev == ButtonType.decelCruise:
         v_cruise -= V_CRUISE_DELTA
 
-    v_cruise_min = V_CRUISE_MIN_KPH if metric else V_CRUISE_MIN_KPH * CV.KPH_TO_MPH
-    v_cruise_max = V_CRUISE_MAX_KPH if metric else V_CRUISE_MAX_KPH * CV.KPH_TO_MPH
+    v_cruise_min = V_CRUISE_MIN if metric else V_CRUISE_MIN * CV.KPH_TO_MPH
+    v_cruise_max = V_CRUISE_MAX if metric else V_CRUISE_MAX * CV.KPH_TO_MPH
 
     v_cruise = clip(v_cruise, v_cruise_min, v_cruise_max)
     v_cruise_kph = v_cruise if metric else v_cruise * CV.MPH_TO_KPH
