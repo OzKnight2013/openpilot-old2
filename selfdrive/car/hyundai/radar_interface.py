@@ -68,7 +68,9 @@ class RadarInterface(RadarInterfaceBase):
         self.pts[ii].aRel = float('nan')
         self.pts[ii].yvRel = float('nan')
         self.pts[ii].measured = True
-
+        print("obj-dist: ", self.pts[ii].dRel)
+        print("obj-Latpos: ", self.pts[ii].yRel)
+        print("obj-Rspeed: ", self.pts[ii].vRel)
     ret.points = list(self.pts.values())
     return ret
 

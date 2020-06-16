@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from numpy import interp
+
 from cereal import car
 from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons
@@ -18,7 +20,14 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def compute_gb(accel, speed):
-    return float(accel) / 10.0
+    cgb_BP = [0., 5., 40.]  # speed break point
+    cgb_Af = [1., 1., 1.]  # accel factor based on speed
+
+    # keep accel factor 1. tune if necessary
+
+    accel_factor = interp(speed, cgb_BP, cgb_Af)
+
+    return float(accel) * accel_factor
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
