@@ -107,14 +107,11 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupWhitePanda @82;
     canErrorPersistentDEPRECATED @83;
     belowEngageSpeed @84;
-    noGps @85;
-    focusRecoverActive @86;
-    wrongCruiseMode @87;
-    preventLaneChange @88;
-    leftBlindspot @89;
-    rightBlindspot @90;
-    turningIndicatorOn @91;
-    lkasButtonOff @92;
+    preventLaneChange @85;
+    leftBlindspot @86;
+    rightBlindspot @87;
+    turningIndicatorOn @88;
+    lkasButtonOff @89;
   }
 }
 
@@ -196,7 +193,6 @@ struct CarState {
     available @2 :Bool;
     speedOffset @3 :Float32;
     standstill @4 :Bool;
-    nonAdaptive @5 :Bool;
   }
 
   enum GearShifter {
