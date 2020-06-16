@@ -10,10 +10,10 @@ from selfdrive.config import Conversions as CV
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
-# Accel limits
+# Accel Hard limits
 ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
 ACCEL_MAX = 1.5  # 1.5 m/s2
-ACCEL_MIN = -10.0 # 3   m/s2
+ACCEL_MIN = -8.0  # 3   m/s2
 ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 def accel_hysteresis(accel, accel_steady):
@@ -90,8 +90,6 @@ class CarController():
 
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
-
-
 
     # Steering Torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX
