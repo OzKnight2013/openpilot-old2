@@ -20,14 +20,14 @@ class CarInterface(CarInterfaceBase):
 
   @staticmethod
   def compute_gb(accel, speed):
-    cgb_BP = [0., 5., 40.]  # speed break point
-    cgb_Af = [1., 1., 1.]  # accel factor based on speed
+#   cgb_BP = [0., 5., 40.]  # speed break point
+#    cgb_Af = [1., 1., 1.]  # accel factor based on speed
 
     # keep accel factor 1. tune if necessary
 
-    accel_factor = interp(speed, cgb_BP, cgb_Af)
+#    accel_factor = interp(speed, cgb_BP, cgb_Af)
 
-    return float(accel) * accel_factor
+    return float(accel) #* accel_factor
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
