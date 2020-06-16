@@ -27,7 +27,7 @@ class CarInterface(CarInterfaceBase):
 
 #    accel_factor = interp(speed, cgb_BP, cgb_Af)
 
-    return float(accel) #* accel_factor
+    return float(accel) / 8.0 #* accel_factor
 
   @staticmethod
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
