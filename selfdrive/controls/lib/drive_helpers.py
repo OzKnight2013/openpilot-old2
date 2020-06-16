@@ -85,9 +85,9 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
 def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
   for b in buttonEvents:
     # 250kph or above probably means we never had a set speed
-    if b.type == ButtonType.accelCruise and v_cruise_last < 250:
+    if b.pressed and b.type == ButtonType.accelCruise and v_cruise_last < 250:
       print("it came here -  001 ")
       return v_cruise_last
-    print("it came here -  002a ", b.type)
+  print("it came here -  002a ", buttonEvents)
   print("it came here -  002 b", v_cruise_last)
   return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
