@@ -44,6 +44,7 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
   global ButtonCnt, LongPressed, ButtonPrev
+  print("it came here -  003a ", buttonEvents)
   if enabled:
     if ButtonCnt:
       ButtonCnt += 1
