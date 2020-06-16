@@ -187,7 +187,10 @@ def calibration_incomplete_alert(CP, sm, metric):
 EVENTS = {
   # ********** events with no alerts **********
 
-    # EventName.gasPressed: {ET.PRE_ENABLE: None},
+  #EventName.gasPressed: {ET.PRE_ENABLE: None},
+
+  #EventName.laneChangeBlocked: {},
+
   #EventName.focusRecoverActive: {},
 
   # ********** events only containing alerts displayed in all states **********
@@ -314,7 +317,6 @@ EVENTS = {
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., 2., 3.),
   },
-
 
   # ********** events only containing alerts that display while engaged **********
 
@@ -523,6 +525,11 @@ EVENTS = {
                               duration_hud_alert=0.),
   },
 
+  #EventName.wrongCruiseMode: {
+  #  ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
+  #  ET.NO_ENTRY: NoEntryAlert("Enable Adaptive Cruise"),
+  #},
+
   EventName.steerTempUnavailable: {
     ET.WARNING: Alert(
       "TAKE CONTROL",
@@ -549,6 +556,15 @@ EVENTS = {
 
   EventName.belowEngageSpeed: {
     ET.NO_ENTRY: NoEntryAlert("Speed Too Low"),
+  },
+
+  EventName.neosUpdateRequired: {
+    ET.PERMANENT: Alert(
+      "NEOS Update Required",
+      "Please Wait for Update",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.HIGHEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
+    ET.NO_ENTRY: NoEntryAlert("NEOS Update Required"),
   },
 
   EventName.sensorDataInvalid: {

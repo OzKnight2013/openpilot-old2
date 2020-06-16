@@ -11,7 +11,7 @@ LongPressed = False
 FIRST_PRESS_TIME = 1
 LONG_PRESS_TIME = 50
 
-V_CRUISE_MAX = 144
+V_CRUISE_MAX = 177
 V_CRUISE_MIN = 8
 V_CRUISE_LONG_PRESS_DELTA_MPH = 5
 V_CRUISE_LONG_PRESS_DELTA_KPH = 10
@@ -55,24 +55,21 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
       elif not b.pressed:
         LongPressed = False
         ButtonCnt = 0
-        print("ButtonCnt:------------", ButtonCnt)
 
-    v_cruise = int(round(v_cruise_kph)) if metric else int(round(v_cruise_kph * CV.KPH_TO_MPH))
+    v_cruise = v_cruise_kph if metric else int(round(v_cruise_kph * CV.KPH_TO_MPH))
     if ButtonCnt > LONG_PRESS_TIME:
       LongPressed = True
       V_CRUISE_DELTA = V_CRUISE_LONG_PRESS_DELTA_KPH if metric else V_CRUISE_LONG_PRESS_DELTA_MPH
       if ButtonPrev == ButtonType.accelCruise:
         v_cruise += V_CRUISE_DELTA - v_cruise % V_CRUISE_DELTA
-        print("vcruise:--", v_cruise)
       elif ButtonPrev == ButtonType.decelCruise:
         v_cruise -= V_CRUISE_DELTA - -v_cruise % V_CRUISE_DELTA
       ButtonCnt = FIRST_PRESS_TIME
     elif ButtonCnt == FIRST_PRESS_TIME and not LongPressed:
-      V_CRUISE_DELTA = 1 if metric else CV.KPH_TO_MPH
       if ButtonPrev == ButtonType.accelCruise:
-        v_cruise += V_CRUISE_DELTA
+        v_cruise += 1
       elif ButtonPrev == ButtonType.decelCruise:
-        v_cruise -= V_CRUISE_DELTA
+        v_cruise -= 1
 
     v_cruise_min = V_CRUISE_MIN if metric else V_CRUISE_MIN * CV.KPH_TO_MPH
     v_cruise_max = V_CRUISE_MAX if metric else V_CRUISE_MAX * CV.KPH_TO_MPH
@@ -85,12 +82,10 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
   return v_cruise_kph
 
 
-def initialize_v_cruise(v_cruise_kph, v_ego, buttonEvents, v_cruise_last):
+def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
   for b in buttonEvents:
     # 250kph or above probably means we never had a set speed
     if b.type == ButtonType.accelCruise and v_cruise_last < 250:
-      v_cruise_kph = v_cruise_last
-    else:
-      v_cruise_kph = int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
+      return v_cruise_last
 
-  return v_cruise_kph
+  return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
