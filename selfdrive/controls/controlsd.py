@@ -326,7 +326,6 @@ class Controls:
           else:
             self.state = State.enabled
           self.current_alert_types.append(ET.ENABLE)
-          print("3a butevent::::::::::::::::::::",CS.buttonEvents)
           self.v_cruise_kph = initialize_v_cruise(CS.vEgo, CS.buttonEvents, self.v_cruise_kph_last)
 
     # Check if actuators are enabled
