@@ -263,11 +263,12 @@ class Controls:
 
   def state_transition(self, CS):
     """Compute conditional state transitions and execute actions on state transitions"""
+
     self.v_cruise_kph_last = self.v_cruise_kph
 
     # if stock cruise is completely disabled, then we can use our own set speed logic
     if not self.CP.enableCruise:
-      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonPressed, CS.buttonType, self.enabled, self.is_metric)
+      self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.buttonEvents, self.enabled, self.is_metric)
     elif self.CP.enableCruise and CS.cruiseState.enabled:
       self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
@@ -325,8 +326,8 @@ class Controls:
           else:
             self.state = State.enabled
           self.current_alert_types.append(ET.ENABLE)
-          print("3a butevent::::::::::::::::::::",CS.buttonType)
-          self.v_cruise_kph = initialize_v_cruise(CS.vEgo, CS.buttonType, self.v_cruise_kph_last)
+          print("3a butevent::::::::::::::::::::",CS.buttonEvents)
+          self.v_cruise_kph = initialize_v_cruise(CS.vEgo, CS.buttonEvents, self.v_cruise_kph_last)
 
     # Check if actuators are enabled
     self.active = self.state == State.enabled or self.state == State.softDisabling

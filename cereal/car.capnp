@@ -164,8 +164,6 @@ struct CarState {
 
   # button presses
   buttonEvents @11 :List(ButtonEvent);
-  buttonPressed @37 :Bool;
-  buttonType @38 :int;
   leftBlinker @20 :Bool;
   rightBlinker @21 :Bool;
   genericToggle @23 :Bool;
