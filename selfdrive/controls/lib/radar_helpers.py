@@ -117,9 +117,9 @@ class Cluster():
   def measured(self):
     return any(t.measured for t in self.tracks)
 
-  def get_RadarState(self, model_prob=0.0):
+  def get_RadarState(self, v_ego, model_prob=0.0):
     return {
-      "dRel": float(self.dRel * 1.2),
+      "dRel": float(self.dRel + (0.3 * v_ego)),
       "yRel": float(self.yRel),
       "vRel": float(self.vRel),
       "vLead": float(self.vLead),
@@ -134,7 +134,7 @@ class Cluster():
 
   def get_RadarState_from_vision(self, lead_msg, v_ego):
     return {
-      "dRel": float((lead_msg.dist * 1.2) - RADAR_TO_CAMERA),
+      "dRel": float(lead_msg.dist - RADAR_TO_CAMERA + (0.3 * v_ego)),
       "yRel": float(lead_msg.relY),
       "vRel": float(lead_msg.relVel),
       "vLead": float(v_ego + lead_msg.relVel),

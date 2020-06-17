@@ -11,7 +11,7 @@ STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
 STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.6  # brake_travel/s while releasing on restart
+STARTING_BRAKE_RATE = 0.2  # brake_travel/s while releasing on restart
 
 BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .4, .0]
 BRAKE_STOPPING_TARGET_D = [.0625, .075, .075, .0375]  # apply at least this amount of brake to maintain the vehicle stationary
@@ -23,7 +23,7 @@ RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, cruise_standstill):
+                             output_gb, brake_pressed, gas_pressed, cruise_standstill):
   """Update longitudinal control state machine"""
 #  stopping_condition = #(v_ego < 2.0 and cruise_standstill) or \
   stopping_condition =  (v_ego < STOPPING_EGO_SPEED and
@@ -32,7 +32,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
 
   starting_condition = v_target > STARTING_TARGET_SPEED # and not cruise_standstill
 
-  if (not active) or brake_pressed:
+  if (not active) or brake_pressed or gas_pressed:
     long_control_state = LongCtrlState.off
 
   else:
@@ -84,7 +84,7 @@ class LongControl():
     output_gb = self.last_output_gb
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.cruiseState.standstill)
+                                                       CS.brakePressed, CS.gasPressed, CS.cruiseState.standstill)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
