@@ -40,7 +40,7 @@ def get_steer_max(CP, v_ego):
   return interp(v_ego, CP.steerMaxBP, CP.steerMaxV)
 
 
-def update_v_cruise(v_cruise_kph, v_cruise_kph_last, buttonEvents, enabled, metric):
+def update_v_cruise(v_cruise_kph, v_cruise_kph_last, buttonEvents, enabled, metric, vEgo):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
   global ButtonCnt, LongPressed, ButtonPrev
@@ -52,7 +52,7 @@ def update_v_cruise(v_cruise_kph, v_cruise_kph_last, buttonEvents, enabled, metr
                                           b.type == ButtonType.decelCruise):
         ButtonCnt = FIRST_PRESS_TIME
         ButtonPrev = b.type
-        v_cruise_kph = v_cruise_kph_last if b.type == ButtonType.accelCruise and v_cruise_kph_last < 250 else v_cruise_kph
+        v_cruise_kph = v_cruise_kph_last if b.type == ButtonType.accelCruise and v_cruise_kph_last < 250 else int(round(vEgo * CV.MS_TO_KPH))
       elif not b.pressed:
         LongPressed = False
         ButtonCnt = 0
