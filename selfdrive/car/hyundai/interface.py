@@ -308,7 +308,7 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(be)
       self.buttonEvents = buttonEvents
 
-    ret.buttonEvents = self.buttonEvent
+    ret.buttonEvents = self.buttonEvents
 
     events = self.create_common_events(ret)
 
