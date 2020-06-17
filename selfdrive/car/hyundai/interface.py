@@ -15,6 +15,8 @@ ButtonType = car.CarState.ButtonEvent.Type
 class CarInterface(CarInterfaceBase):
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
+    self.button_type = 0
+    self.button_pressed = 0
     self.cp2 = self.CS.get_can2_parser(CP)
     self.lkas_button_alert = False
 
@@ -298,13 +300,18 @@ class CarInterface(CarInterfaceBase):
       else:
         be.type = ButtonType.unknown
       buttonEvents.append(be)
+      self.button_type = be.type
+      self.button_pressed = be.pressed
 
     if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
       be = car.CarState.ButtonEvent.new_message()
       be.type = ButtonType.altButton3
       be.pressed = bool(self.CS.cruise_main_button)
       buttonEvents.append(be)
+
     ret.buttonEvents = buttonEvents
+    ret.button_pressed = self.button_pressed
+    ret.button_type = self.button_type
 
     events = self.create_common_events(ret)
 
