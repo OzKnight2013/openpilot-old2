@@ -304,7 +304,6 @@ class CarInterface(CarInterfaceBase):
       be.type = ButtonType.altButton3
       be.pressed = bool(self.CS.cruise_main_button)
       buttonEvents.append(be)
-
     ret.buttonEvents = buttonEvents
 
     events = self.create_common_events(ret)

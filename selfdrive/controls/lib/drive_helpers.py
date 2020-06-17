@@ -52,6 +52,7 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
                                           b.type == ButtonType.decelCruise):
         ButtonCnt = FIRST_PRESS_TIME
         ButtonPrev = b.type
+        print("1a ---------- ", b.type)
       elif not b.pressed:
         LongPressed = False
         ButtonCnt = 0
@@ -84,6 +85,8 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
 def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
   for b in buttonEvents:
     # 250kph or above probably means we never had a set speed
+    print("2a ~~~~~~~~~~~", b.type)
     if b.type == ButtonType.accelCruise  and not b.pressed and v_cruise_last < 250:
       return v_cruise_last                                        # no button info coming here possibly because this is disable state- investigate
+  print("2b ~~~~~~>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>~~~~~", buttonEvents)
   return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
