@@ -22,14 +22,10 @@ class CarState(CarStateBase):
     self.has_scc13 = CP.carFingerprint in FEATURES["has_scc13"]
     self.has_scc14 = CP.carFingerprint in FEATURES["has_scc14"]
     self.cruise_main_button = 0
-    self.cruisespeed = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
-    self.brakePressed = 0
-    self.gasPressed = 0
     self.cruise_buttons = 0
     self.prev_cruise_buttons = 0
-    self.button_counter = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -56,7 +52,7 @@ class CarState(CarStateBase):
     ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
 
-    ret.standstill = self.standstill = ret.vEgoRaw < 0.1
+    ret.standstill = ret.vEgoRaw < 0.1
 
     ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle']
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
@@ -70,8 +66,8 @@ class CarState(CarStateBase):
 
     # TODO: Find brake pressure
     ret.brake = 0
-    ret.brakePressed = self.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
-
+    ret.brakePressed = cp.vl["TCS13"]['DriverBraking'] != 0
+    self.brakesUnavailable = cp.vl["TCS13"]['ACCEnable'] == 3
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
@@ -89,8 +85,6 @@ class CarState(CarStateBase):
         self.cruiseStateavailable = 0
       elif not self.prev_cruiseStateavailable:
         self.cruiseStateavailable = 0
-
-    ret.cruiseState.available = (self.cruiseStateavailable != 0)
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
@@ -110,10 +104,10 @@ class CarState(CarStateBase):
     ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100 if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
                 cp.vl["E_EMS11"]['Accel_Pedal_Pos'] / 100
 
-    ret.gasPressed = self.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"]) if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
+    ret.gasPressed = bool(cp.vl["EMS16"]["CF_Ems_AclAct"]) if self.CP.carFingerprint not in FEATURES["use_elect_ems"] else \
                 cp.vl["E_EMS11"]['Accel_Pedal_Pos'] > 5
 
-    ret.espDisabled = cp.vl["TCS15"]['ESC_Off_Step'] != 0
+    ret.espDisabled = self.brakesUnavailable or (cp.vl["TCS15"]['ESC_Off_Step'] != 0)
 
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection, as this seems to be standard over all cars, but is not the preferred method.
     if self.CP.carFingerprint in FEATURES["use_cluster_gears"]:
@@ -359,7 +353,6 @@ class CarState(CarStateBase):
     if CP.carFingerprint not in FEATURES["use_elect_ems"]:
       signals += [
         ("PV_AV_CAN", "EMS12", 0),
-
         ("CF_Ems_AclAct", "EMS16", 0),
       ]
       checks += [
