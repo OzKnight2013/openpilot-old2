@@ -262,7 +262,7 @@ class CarInterface(CarInterfaceBase):
 #    if not self.CP.openpilotLongitudinalControl:
 #      ret.cruiseState.enabled = ret.cruiseState.available
     ret.cruiseState.enabled = ret.cruiseState.available
-    
+
     # some Optima only has blinker flash signal
     if self.CP.carFingerprint == CAR.KIA_OPTIMA:
       ret.leftBlinker = self.CS.left_blinker_flash or self.CS.prev_left_blinker and self.CC.turning_signal_timer
@@ -314,10 +314,6 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
-    if not ret.cruiseState.enabled:
-      print("this?????????:~~~~~~~~", self.countenable)
-      events.add(EventName.pcmDisable)
-
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
       events.add(EventName.steerTempUnavailable)
     if self.low_speed_alert and not self.CS.mdps_bus:
@@ -340,6 +336,9 @@ class CarInterface(CarInterfaceBase):
         # do disable on button down
         if b.type == ButtonType.cancel and b.pressed:
           events.add(EventName.buttonCancel)
+        if b.type == ButtonType.altButton3 and b.pressed:
+          print("this?????????:~~~~~~~~", self.countenable)
+          events.add(EventName.pcmDisable)
       if EventName.wrongCarMode in events.events:
         events.events.remove(EventName.wrongCarMode)
       if EventName.pcmDisable in events.events:
