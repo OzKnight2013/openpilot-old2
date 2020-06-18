@@ -198,7 +198,7 @@ class CarController():
         can_sends.append(create_scc14(self.packer, enabled, CS.scc14))
       self.scc12_cnt += 1
 
-    if CS.out.cruiseState.standstill:
+    if CS.out.cruiseState.standstill and not self.CP.openpilotLongitudinalControl:
       # run only first time when the car stopped
       if self.last_lead_distance == 0:
         # get the lead distance from the Radar
