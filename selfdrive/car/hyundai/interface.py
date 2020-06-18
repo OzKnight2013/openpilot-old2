@@ -288,7 +288,7 @@ class CarInterface(CarInterfaceBase):
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = self.CS.cruise_buttons != 0 
-      but = self.CS.cruise_buttons if be.pressed else self.CS.prev_cruise_buttons
+      but = self.CS.cruise_buttons
       if but == Buttons.RES_ACCEL:    # TODO avoid speed increase due to res spam when stopped behind target
         be.type = ButtonType.accelCruise
       elif but == Buttons.SET_DECEL:
@@ -338,10 +338,10 @@ class CarInterface(CarInterfaceBase):
         # do disable on button down
         if b.type == ButtonType.cancel and b.pressed:
           events.add(EventName.buttonCancel)
-      #if EventName.wrongCarMode in events.events:
-      #  events.events.remove(EventName.wrongCarMode)
-      #if EventName.pcmDisable in events.events:
-      #  events.events.remove(EventName.pcmDisable)
+      if EventName.wrongCarMode in events.events:
+        events.events.remove(EventName.wrongCarMode)
+      if EventName.pcmDisable in events.events:
+        events.events.remove(EventName.pcmDisable)
 
     ret.events = events.to_msg()
     ret.cruiseState.available = (self.CS.cruiseStateavailable != 0)
