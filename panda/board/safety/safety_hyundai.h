@@ -235,7 +235,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
           OP_MDPS_live -= 1;
         }
       } else {
-        bus_fwd = 2; // EON create CLU12 for MDPS
+        bus_fwd = 2; // EON create CLU11 for MDPS
         OP_CLU_live -= 1;
       }
     }
