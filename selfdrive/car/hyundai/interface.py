@@ -345,8 +345,6 @@ class CarInterface(CarInterfaceBase):
         events.events.remove(EventName.pcmDisable)
 
     ret.events = events.to_msg()
-    ret.cruiseState.available = (self.CS.cruiseStateavailable != 0)
-
     self.CS.out = ret.as_reader()
     return self.CS.out
 

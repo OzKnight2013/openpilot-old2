@@ -86,6 +86,8 @@ class CarState(CarStateBase):
       elif not self.prev_cruiseStateavailable:
         self.cruiseStateavailable = 0
 
+    ret.cruiseState.available = (self.cruiseStateavailable != 0)
+
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
     ret.cruiseState.standstill = (cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4) if not self.no_radar else False
