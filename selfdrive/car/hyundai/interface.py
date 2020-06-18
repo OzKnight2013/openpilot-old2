@@ -314,6 +314,7 @@ class CarInterface(CarInterfaceBase):
     events = self.create_common_events(ret)
 
     if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
+      print("this?????????:~~~~~~~~", self.countenable)
       events.add(EventName.pcmDisable)
 
     if abs(ret.steeringAngle) > 90. and EventName.steerTempUnavailable not in events.events:
