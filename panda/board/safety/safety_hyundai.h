@@ -32,6 +32,17 @@ AddrCheckStruct hyundai_rx_checks[] = {
 };
 const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_checks[0]);
 
+// older hyundai models have less checks due to missing counters and checksums
+AddrCheckStruct hyundai_legacy_rx_checks[] = {
+//  {.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
+//           {881, 0, 8, .expected_timestep = 10000U}}},
+//  {.msg = {{902, 0, 8, .expected_timestep = 10000U}}},
+//  {.msg = {{916, 0, 8, .expected_timestep = 10000U}}},
+//  {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
+};
+const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]);
+
+bool hyundai_legacy = false;
 
 bool hyundai_has_scc = false;
 int OP_LKAS_live = 0;
@@ -46,9 +57,17 @@ bool hyundai_forward_bus1 = false;
 
 static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
-  bool valid = addr_safety_check(to_push, hyundai_rx_checks, HYUNDAI_RX_CHECK_LEN,
-                                 NULL, NULL, NULL);
+  bool valid;
+  if (0) {
+    valid = addr_safety_check(to_push, hyundai_legacy_rx_checks, HYUNDAI_LEGACY_RX_CHECK_LEN,
+                              NULL, NULL,
+                              NULL);
 
+  } else {
+    valid = addr_safety_check(to_push, hyundai_rx_checks, HYUNDAI_RX_CHECK_LEN,
+                              NULL, NULL,
+                              NULL);
+  }
 
 
   int addr = GET_ADDR(to_push);
@@ -99,29 +118,6 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       }
       cruise_engaged_prev = cruise_engaged;
     }
-    // cruise control for car without SCC
-    if ((addr == 871) && (!hyundai_has_scc) && (OP_SCC_live) && (bus == 0)) {
-      // first byte
-      int cruise_engaged = (GET_BYTES_04(to_push) & 0xFF);
-      if (cruise_engaged && !cruise_engaged_prev) {
-        controls_allowed = 1;
-      }
-      if (!cruise_engaged) {
-        controls_allowed = 0;
-      }
-      cruise_engaged_prev = cruise_engaged;
-    }
-    if ((addr == 608) && (!hyundai_has_scc) && (!OP_SCC_live) && (bus == 0)) {
-      // bit 25
-      int cruise_engaged = (GET_BYTES_04(to_push) >> 25 & 0x1); // ACC main_on signal
-      if (cruise_engaged && !cruise_engaged_prev) {
-        controls_allowed = 1;
-      }
-      if (!cruise_engaged) {
-        controls_allowed = 0;
-      }
-      cruise_engaged_prev = cruise_engaged;
-    }
 
     gas_pressed = false;
     // sample subaru wheel speed, averaging opposite corners
@@ -135,7 +131,6 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     brake_pressed = false;
 
-    // check if stock camera ECU is on bus 0
     generic_rx_checks((addr == 832));
   }
   return valid;
@@ -282,12 +277,38 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   return bus_fwd;
 }
 
+static void hyundai_init(int16_t param) {
+  UNUSED(param);
+  controls_allowed = false;
+  relay_malfunction_reset();
+
+  hyundai_legacy = false;
+}
+
+static void hyundai_legacy_init(int16_t param) {
+  UNUSED(param);
+  controls_allowed = false;
+  relay_malfunction_reset();
+
+  hyundai_legacy = true;
+}
+
 const safety_hooks hyundai_hooks = {
-  .init = nooutput_init,
+  .init = hyundai_init,
   .rx = hyundai_rx_hook,
   .tx = hyundai_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
   .fwd = hyundai_fwd_hook,
   .addr_check = hyundai_rx_checks,
   .addr_check_len = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_checks[0]),
+};
+
+const safety_hooks hyundai_legacy_hooks = {
+  .init = hyundai_legacy_init,
+  .rx = hyundai_rx_hook,
+  .tx = hyundai_tx_hook,
+  .tx_lin = nooutput_tx_lin_hook,
+  .fwd = hyundai_fwd_hook,
+  .addr_check = hyundai_legacy_rx_checks,
+  .addr_check_len = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]),
 };
