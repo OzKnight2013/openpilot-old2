@@ -133,9 +133,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
 
     // check if stock camera ECU is on bus 0
-    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (bus == 0) && (addr == 832)) {
-      relay_malfunction_set();
-    }
+    generic_rx_checks((addr == 832));
   }
   return valid;
 }
