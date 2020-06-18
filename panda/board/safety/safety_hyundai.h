@@ -123,6 +123,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       cruise_engaged_prev = cruise_engaged;
     }
 
+    gas_pressed = false;
     // sample subaru wheel speed, averaging opposite corners
     if ((addr == 902) && (bus == 0)) {
       int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
@@ -131,6 +132,8 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       vehicle_moving = hyundai_speed > HYUNDAI_STANDSTILL_THRSLD;
     }
 
+
+    brake_pressed = false;
 
     // check if stock camera ECU is on bus 0
     generic_rx_checks((addr == 832));
