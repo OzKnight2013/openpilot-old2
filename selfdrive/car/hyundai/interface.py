@@ -16,6 +16,7 @@ class CarInterface(CarInterfaceBase):
   def __init__(self, CP, CarController, CarState):
     super().__init__(CP, CarController, CarState)
     self.buttonEvents = []
+    self.countenable = 0
     self.cp2 = self.CS.get_can2_parser(CP)
     self.lkas_button_alert = False
 
