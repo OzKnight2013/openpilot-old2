@@ -331,7 +331,7 @@ class CarInterface(CarInterfaceBase):
     if not self.CP.enableCruise:
       for b in self.buttonEvents:
         # do enable on both accel and decel buttons
-        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and not b.pressed and self.CS.cruiseStateavailable:
+        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
           events.add(EventName.buttonEnable)
           self.countenable += 1
           print("enable counter:~~~~~~~~", self.countenable)
