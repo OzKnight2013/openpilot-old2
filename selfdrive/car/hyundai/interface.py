@@ -313,7 +313,7 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
-    if (not self.CS.cruiseStateavailable) and (self.CS.cruiseStateavailable != self.CS.prev_cruiseStateavailable):
+    if not ret.cruiseState.enabled:
       print("this?????????:~~~~~~~~", self.countenable)
       events.add(EventName.pcmDisable)
 
@@ -347,7 +347,7 @@ class CarInterface(CarInterfaceBase):
     ret.events = events.to_msg()
     ret.cruiseState.available = (self.CS.cruiseStateavailable != 0)
     ret.cruiseState.enabled = ret.cruiseState.available
-    
+
     self.CS.out = ret.as_reader()
     return self.CS.out
 
