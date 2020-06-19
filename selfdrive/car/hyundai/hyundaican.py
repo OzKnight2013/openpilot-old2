@@ -1,5 +1,6 @@
 import crcmod
 from selfdrive.car.hyundai.values import CAR, CHECKSUM
+from selfdrive.controls.lib.longcontrol import LongCtrlState
 
 hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 
@@ -58,23 +59,22 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
 def create_clu11(packer, frame, bus, clu11, button, speed):
   values = clu11
 
-  #values["CF_Clu_CruiseSwState"] = button
+#  values["CF_Clu_CruiseSwState"] = button
   values["CF_Clu_Vanz"] = speed
   values["CF_Clu_AliveCnt1"] = frame // 2 % 0x10
   return packer.make_can_msg("CLU11", bus, values)
 
 def create_scc12(packer, apply_accel, enabled, brake, gas, standstill, cnt, scc12):
   values = scc12
-  if enabled and (not brake):
+  if enabled and (not brake) and (not gas):
     values["ACCMode"] = 1
-    if gas and (apply_accel >= 0):
-      values["ACCMode"] = 2
+    if (apply_accel < 0):
+      values["StopReq"] = standstill if LongCtrlState.stopping else False
   else:
     values["ACCMode"] = 0
 
   values["aReqRaw"] = apply_accel if enabled else 0 #aReqMax
   values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
-  values["StopReq"] = standstill if enabled else False
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
 

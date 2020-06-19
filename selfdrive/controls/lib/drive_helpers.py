@@ -40,10 +40,10 @@ def get_steer_max(CP, v_ego):
   return interp(v_ego, CP.steerMaxBP, CP.steerMaxV)
 
 
-def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
+def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, metric):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
-  global ButtonCnt, LongPressed, ButtonPrev, PrevDisable
+  global ButtonCnt, LongPressed, ButtonPrev, PrevDisable, CurrentVspeed
   if enabled:
     if ButtonCnt:
       ButtonCnt += 1
@@ -56,7 +56,12 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
         LongPressed = False
         ButtonCnt = 0
 
+    CurrentVspeed = clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)
+    CurrentVspeed = CurrentVspeed if metric else (CurrentVspeed * CV.KPH_TO_MPH)
+    CurrentVspeed = int(round(CurrentVspeed))
+
     v_cruise = v_cruise_kph if metric else int(round(v_cruise_kph * CV.KPH_TO_MPH))
+
     if ButtonCnt > LONG_PRESS_TIME:
       LongPressed = True
       V_CRUISE_DELTA = V_CRUISE_LONG_PRESS_DELTA_KPH if metric else V_CRUISE_LONG_PRESS_DELTA_MPH
@@ -67,9 +72,9 @@ def update_v_cruise(v_cruise_kph, buttonEvents, enabled, metric):
       ButtonCnt = FIRST_PRESS_TIME
     elif ButtonCnt == FIRST_PRESS_TIME and not LongPressed and not PrevDisable:
       if ButtonPrev == ButtonType.accelCruise:
-        v_cruise += 1
+        v_cruise = v_cruise + 1 if not gas_pressed else CurrentVspeed
       elif ButtonPrev == ButtonType.decelCruise:
-        v_cruise -= 1
+        v_cruise = v_cruise - 1 if not gas_pressed else CurrentVspeed
 
     v_cruise_min = V_CRUISE_MIN if metric else V_CRUISE_MIN * CV.KPH_TO_MPH
     v_cruise_max = V_CRUISE_MAX if metric else V_CRUISE_MAX * CV.KPH_TO_MPH
