@@ -126,6 +126,8 @@ struct CarState {
   errorsDEPRECATED @0 :List(CarEvent.EventName);
   events @13 :List(CarEvent);
 
+  leadDistance @40 : Float32;
+
   # car speed
   vEgo @1 :Float32;         # best estimate of speed
   aEgo @16 :Float32;        # best estimate of acceleration
