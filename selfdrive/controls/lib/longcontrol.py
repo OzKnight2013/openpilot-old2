@@ -89,7 +89,7 @@ class LongControl():
     output_gb = self.last_output_gb
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.gasPressed, CS.cruiseState.standstill, RadarData.dRel)
+                                                       CS.brakePressed, CS.gasPressed, CS.cruiseState.standstill, CP.dRel)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
