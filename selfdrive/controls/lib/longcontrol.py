@@ -26,7 +26,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
                              output_gb, brake_pressed, gas_pressed, cruise_standstill, dRel):
   """Update longitudinal control state machine"""
 #  stopping_condition = #(v_ego < 2.0 and cruise_standstill) or \
-  stopping_condition = (dRel < 3. and
+  stopping_condition = (dRel < 2.5 and
                         v_ego < STOPPING_EGO_SPEED and
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
                          brake_pressed))
@@ -56,10 +56,6 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
         long_control_state = LongCtrlState.pid
 
   return long_control_state
-
-
-class RadarData(object):
-  pass
 
 
 class LongControl():
