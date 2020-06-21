@@ -28,8 +28,8 @@ def accel_hysteresis(accel, accel_steady):
   return accel, accel_steady
 
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
-                      right_lane, left_lane_depart, right_lane_depart, button_on, leftBlinker, rightBlinker):
-  sys_warning = (visual_alert == VisualAlert.steerRequired) and not (leftBlinker or rightBlinker)
+                      right_lane, left_lane_depart, right_lane_depart, button_on):
+  sys_warning = (visual_alert == VisualAlert.steerRequired)
   if sys_warning:
       sys_warning = 4 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 3
 
@@ -128,7 +128,7 @@ class CarController():
     sys_warning, sys_state, left_lane_warning, right_lane_warning =\
       process_hud_alert(lkas_active, self.car_fingerprint, visual_alert,
                         left_lane, right_lane, left_lane_depart, right_lane_depart,
-                        self.lkas_button_on, CS.out.leftBlinker, CS.out.rightBlinker)
+                        self.lkas_button_on)
 
     clu11_speed = CS.clu11["CF_Clu_Vanz"]
     enabled_speed = 38 if CS.is_set_speed_in_mph  else 60
