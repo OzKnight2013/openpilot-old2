@@ -71,10 +71,10 @@ def create_scc12(packer, apply_accel, enabled, brake, gas, standstill, cnt, scc1
     if (apply_accel < 0):
       values["StopReq"] = standstill if LongCtrlState.stopping else False
   else:
-    values["ACCMode"] = 1
+    values["ACCMode"] = 0
 
-  values["aReqRaw"] = apply_accel if enabled else -1. #aReqMax
-  values["aReqValue"] = apply_accel if enabled else -1. #aReqMin
+  values["aReqRaw"] = apply_accel if enabled else 0 #aReqMax
+  values["aReqValue"] = apply_accel if enabled else 0 #aReqMin
   values["CR_VSM_Alive"] = cnt
   values["CR_VSM_ChkSum"] = 0
 
