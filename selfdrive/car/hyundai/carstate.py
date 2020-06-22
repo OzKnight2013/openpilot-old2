@@ -27,6 +27,7 @@ class CarState(CarStateBase):
     self.cruise_buttons = 0
     self.prev_cruise_buttons = 0
     self.avhActive = False
+    self.prev_spas_hmi_state = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -174,6 +175,16 @@ class CarState(CarStateBase):
     self.lca_state = cp.vl["LCA11"]["CF_Lca_Stat"]
     ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
     ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
+
+    self.prev_spas_hmi_state = self.spas_hmi_state
+    self.spas_hmi_state = cp_cam.vl["SPAS12"]["CF_Spas_HMI_Stat"]
+    self.spas_on = cp_cam.vl["SPAS12"]["CF_Spas_Disp"]
+
+    self.front_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
+                                  cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
+
+    self.rear_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
+                                  cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
 
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = cp_cam.vl["LKAS11"]
@@ -490,7 +501,20 @@ class CarState(CarStateBase):
       ("CF_Lkas_MsgCount", "LKAS11", 0),
       ("CF_Lkas_FusionState", "LKAS11", 0),
       ("CF_Lkas_FcwOpt_USM", "LKAS11", 0),
-      ("CF_Lkas_LdwsOpt_USM", "LKAS11", 0)
+      ("CF_Lkas_LdwsOpt_USM", "LKAS11", 0),
+
+      ("CF_Spas_HMI_Stat", "SPAS12", 0),
+      ("CF_Spas_Disp", "SPAS12", 0),
+
+      ("CF_Spas_FIL_Ind", "SPAS12", 0),
+      ("CF_Spas_FIR_Ind", "SPAS12", 0),
+      ("CF_Spas_FOL_Ind", "SPAS12", 0),
+      ("CF_Spas_FOR_Ind", "SPAS12", 0),
+
+      ("CF_Spas_RIL_Ind", "SPAS12", 0),
+      ("CF_Spas_RIR_Ind", "SPAS12", 0),
+      ("CF_Spas_ROL_Ind", "SPAS12", 0),
+      ("CF_Spas_ROR_Ind", "SPAS12", 0)
     ]
 
     checks = []
