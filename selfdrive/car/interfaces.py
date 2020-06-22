@@ -111,7 +111,7 @@ class CarInterfaceBase():
       events.add(EventName.speedTooHigh)
     if cs_out.brakeHold:
       events.add(EventName.brakeHold)
-    if cs_out.park_brake:
+    if cs_out.parkBrake:
       events.add(EventName.parkBrake)
     #if cs_out.cruiseState.nonAdaptive:
     #  events.add(EventName.wrongCruiseMode)
