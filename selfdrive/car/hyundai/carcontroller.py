@@ -262,13 +262,14 @@ class CarController():
       print('###############!%%!###################')
     elif self.op_spas_state > 2 and CS.spas_hmi_state == 26 \
            and CS.out.gearShifter == GearShifter.reverse:
+      if self.op_spas_state != 4:
+        self.phasecount += 1
+        print('Reverse, Phase = ', self.phasecount)
+        print('################%%####################')
+        print('##############%%%%%%##################')
+        print('################%%####################')
       self.op_spas_state = 4  # move to Reverse
       self.op_spas_brake_state = 10
-      self.phasecount += 1
-      print('Reverse, Phase = ', self.phasecount)
-      print('################%%####################')
-      print('##############%%%%%%##################')
-      print('################%%####################')
     elif self.op_spas_state > 2 and CS.prev_spas_hmi_state == 26 and CS.spas_hmi_state == 25 \
           and not CS.out.gearShifter == GearShifter.drive:
       self.op_spas_brake_state = 13  # shift to Drive
@@ -278,13 +279,14 @@ class CarController():
       print('###############!%%!###################')
     elif self.op_spas_state > 2 and CS.spas_hmi_state == 25 \
            and CS.out.gearShifter == GearShifter.drive:
-      self.op_spas_state = 5   # move in Drive
+      if self.op_spas_state != 5:
+        self.phasecount += 1
+        print('Drive, Phase = ', self.phasecount)
+        print('################%%####################')
+        print('##############%%%%%%##################')
+        print('################%%####################')
+      self.op_spas_state = 5  # move in Drive
       self.op_spas_brake_state = 10
-      self.phasecount += 1
-      print('Drive, Phase = ', self.phasecount)
-      print('################%%####################')
-      print('##############%%%%%%##################')
-      print('################%%####################')
 
     if CS.out.gearShifter == GearShifter.drive:
       if CS.front_sensor_state > 2 and self.op_spas_brake_state < 13:
@@ -329,7 +331,7 @@ class CarController():
     if self.op_spas_brake_state == 13:
       self.spas_accel = -interp(CS.out.vEgo, CONTROL3_BP, CONTROL3_A)
     elif self.op_spas_brake_state == 12:
-      self.spas_accel = -interp((CS.out.vEgo - 0.15), CONTROL2_BP, CONTROL2_A)
+      self.spas_accel = -interp((CS.out.vEgo - 0.11), CONTROL2_BP, CONTROL2_A)
     elif self.op_spas_brake_state == 11:
       self.spas_accel = -interp((CS.out.vEgo - 0.28), CONTROL1_BP, CONTROL1_A)
     else:
