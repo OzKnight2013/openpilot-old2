@@ -145,7 +145,7 @@ class CarController():
 
     clu11_speed = CS.clu11["CF_Clu_Vanz"]
     enabled_speed = 38 if CS.is_set_speed_in_mph  else 60
-    if clu11_speed > enabled_speed or not lkas_active:
+    if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter == GearShifter.reverse:
       enabled_speed = clu11_speed
 
     if CS.is_set_speed_in_mph:
@@ -292,7 +292,7 @@ class CarController():
         print('##$$$$$$$$$$$##!!!!!!!!!!!!%%!!!!!!!!!!!!!!!!##$$$$$$$$$$$##')
         print('***#######$$$##!!!%%%%%%!!!##$$$###########*****************')
         print('@@@@@###############!%%!###################@@@@@@@@@@@@@@@@@')
-      elif CS.front_sensor_state == 1 and self.op_spas_brake_state == 11:
+      elif CS.front_sensor_state == 2 and self.op_spas_brake_state == 11:
         self.op_spas_brake_state = 12
         print('Brake for Front Sensor =', CS.front_sensor_state)
         print('##$$$$$$$$$$$##!!!!!!!!!!!!%%!!!!!!!!!!!!!!!!##$$$$$$$$$$$##')
@@ -306,7 +306,7 @@ class CarController():
         print('##$$$$$$$$$$$##!!!!!!!!!!!!%%!!!!!!!!!!!!!!!!##$$$$$$$$$$$##')
         print('***#######$$$##!!!%%%%%%!!!##$$$###########*****************')
         print('@@@@@###############!%%!###################@@@@@@@@@@@@@@@@@')
-      elif CS.rear_sensor_state == 1 and self.op_spas_brake_state == 11:
+      elif CS.rear_sensor_state == 2 and self.op_spas_brake_state == 11:
         self.op_spas_brake_state = 12
         print('Brake for Front Sensor =', CS.rear_sensor_state)
         print('##$$$$$$$$$$$##!!!!!!!!!!!!%%!!!!!!!!!!!!!!!!##$$$$$$$$$$$##')
