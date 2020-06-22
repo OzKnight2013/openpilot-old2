@@ -209,10 +209,10 @@ class CarController():
     # reverse parking left - 18
     # parallel parking right - 19
     # parking exit left - 40
-    if CS.spas_on:
-      if self.op_spas_state == -1:
-        print('SPAS ON')
+    if CS.spas_on and self.op_spas_state == -1:
+      print('SPAS ON')
       self.op_spas_state = 0  # SPAS enabled
+
 
     if self.op_spas_state == 0 and \
        ((CS.prev_spas_hmi_state != 18 and CS.spas_hmi_state == 18) or
