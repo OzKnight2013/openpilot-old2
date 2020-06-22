@@ -26,7 +26,6 @@ class CarState(CarStateBase):
     self.prev_cruiseStateavailable = 0
     self.cruise_buttons = 0
     self.prev_cruise_buttons = 0
-    self.avhActive = False
     self.prev_spas_hmi_state = 0
 
   def update(self, cp, cp2, cp_cam):
@@ -73,11 +72,11 @@ class CarState(CarStateBase):
 
     # if no lead then allow AVH and wait for gas press to disable AVH
     if (cp.vl["ESP11"]['AVH_STAT'] == 1) and (cp_scc.vl["SCC11"]['ACC_ObjStatus'] == 0):
-      self.avhActive = True
+      ret.brakeHold = True
     elif ret.gasPressed or ret.vEgo > 0.3:
-      self.avhActive = False
+      ret.brakeHold = False
 
-    ret.brakeHold = self.avhActive
+   
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
