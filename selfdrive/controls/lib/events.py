@@ -517,8 +517,8 @@ EVENTS = {
   EventName.brakeHold: {
     ET.WARNING: Alert(
       "Auto Hold Active - Press Gas to continue",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.MID, VisualAlert.none, AudibleAlert.chimeWarning2Repeat, 0., 0., 0.),
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
   },
 
   EventName.parkBrake: {
