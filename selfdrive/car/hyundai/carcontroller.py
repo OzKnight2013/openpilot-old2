@@ -108,7 +108,7 @@ class CarController():
     # gas and brake
     apply_accel = actuators.gas - actuators.brake
 
-    if not CS.out.spas_on:
+    if not CS.out.spasOn:
       apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
@@ -219,7 +219,7 @@ class CarController():
     # reverse parking left - 18
     # parallel parking right - 19
     # parking exit left - 40
-    if CS.out.spas_on and self.op_spas_state == -1:
+    if CS.out.spasOn and self.op_spas_state == -1:
       print('SPAS ON')
       self.op_spas_state = 0  # SPAS enabled
 
@@ -367,7 +367,7 @@ class CarController():
     elif not self.op_spas_speed_control:
       self.spas_accel = 0.
 
-    if not CS.out.spas_on or CS.out.vEgo > 2. or self.gear_shift == GearShifter.park:
+    if not CS.out.spasOn or CS.out.vEgo > 2. or self.gear_shift == GearShifter.park:
       self.op_spas_state = -1  # no control
       self.op_spas_brake_state = 0
       self.spas_accel = 0.
