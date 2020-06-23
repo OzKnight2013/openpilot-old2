@@ -358,8 +358,8 @@ class CarController():
         self.i_part += self.error * 0.005
       else:
         self.p_part = self.error * 0.1
-        self.i_part += self.error * 0.005
-      self.spas_accel = min(-(self.p_part + self.i_part + 0.3), 0.)
+        self.i_part += self.error * 0.007
+      self.spas_accel = min(-(self.p_part + self.i_part + 0.5), 0.)
     else:
       if CS.out.brakePressed:
         self.i_part = 0.3
