@@ -339,7 +339,7 @@ class CarController():
     if self.op_spas_speed_control:
       if not CS.out.standstill and not CS.out.gasPressed and not CS.out.brakePressed \
             and not self.gear_shift == GearShifter.park and self.gear_shift == self.prev_gear_shift:
-        self.target = 0.28
+        self.target = 0.56
         self.target = min(self.target, CS.out.vEgo + 0.14)
         self.target = min(self.target, self.prev_target + 0.001)
         self.error = (CS.out.vEgo - self.target)
