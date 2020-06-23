@@ -350,7 +350,7 @@ class CarController():
     self.prev_target = self.target
     if CS.out.vEgo > 0.and not CS.out.gearShifter == GearShifter.park:
       self.op_spas_state = 1
-      self.target = min(0.28, CS.out.vEgo + 0.03)
+      self.target = min(0.28, max(self.target, CS.out.vEgo + 0.03))
       self.target = min(self.target, self.prev_target + 0.001)
       self.error = (CS.out.vEgo - self.target)
       if self.error > 0:
