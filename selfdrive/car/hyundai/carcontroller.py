@@ -353,11 +353,13 @@ class CarController():
       self.target = 0.28
       self.target = min(self.target, self.prev_target + 0.002)
       self.error = (CS.out.vEgo - self.target)
-      self.p_part = self.error * 1.
+      self.p_part = self.error * 0.5
       self.i_part += self.error * 0.008
-      self.spas_accel = min(-(self.p_part + self.i_part + 0.1), 0.)
+      self.spas_accel = min(-(self.p_part + self.i_part + 0.05), 0.)
     else:
       self.i_part = 0.
+      self.target = 0.
+      self.target = max(self.target, self.prev_target - 0.004)
     self.spas_count += 1
     if self.spas_count > 50:
       if self.prev_spas_accel != self.spas_accel:
