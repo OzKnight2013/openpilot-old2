@@ -348,7 +348,7 @@ class CarController():
 
     if CS.out.vEgo > 0.:
       self.op_spas_state = 1
-      self.spas_accel = min(-(CS.out.vEgo - 0.14) * 5., 0) #interp((CS.out.vEgo - 0.28), CONTROL1_BP, CONTROL1_A)
+      self.spas_accel = min(-(CS.out.vEgo - 0.14) * 2., 0) #interp((CS.out.vEgo - 0.28), CONTROL1_BP, CONTROL1_A)
 
     self.spas_count += 1
     if self.spas_count > 50:
