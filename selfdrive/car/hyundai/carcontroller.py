@@ -348,9 +348,9 @@ class CarController():
 
     if CS.out.vEgo > 0.:
       self.op_spas_state = 1
-      self.error = (CS.out.vEgo - 0.14)
+      self.error = (CS.out.vEgo - 0.28)
       self.p_part = self.error * 2.
-      self.i_part += self.error * 0.02
+      self.i_part += self.error * 0.008
       self.spas_accel = min(-(self.p_part + self.i_part), 0.)
     else:
       self.i_part = 0.
