@@ -95,7 +95,9 @@ class CarController():
     self.op_spas_speed_control = False
     self.spas_count = 0
     self.op_spas_sensor_brake_state = 0
-    self.target = 0
+    self.target = 0.
+    self.p_part = 0.
+    self.i_part = 0.
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
