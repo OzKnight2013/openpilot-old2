@@ -293,8 +293,10 @@ class CarController():
 
     if self.op_spas_state > 1 and (CS.out.gearShifter == GearShifter.drive and CS.front_sensor_state > 0 or
                                    CS.out.gearShifter == GearShifter.reverse and CS.rear_sensor_state > 0):
-      self.op_spas_sensor_brake_state = CS.front_sensor_state if CS.out.gearShifter == GearShifter.drive\
-        else self.op_spas_sensor_brake_state = CS.rear_sensor_state
+      if CS.out.gearShifter == GearShifter.drive:
+        self.op_spas_sensor_brake_state = CS.front_sensor_state
+      else:
+        self.op_spas_sensor_brake_state = CS.rear_sensor_state
       if self.op_spas_sensor_brake_state != self.prev_op_spas_sensor_brake_state:
         if self.op_spas_sensor_brake_state > 2:
           print('Brake for Sensor =', self.op_spas_sensor_brake_state)
