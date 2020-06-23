@@ -356,8 +356,8 @@ class CarController():
       self.target = min(self.target, self.prev_target + 0.001)
       self.error = (CS.out.vEgo - self.target)
       if self.error > 0.:
-        self.p_part = self.error * 0.5
-        self.i_part += self.error * 0.01
+        self.p_part = self.error * 0.8
+        self.i_part += self.error * 0.03
       elif self.error < -0.05:
         self.p_part = self.error * 0.1
         self.i_part += self.error * 0.07
