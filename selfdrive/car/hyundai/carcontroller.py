@@ -347,24 +347,24 @@ class CarController():
       self.prev_spas_accel = 0.
       self.op_spas_speed_control = False
 
-    #self.prev_target = self.target
-    #if CS.out.vEgo > 0. and not CS.out.gearShifter == GearShifter.park:
-    #  self.op_spas_state = 1
-    #  self.target = 0.28
-    #  self.target = min(self.target, self.prev_target + 0.001)
-    #  self.error = (CS.out.vEgo - self.target)
-    #  if self.error > 0:
-    #    self.p_part = self.error * 0.1
-    #    self.i_part += self.error * 0.005
-    #  else:
-    #    self.p_part = self.error * 0.1
-    #    self.i_part += self.error * 0.007
-    #  self.spas_accel = min(-(self.p_part + self.i_part + 0.5), 0.)
-    #else:
-    #  if CS.out.brakePressed:
-    #    self.i_part = 0.3
-    #    print('CS.out.vEgo')
-    #  self.target = 0.
+    self.prev_target = self.target
+    if not CS.out.brakePressed and not CS.out.gearShifter == GearShifter.park:
+      self.op_spas_state = 1
+      self.target = 0.28
+      self.target = min(self.target, self.prev_target + 0.001)
+      self.error = (CS.out.vEgo - self.target)
+      if self.error > 0:
+        self.p_part = self.error * 0.1
+        self.i_part += self.error * 0.005
+      else:
+        self.p_part = self.error * 0.1
+        self.i_part += self.error * 0.007
+      self.spas_accel = min(-(self.p_part + self.i_part + 0.5), 0.)
+    else:
+      self.i_part = 0.3
+      if CS.out.brakePressed and CS.out.gearShifter == GearShifter.park:
+        print('CS.out.vEgo')
+      self.target = 0.
 
     self.spas_count += 1
     if self.spas_count > 50:
