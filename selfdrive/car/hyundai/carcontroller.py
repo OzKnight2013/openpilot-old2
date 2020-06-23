@@ -356,7 +356,7 @@ class CarController():
       self.target = min(self.target, self.prev_target + 0.001)
       self.error = (CS.out.vEgo - self.target)
       if self.error > 0.: # brake
-        self.p_part = self.error * 0.8
+        self.p_part = self.error * 1.2
         self.i_part += self.error * 0.03
       elif self.error < 0.: # release
         self.p_part =  self.error * 0.3
