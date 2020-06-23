@@ -355,7 +355,7 @@ class CarController():
       self.error = (CS.out.vEgo - self.target)
       if self.error > 0:
         self.p_part = self.error * 0.1
-        self.i_part += self.error * 0.005
+        self.i_part += self.error * 0.01
       else:
         self.p_part = self.error * 0.1
         self.i_part += self.error * 0.007
