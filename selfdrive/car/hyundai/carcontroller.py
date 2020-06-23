@@ -348,9 +348,9 @@ class CarController():
       self.op_spas_speed_control = False
 
     self.prev_target = self.target
-    if CS.out.vEgo > 0.and not CS.out.gearShifter == GearShifter.park:
+    if CS.out.vEgo > 0. and not CS.out.gearShifter == GearShifter.park:
       self.op_spas_state = 1
-      self.target = min(0.28, max(self.target, CS.out.vEgo + 0.03))
+      self.target = min(0.28, CS.out.vEgo + 0.03)
       self.target = min(self.target, self.prev_target + 0.001)
       self.error = (CS.out.vEgo - self.target)
       if self.error > 0:
@@ -361,7 +361,7 @@ class CarController():
         self.i_part += self.error * 0.01
       self.spas_accel = min(-(self.p_part + self.i_part + 0.3), 0.)
     else:
-      self.i_part = 0.
+      self.i_part = 0.3
       self.target = 0.
 
     self.spas_count += 1
