@@ -95,6 +95,7 @@ class CarController():
     self.op_spas_speed_control = False
     self.spas_count = 0
     self.op_spas_sensor_brake_state = 0
+    self.target = 0
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
@@ -346,12 +347,15 @@ class CarController():
       self.prev_spas_accel = 0.
       self.op_spas_speed_control = False
 
+    self.prev_target = self.target
     if CS.out.vEgo > 0.:
       self.op_spas_state = 1
-      self.error = (CS.out.vEgo - 0.28)
+      self.target = 0.28
+      self.target = min(self.target, self.prev_target + 0.002)
+      self.error = (CS.out.vEgo - self.target)
       self.p_part = self.error * 1.
       self.i_part += self.error * 0.008
-      self.spas_accel = min(-(self.p_part + self.i_part), 0.)
+      self.spas_accel = min(-(self.p_part + self.i_part + 0.1), 0.)
     else:
       self.i_part = 0.
     self.spas_count += 1
