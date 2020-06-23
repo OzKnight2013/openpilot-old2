@@ -28,8 +28,8 @@ class CarState(CarStateBase):
     self.prev_cruise_buttons = 0
     self.spas_hmi_state = 0
     self.prev_spas_hmi_state = 0
-    self.front_sensor_stat = 0
-    self.rear_sensor_stat = 0
+    self.front_sensor_state = 0
+    self.rear_sensor_state = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
