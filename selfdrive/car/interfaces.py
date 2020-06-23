@@ -93,8 +93,8 @@ class CarInterfaceBase():
     #  events.add(EventName.seatbeltNotLatched)
     #if cs_out.gearShifter != GearShifter.drive and cs_out.gearShifter not in extra_gears:
     #  events.add(EventName.wrongGear)
-    #if cs_out.gearShifter == GearShifter.reverse:
-    #  events.add(EventName.reverseGear)
+    if cs_out.gearShifter == GearShifter.reverse:
+      events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
@@ -116,10 +116,10 @@ class CarInterfaceBase():
     #if cs_out.cruiseState.nonAdaptive:
     #  events.add(EventName.wrongCruiseMode)
 
-    #if cs_out.steerError:
-    #  events.add(EventName.steerUnavailable)
-    #elif cs_out.steerWarning:
-    #  events.add(EventName.steerTempUnavailable)
+    if cs_out.steerError:
+      events.add(EventName.steerUnavailable)
+    elif cs_out.steerWarning:
+      events.add(EventName.steerTempUnavailable)
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
     # Optionally allow to press gas at zero speed to resume.
