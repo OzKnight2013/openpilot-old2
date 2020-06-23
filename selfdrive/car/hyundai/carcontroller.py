@@ -359,7 +359,7 @@ class CarController():
         self.p_part = self.error * 0.8
         self.i_part += self.error * 0.03
       elif self.error < -0.05:
-        self.p_part = self.error * 0.1
+        self.p_part = self.error * 0.3
         self.i_part += self.error * 0.07
       self.i_part = min(self.i_part, 0.5)
       self.spas_accel = min(-(self.p_part + self.i_part + 0.5), 0.)
