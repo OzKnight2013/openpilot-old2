@@ -359,12 +359,10 @@ class CarController():
         self.i_part += self.error * 0.01
       else:
         self.p_part = self.error * 0.1
-        self.i_part += self.error * 0.007
+        self.i_part += self.error * 0.07
       self.spas_accel = min(-(self.p_part + self.i_part + 0.5), 0.)
     else:
       self.i_part = 0.3
-      if CS.out.brakePressed and CS.out.gearShifter == GearShifter.park:
-        print('stop speed', CS.out.vEgo)
       self.target = 0.
 
     self.spas_count += 1
