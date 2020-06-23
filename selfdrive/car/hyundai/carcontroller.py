@@ -339,13 +339,6 @@ class CarController():
     else:
       self.spas_accel = 0.
 
-    self.spas_count += 1
-    if self.spas_count > 50:
-      if self.prev_spas_accel != self.spas_accel:
-        print('SPAS ACCEL', self.spas_accel)
-        self.prev_spas_accel = self.spas_accel
-      self.spas_count = 0
-
     if not CS.spas_on or CS.out.vEgo > 2. or CS.out.gearShifter == GearShifter.park:
       self.op_spas_state = -1  # no control
       self.op_spas_brake_state = 0
@@ -355,7 +348,14 @@ class CarController():
 
     if CS.out.vEgo > 0.12:
       self.op_spas_state = 1
-      self.spas_accel = -interp((CS.out.vEgo - 0.28), CONTROL1_BP, CONTROL1_A)
+      self.spas_accel = -0.2 #interp((CS.out.vEgo - 0.28), CONTROL1_BP, CONTROL1_A)
+
+    self.spas_count += 1
+    if self.spas_count > 50:
+      if self.prev_spas_accel != self.spas_accel:
+        print('SPAS ACCEL', self.spas_accel)
+        self.prev_spas_accel = self.spas_accel
+      self.spas_count = 0
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
     if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,
