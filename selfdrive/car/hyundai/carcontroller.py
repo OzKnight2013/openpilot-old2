@@ -394,7 +394,7 @@ class CarController():
       self.spas_paused = False
 
     ret = car.CarState.new_message()
-    ret.spasTarget = self.target
+    ret.spasTarget = self.target + 20.
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
     if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0: 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,

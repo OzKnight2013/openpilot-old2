@@ -278,7 +278,7 @@ class Controls:
         self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.vEgo, CS.gasPressed, CS.buttonEvents, self.enabled, self.is_metric)
     elif self.CP.enableCruise and CS.cruiseState.enabled:
       self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
-        
+
     self.v_cruise_kph = CS.spasTarget
     # decrease the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
