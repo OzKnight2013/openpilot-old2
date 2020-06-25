@@ -1,5 +1,6 @@
 
 from cereal import car
+from selfdrive.car.hyundai import carcontroller
 from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
@@ -37,7 +38,6 @@ class CarState(CarStateBase):
     cp_mdps = cp2 if self.mdps_bus else cp
     cp_sas = cp2 if self.sas_bus else cp
     cp_scc = cp2 if self.scc_bus == 1 else cp_cam if self.scc_bus == 2 else cp
-    cc = car.carcontroller.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_cruise_main_button = self.cruise_main_button
@@ -190,8 +190,6 @@ class CarState(CarStateBase):
       self.spasOn = False if ret.gearShifter == GearShifter.park or ret.gasPressed or ret.brakePressed else True
 
     ret.spasOn = self.spasOn != 0
-
-    ret.spasTarget = cc.target
 
     self.prev_front_sensor_state = self.front_sensor_state
     self.front_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
