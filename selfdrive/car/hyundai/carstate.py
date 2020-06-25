@@ -1,4 +1,3 @@
-from selfdrive.car.hyundai.carcontroller import target
 
 from cereal import car
 from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES
