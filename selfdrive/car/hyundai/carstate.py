@@ -32,7 +32,7 @@ class CarState(CarStateBase):
     self.rear_sensor_state = 0
     self.spasOn = 0
 
-  def update(self, cp, cp2, cp_cam):
+  def update(self, cp, cp2, cp_cam, cc):
     cp_mdps = cp2 if self.mdps_bus else cp
     cp_sas = cp2 if self.sas_bus else cp
     cp_scc = cp2 if self.scc_bus == 1 else cp_cam if self.scc_bus == 2 else cp
@@ -188,6 +188,8 @@ class CarState(CarStateBase):
       self.spasOn = False if ret.gearShifter == GearShifter.park or ret.gasPressed or ret.brakePressed else True
 
     ret.spasOn = self.spasOn != 0
+
+    ret.spasTarget = cc.target
     self.prev_front_sensor_state = self.front_sensor_state
     self.front_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
                                   cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
