@@ -204,9 +204,7 @@ def wrong_car_mode_alert(CP, sm, metric):
 EVENTS = {
   # ********** events with no alerts **********
 
-  #EventName.gasPressed: {ET.PRE_ENABLE: None},
-
-  #EventName.laneChangeBlocked: {},
+  EventName.gasPressed: {ET.PRE_ENABLE: None},
 
   # ********** events only containing alerts displayed in all states **********
 
@@ -443,6 +441,14 @@ EVENTS = {
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
   },
 
+  EventName.laneChangeBlocked: {
+    ET.WARNING: Alert(
+      "Car Detected in Blindspot",
+      "Monitor Other Vehicles",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+  },
+
   EventName.laneChange: {
     ET.WARNING: Alert(
       "Changing Lane",
@@ -458,47 +464,6 @@ EVENTS = {
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
-
-  EventName.turningIndicatorOn: {
-    ET.WARNING: Alert(
-      "TAKE CONTROL",
-      "Steer Unavailable while Turning",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .0, .2),
-  },
-
-  EventName.lkasButtonOff: {
-    ET.WARNING: Alert(
-      "lkasButtonOff",
-      "LKAS button off",
-      "",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .1),
-  },
-
-   EventName.rightBlindspot: {
-     ET.WARNING: Alert(
-       "Vehicle in Right Lane",
-       "Waiting for Lane to be clear",
-       AlertStatus.userPrompt, AlertSize.mid,
-       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
-   },
-
-   EventName.leftBlindspot: {
-     ET.WARNING: Alert(
-       "Vehicle in Left Lane",
-       "Waiting for Lane to be clear",
-       AlertStatus.userPrompt, AlertSize.mid,
-       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
-   },
-
-   EventName.preventLaneChange: {
-     ET.WARNING: Alert(
-       "TAKE CONTROL",
-       "Lane Change Cancelled, Lane Unsafe",
-       AlertStatus.critical, AlertSize.full,
-       Priority.HIGH, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
-   },
 
   # ********** events that affect controls state transitions **********
 
@@ -519,15 +484,12 @@ EVENTS = {
   },
 
   EventName.brakeHold: {
-    ET.WARNING: Alert(
-      "Auto Hold Active",
-      "Press Gas to continue",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.NO_ENTRY: NoEntryAlert("Brake Hold Active"),
   },
 
   EventName.parkBrake: {
-    ET.WARNING: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
     ET.NO_ENTRY: NoEntryAlert("Park Brake Engaged"),
   },
 
@@ -652,11 +614,6 @@ EVENTS = {
   EventName.espDisabled: {
     ET.SOFT_DISABLE: SoftDisableAlert("ESP Off"),
     ET.NO_ENTRY: NoEntryAlert("ESP Off"),
-  },
-
-  EventName.brakeUnavailable: {
-    ET.SOFT_DISABLE: SoftDisableAlert("Brakes Unavailable - Restart vehicle"),
-    ET.NO_ENTRY: NoEntryAlert("Brakes Unavailable - Restart vehicle"),
   },
 
   EventName.lowBattery: {
