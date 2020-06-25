@@ -271,15 +271,13 @@ class Controls:
     self.v_cruise_kph_last = self.v_cruise_kph
 
     # if stock cruise is completely disabled, then we can use our own set speed logic
-    if not self.CP.enableCruise:
-      if CS.spasOn:
-        self.v_cruise_kph = CS.spasTarget
-      else:
+    if CS.spasOn:
+      self.v_cruise_kph = CS.spasTarget
+    elif not self.CP.enableCruise:
         self.v_cruise_kph = update_v_cruise(self.v_cruise_kph, CS.vEgo, CS.gasPressed, CS.buttonEvents, self.enabled, self.is_metric)
     elif self.CP.enableCruise and CS.cruiseState.enabled:
       self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
-    self.v_cruise_kph = CS.spasTarget
     # decrease the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
     self.soft_disable_timer = max(0, self.soft_disable_timer - 1)
