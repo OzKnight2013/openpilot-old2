@@ -1,3 +1,5 @@
+from selfdrive.car.hyundai.carcontroller import target
+
 from cereal import car
 from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES
 from selfdrive.car.interfaces import CarStateBase
@@ -32,10 +34,11 @@ class CarState(CarStateBase):
     self.rear_sensor_state = 0
     self.spasOn = 0
 
-  def update(self, cp, cp2, cp_cam, cc):
+  def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
     cp_sas = cp2 if self.sas_bus else cp
     cp_scc = cp2 if self.scc_bus == 1 else cp_cam if self.scc_bus == 2 else cp
+    cc = car.carcontroller.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_cruise_main_button = self.cruise_main_button
@@ -190,6 +193,7 @@ class CarState(CarStateBase):
     ret.spasOn = self.spasOn != 0
 
     ret.spasTarget = cc.target
+
     self.prev_front_sensor_state = self.front_sensor_state
     self.front_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
                                   cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
