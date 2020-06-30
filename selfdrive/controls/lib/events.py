@@ -188,10 +188,10 @@ def calibration_incomplete_alert(CP, sm, metric):
     Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
 
 def no_gps_alert(CP, sm, metric):
-  two = sm['health'].hwType == log.HealthData.HwType.uno
+  gps_integrated = sm['health'].hwType in [log.HealthData.HwType.uno, log.HealthData.HwType.dos]
   return Alert(
     "Poor GPS reception",
-    "If sky is visible, contact support" if two else "Check GPS antenna placement",
+    "If sky is visible, contact support" if gps_integrated else "Check GPS antenna placement",
     AlertStatus.normal, AlertSize.mid,
     Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2, creation_delay=300.)
 
@@ -203,8 +203,6 @@ def wrong_car_mode_alert(CP, sm, metric):
 
 EVENTS = {
   # ********** events with no alerts **********
-
-  EventName.gasPressed: {ET.PRE_ENABLE: None},
 
   # ********** events only containing alerts displayed in all states **********
 
@@ -328,10 +326,18 @@ EVENTS = {
       "TAKE CONTROL",
       "Lane Departure Detected",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., 2., 3.),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
   },
 
   # ********** events only containing alerts that display while engaged **********
+
+  EventName.gasPressed: {
+    ET.PRE_ENABLE: Alert(
+      "openpilot will not brake while gas pressed",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .0, .0, .1),
+  },
 
   EventName.vehicleModelInvalid: {
     ET.WARNING: Alert(
@@ -430,7 +436,7 @@ EVENTS = {
       "Steer Left to Start Lane Change",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
   },
 
   EventName.preLaneChangeRight: {
@@ -438,7 +444,7 @@ EVENTS = {
       "Steer Right to Start Lane Change",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
   },
 
   EventName.laneChangeBlocked: {
@@ -446,7 +452,7 @@ EVENTS = {
       "Car Detected in Blindspot",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1),
   },
 
   EventName.laneChange: {
@@ -454,7 +460,7 @@ EVENTS = {
       "Changing Lane",
       "Monitor Other Vehicles",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1),
   },
 
   EventName.steerSaturated: {
@@ -462,7 +468,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Turn Exceeds Steering Limit",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
   },
 
   # ********** events that affect controls state transitions **********
@@ -514,7 +520,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Steering Temporarily Unavailable",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 0., 0., .2),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3.),
     ET.NO_ENTRY: NoEntryAlert("Steering Temporarily Unavailable",
                               duration_hud_alert=0.),
   },
@@ -699,8 +705,8 @@ EVENTS = {
   },
 
   EventName.reverseGear: {
-    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
-    ET.NO_ENTRY: NoEntryAlert("Shift Gear to Drive"),
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Reverse Gear"),
+    ET.NO_ENTRY: NoEntryAlert("Reverse Gear"),
   },
 
   EventName.cruiseDisabled: {
