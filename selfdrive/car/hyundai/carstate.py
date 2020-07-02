@@ -36,8 +36,8 @@ class CarState(CarStateBase):
     ret.steerWarning = cp.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0
 
     # cruise state
-    ret.cruiseState.available = True
-    ret.cruiseState.enabled = cp.vl["SCC12"]['ACCMode'] != 0
+    ret.cruiseState.available = cp.vl["SCC11"]['MainMode_ACC'] != 0
+    ret.cruiseState.enabled = cp.vl["SCC12"]['ACCMode'] != 0 or ret.cruiseState.available != 0
     ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
     if ret.cruiseState.enabled:

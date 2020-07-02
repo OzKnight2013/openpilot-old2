@@ -112,9 +112,9 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if (addr == 1057) {
+    if (addr == 1056) {
       // 2 bits: 13-14
-      int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
+      int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
       }
@@ -124,14 +124,14 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       cruise_engaged_prev = cruise_engaged;
     }
 
-    if ((addr == 608) || (hyundai_legacy && (addr == 881))) {
-      if (addr == 608) {
-        gas_pressed = (GET_BYTE(to_push, 7) >> 6) != 0;
-      } else {
-        gas_pressed = (((GET_BYTE(to_push, 4) & 0x7F) << 1) | GET_BYTE(to_push, 3) >> 7) != 0;
-      }
-    }
-
+//    if ((addr == 608) || (hyundai_legacy && (addr == 881))) {
+//      if (addr == 608) {
+//        gas_pressed = (GET_BYTE(to_push, 7) >> 6) != 0;
+//      } else {
+//       gas_pressed = (((GET_BYTE(to_push, 4) & 0x7F) << 1) | GET_BYTE(to_push, 3) >> 7) != 0;
+//      }
+//    }
+    gas_pressed = false;
     // sample wheel speed, averaging opposite corners
     if (addr == 902) {
       int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
@@ -140,9 +140,11 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       vehicle_moving = hyundai_speed > HYUNDAI_STANDSTILL_THRSLD;
     }
 
-    if (addr == 916) {
-      brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
-    }
+    brake_pressed = false;
+
+//    if (addr == 916) {
+//      brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
+//    }
 
     generic_rx_checks((addr == 832));
   }
