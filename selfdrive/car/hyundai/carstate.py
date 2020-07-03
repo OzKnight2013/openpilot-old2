@@ -94,6 +94,8 @@ class CarState(CarStateBase):
         self.cruiseStateavailable = 0
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
+    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0)
+
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 

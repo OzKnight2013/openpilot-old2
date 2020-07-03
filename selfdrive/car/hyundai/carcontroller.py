@@ -74,7 +74,7 @@ class CarController():
     self.resume_cnt = 0
     self.last_resume_frame = 0
     self.last_lead_distance = 0
-    self.longcontrol = True #TODO: make auto
+    self.longcontrol = False #TODO: make auto
     self.fs_error = False
     self.update_live = False
     self.scc_live = not CP.radarOffCan

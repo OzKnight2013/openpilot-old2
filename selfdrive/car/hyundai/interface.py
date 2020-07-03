@@ -231,7 +231,7 @@ class CarInterface(CarInterfaceBase):
     # most HKG cars has no long control, it is safer and easier to engage by main on
 #    if not self.CP.openpilotLongitudinalControl:
 #      ret.cruiseState.enabled = ret.cruiseState.available
-    ret.cruiseState.enabled = ret.cruiseState.available
+#    ret.cruiseState.enabled = ret.cruiseState.available
 
     # turning indicator alert logic
     if (ret.leftBlinker or ret.rightBlinker) and ret.vEgo < 10.:
