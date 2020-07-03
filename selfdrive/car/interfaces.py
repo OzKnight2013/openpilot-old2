@@ -93,7 +93,7 @@ class CarInterfaceBase():
     #  events.add(EventName.seatbeltNotLatched)
     #if cs_out.gearShifter != GearShifter.drive and cs_out.gearShifter not in extra_gears:
     #  events.add(EventName.wrongGear)
-    if cs_out.gearShifter == GearShifter.reverse:
+    if not cs_out.spasOn and cs_out.gearShifter == GearShifter.reverse:
       events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
@@ -101,12 +101,18 @@ class CarInterfaceBase():
       events.add(EventName.espDisabled)
     #if cs_out.gasPressed:
     #  events.add(EventName.gasPressed)
+    if cs_out.brakeUnavailable:
+      events.add(EventName.brakeUnavailable)
     if cs_out.stockFcw:
       events.add(EventName.stockFcw)
     if cs_out.stockAeb:
       events.add(EventName.stockAeb)
     if cs_out.vEgo > MAX_CTRL_SPEED:
       events.add(EventName.speedTooHigh)
+    if cs_out.brakeHold:
+      events.add(EventName.brakeHold)
+    if cs_out.parkBrake:
+      events.add(EventName.parkBrake)
     if cs_out.cruiseState.nonAdaptive:
       events.add(EventName.wrongCruiseMode)
 
@@ -149,7 +155,7 @@ class CarStateBase:
   def __init__(self, CP):
     self.CP = CP
     self.car_fingerprint = CP.carFingerprint
-    self.cruise_buttons = 0
+    #self.cruise_buttons = 0
     self.out = car.CarState.new_message()
 
     # Q = np.matrix([[10.0, 0.0], [0.0, 100.0]])

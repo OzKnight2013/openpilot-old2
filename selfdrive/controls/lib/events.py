@@ -326,7 +326,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Lane Departure Detected",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 1., 2., 3.),
   },
 
   # ********** events only containing alerts that display while engaged **********
@@ -468,7 +468,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Turn Exceeds Steering Limit",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
   # ********** events that affect controls state transitions **********
