@@ -101,7 +101,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if (addr == 1056 && (bus != 1 || !hyundai_LCAN_on_bus1)) {
+    if ((1) || (addr == 1056 && (bus != 1 || !hyundai_LCAN_on_bus1))) {
       hyundai_has_scc = true;
       car_SCC_live = 50;
       int cruise_engaged;
