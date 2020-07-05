@@ -307,6 +307,8 @@ class CarState(CarStateBase):
       ("AEB_StopReq", "SCC12", 0),
       ("CR_VSM_Alive", "SCC12", 0),
       ("CR_VSM_ChkSum", "SCC12", 0),
+
+      ("Accel_Pedal_Pos", "E_EMS11", 0),
     ]
 
     checks = [
