@@ -226,7 +226,7 @@ class CarInterface(CarInterfaceBase):
 #    elif self.CC.scc_live and not self.CP.enableCruise:
 #      self.CP.enableCruise = True
 
-    self.CP.enableCruise = True
+    self.CP.enableCruise = False
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
 #    if not self.CP.openpilotLongitudinalControl:
