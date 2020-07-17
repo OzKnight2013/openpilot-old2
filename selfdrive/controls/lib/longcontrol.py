@@ -1,18 +1,20 @@
 from cereal import log
 from common.numpy_fast import clip, interp
-from selfdrive.controls.lib.pid import PIController
+from selfdrive.controls.lib.pid import PIDController
 
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 0.5
+STOPPING_EGO_SPEED = 1.1
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
-STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
+STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.1
 STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
-BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
+STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
+STARTING_BRAKE_RATE = 0.2  # brake_travel/s while releasing on restart
+
+BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .7, .0]
+BRAKE_STOPPING_TARGET_D = [.075, .07, .065, .045]  # apply at least this amount of brake to maintain the vehicle stationary
 
 _MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
 _MAX_SPEED_ERROR_V = [1.5, .8]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
@@ -21,16 +23,17 @@ RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, cruise_standstill):
+                             output_gb, brake_pressed, gas_pressed, avh_active, op_paused, spas_on,cruise_standstill, dRel):
   """Update longitudinal control state machine"""
-  stopping_condition = (v_ego < 2.0 and cruise_standstill) or \
-                       (v_ego < STOPPING_EGO_SPEED and
+#  stopping_condition = #(v_ego < 2.0 and cruise_standstill) or \
+  stopping_condition = (dRel < 2.5 and
+                        v_ego < STOPPING_EGO_SPEED and
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
-                        brake_pressed))
+                         brake_pressed))
 
-  starting_condition = v_target > STARTING_TARGET_SPEED and not cruise_standstill
+  starting_condition = v_target > STARTING_TARGET_SPEED # and not cruise_standstill
 
-  if not active:
+  if (not active) or brake_pressed or gas_pressed or (avh_active and not spas_on) or op_paused:
     long_control_state = LongCtrlState.off
 
   else:
@@ -58,11 +61,17 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
 class LongControl():
   def __init__(self, CP, compute_gb):
     self.long_control_state = LongCtrlState.off  # initialized to off
-    self.pid = PIController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
-                            (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                            rate=RATE,
-                            sat_limit=0.8,
-                            convert=compute_gb)
+
+    kdBP = [0., 16., 35.]
+    kdV = [0.08, 1.215, 2.51]
+
+    self.pid = PIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
+                             (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
+                             (CP.longitudinalTuning.kfBP, CP.longitudinalTuning.kfV),
+                             (kdBP, kdV),
+                             rate=RATE,
+                             sat_limit=0.8,
+                             convert=compute_gb)
     self.v_pid = 0.0
     self.last_output_gb = 0.0
 
@@ -76,12 +85,15 @@ class LongControl():
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
     brake_max = interp(CS.vEgo, CP.brakeMaxBP, CP.brakeMaxV)
+    stop_decel = interp(CS.vEgo, BRAKE_STOPPING_TARGET_BP, BRAKE_STOPPING_TARGET_D)
 
     # Update state machine
     output_gb = self.last_output_gb
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.cruiseState.standstill)
+                                                       CS.brakePressed, CS.gasPressed, CS.brakeHold,
+                                                       CS.tempOplongdisable, CS.spasOn,
+                                                       CS.cruiseState.standstill, CS.leadDistance)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
@@ -109,7 +121,7 @@ class LongControl():
     # Intention is to stop, switch to a different brake control until we stop
     elif self.long_control_state == LongCtrlState.stopping:
       # Keep applying brakes until the car is stopped
-      if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
+      if output_gb > -stop_decel:   #not CS.standstill or 
         output_gb -= STOPPING_BRAKE_RATE / RATE
       output_gb = clip(output_gb, -brake_max, gas_max)
 

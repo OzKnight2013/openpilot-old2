@@ -30,6 +30,8 @@ class CarState(CarStateBase):
     self.rear_sensor_state = 0
     self.spasOn = 0
     self.brakeHold = 0
+    self.lkas_button_init_on_Gear = 0
+    self.lkas_button_enable = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdps_bus else cp
@@ -38,6 +40,7 @@ class CarState(CarStateBase):
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_cruise_main_button = self.cruise_main_button
+    self.prev_lkas_button_enable = self.lkas_button_enable
     self.prev_lkas_button_on = self.lkas_button_on
 
     ret = car.CarState.new_message()
@@ -51,7 +54,7 @@ class CarState(CarStateBase):
     ret.wheelSpeeds.fr = cp.vl["WHL_SPD11"]['WHL_SPD_FR'] * CV.KPH_TO_MS
     ret.wheelSpeeds.rl = cp.vl["WHL_SPD11"]['WHL_SPD_RL'] * CV.KPH_TO_MS
     ret.wheelSpeeds.rr = cp.vl["WHL_SPD11"]['WHL_SPD_RR'] * CV.KPH_TO_MS
-    ret.vEgoRaw = (ret.wheelSpeeds.fl + ret.wheelSpeeds.fr + ret.wheelSpeeds.rl + ret.wheelSpeeds.rr) / 4.
+    ret.vEgoRaw = max(ret.wheelSpeeds.fl, ret.wheelSpeeds.fr, ret.wheelSpeeds.rl, ret.wheelSpeeds.rr)
     ret.vEgo, ret.aEgo = self.update_speed_kf(ret.vEgoRaw)
 
     ret.standstill = ret.vEgoRaw < 0.1
@@ -64,7 +67,7 @@ class CarState(CarStateBase):
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
-    ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
+    ret.steerError = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
 
     # if no lead then allow AVH and wait for gas press to disable AVH
@@ -77,13 +80,22 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
+#    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
+    self.lkas_button_enable = 0
+
+    if self.lkas_button_on and not self.prev_lkas_button_on:
+      self.lkas_button_enable = 2
+    elif not self.lkas_button_on and self.prev_lkas_button_on:
+      self.lkas_button_enable = 1
 
     # cruise state
 #    ret.cruiseState.available = True
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
 #    ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
+#    self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
+#    self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
-    ret.cruiseState.available = self.cruiseStateavailable = True #(cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
     if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
@@ -93,18 +105,17 @@ class CarState(CarStateBase):
       elif not self.prev_cruiseStateavailable:
         self.cruiseStateavailable = 0
 
-    ret.cruiseState.enabled = (self.cruiseStateavailable != 0)
+#    ret.cruiseState.available = (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
+
+    ret.cruiseState.available = (self.cruiseStateavailable != 0)
+    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0)
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
 
-    if ret.cruiseState.enabled:
-#      is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
-    else:
-      ret.cruiseState.speed = 0
+    speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+    ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
 
     # TODO: Find brake pressure
     ret.brake = 0
@@ -115,7 +126,7 @@ class CarState(CarStateBase):
     ret.brakeLights = bool(cp.vl["TCS13"]['BrakeLight'] or ret.brakePressed)
 
     if self.CP.carFingerprint in EV_HYBRID:
-      ret.gas = cp.vl["E_EMS11"]['Accel_Pedal_Pos'] / 256.
+      ret.gas = cp.vl["EV_PC4"]['CR_Vcu_AltAccPedDep_Pc']
       ret.gasPressed = ret.gas > 0
     else:
       ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100
@@ -149,7 +160,7 @@ class CarState(CarStateBase):
         ret.gearShifter = GearShifter.unknown
     # Gear Selecton - This is only compatible with optima hybrid 2017
     elif self.CP.carFingerprint in FEATURES["use_elect_gears"]:
-      gear = cp.vl["ELECT_GEAR"]["Elect_Gear_Shifter"]
+      gear = cp.vl["EV_PC5"]["CF_Vcu_GearSelDisp"]
       if gear in (5, 8):  # 5: D, 8: sport mode
         ret.gearShifter = GearShifter.drive
       elif gear == 6:
@@ -174,12 +185,24 @@ class CarState(CarStateBase):
       else:
         ret.gearShifter = GearShifter.unknown
 
-#    ret.stockAeb = cp.vl["FCA11"]['FCA_CmdAct'] != 0
-#    ret.stockFcw = cp.vl["FCA11"]['CF_VSM_Warn'] == 2
-    
-    ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
-    ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
+    if self.CP.carFingerprint in FEATURES["use_fca"]:
+      ret.stockAeb = cp.vl["FCA11"]['FCA_CmdAct'] != 0
+      ret.stockFcw = cp.vl["FCA11"]['CF_VSM_Warn'] == 2
+    else:
+      ret.stockAeb = cp.vl["SCC12"]['AEB_CmdAct'] != 0
+      ret.stockFcw = cp.vl["SCC12"]['CF_VSM_Warn'] == 2
 
+    if self.CP.carFingerprint in FEATURES["use_bsm"]:
+      ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
+      ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
+
+
+    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
+      self.lkas_button_enable = 2
+      self.lkas_button_init_on_Gear = 1
+    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
+      self.lkas_button_enable = 1
+      self.lkas_button_init_on_Gear = 0
     self.prev_spas_hmi_state = self.spas_hmi_state
     self.spas_hmi_state = cp_cam.vl["SPAS12"]["CF_Spas_HMI_Stat"]
     self.prev_spasOn = self.spasOn
@@ -205,12 +228,9 @@ class CarState(CarStateBase):
     self.mdps12 = cp_mdps.vl["MDPS12"]
     self.parkBrake = cp.vl["CGW1"]['CF_Gway_ParkBrakeSw']
     self.steer_state = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiActive'] #0 NOT ACTIVE, 1 ACTIVE
-    ret.leadDistance = self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist'] if not self.no_radar else 0
+    ret.leadDistance = self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
     self.Vrel_radar = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
 
-    self.lkas_error = cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] == 7
-    if not self.lkas_error:
-      self.lkas_button_on = cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"]
     self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
     self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
 
@@ -265,9 +285,6 @@ class CarState(CarStateBase):
 
       ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
 
-      ("CF_Lca_Stat", "LCA11", 0),
-      ("CF_Lca_IndLeft", "LCA11", 0),
-      ("CF_Lca_IndRight", "LCA11", 0),
 
       ("MainMode_ACC", "SCC11", 0),
       ("SCCInfoDisplay", "SCC11", 0),
@@ -308,7 +325,8 @@ class CarState(CarStateBase):
       ("CR_VSM_Alive", "SCC12", 0),
       ("CR_VSM_ChkSum", "SCC12", 0),
 
-      ("Accel_Pedal_Pos", "E_EMS11", 0),
+      ("CR_Vcu_AltAccPedDep_Pc", "EV_PC4", 0),
+      ("CF_Clu_LdwsLkasSW", "CLU13", 0),
     ]
 
     checks = [
@@ -320,7 +338,6 @@ class CarState(CarStateBase):
       ("CGW1", 10),
       ("CGW4", 5),
       ("WHL_SPD11", 50),
-      ("LCA11", 50),
     ]
     if CP.sccBus == 0 and CP.enableCruise:
       checks += [
@@ -357,6 +374,30 @@ class CarState(CarStateBase):
         ("CRUISE_LAMP_M", "EMS16", 0),
         ("CF_Lvr_CruiseSet", "LVR12", 0),
       ]
+    if CP.carFingerprint in FEATURES["use_bsm"]:
+      signals += [
+        ("CF_Lca_IndLeft", "LCA11", 0),
+        ("CF_Lca_IndRight", "LCA11", 0),
+      ]
+      checks += [("LCA11", 50)]
+
+    if CP.carFingerprint in EV_HYBRID:
+      signals += [
+        ("CR_Vcu_AltAccPedDep_Pc", "EV_PC4", 0),
+      ]
+      checks += [
+        ("EV_PC4", 50),
+      ]
+    else:
+      signals += [
+        ("PV_AV_CAN", "EMS12", 0),
+        ("CF_Ems_AclAct", "EMS16", 0),
+      ]
+      checks += [
+        ("EMS12", 100),
+        ("EMS16", 100),
+      ]
+
     if CP.carFingerprint in FEATURES["use_cluster_gears"]:
       signals += [
         ("CF_Clu_InhibitD", "CLU15", 0),
@@ -364,17 +405,25 @@ class CarState(CarStateBase):
         ("CF_Clu_InhibitN", "CLU15", 0),
         ("CF_Clu_InhibitR", "CLU15", 0),
       ]
+      checks += [
+        ("CLU15", 5)
+      ]
     elif CP.carFingerprint in FEATURES["use_tcu_gears"]:
       signals += [
-        ("CUR_GR", "TCU12",0),
+        ("CUR_GR", "TCU12", 0)
+      ]
+      checks += [
+        ("TCU12", 100)
       ]
     elif CP.carFingerprint in FEATURES["use_elect_gears"]:
-      signals += [
-        ("Elect_Gear_Shifter", "ELECT_GEAR", 0),
-    ]
+      signals += [("CF_Vcu_GearSelDisp", "EV_PC5", 0)]
+      checks += [("EV_PC5", 20)]
     else:
       signals += [
-        ("CF_Lvr_Gear","LVR12",0),
+        ("CF_Lvr_Gear", "LVR12", 0)
+      ]
+      checks += [
+        ("LVR12", 100)
       ]
       signals += [
         ("PV_AV_CAN", "EMS12", 0),
@@ -384,6 +433,14 @@ class CarState(CarStateBase):
         ("EMS12", 100),
         ("EMS16", 100),
       ]
+
+    if CP.carFingerprint in FEATURES["use_fca"]:
+      signals += [
+        ("FCA_CmdAct", "FCA11", 0),
+        ("CF_VSM_Warn", "FCA11", 0),
+      ]
+      checks += [("FCA11", 50)]
+
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 
   @staticmethod
@@ -468,7 +525,7 @@ class CarState(CarStateBase):
 
     signals = [
       # sig_name, sig_address, default
-      ("CF_Lkas_Bca_R", "LKAS11", 0),
+      ("CF_Lkas_LdwsActivemode", "LKAS11", 0),
       ("CF_Lkas_LdwsSysState", "LKAS11", 0),
       ("CF_Lkas_SysWarning", "LKAS11", 0),
       ("CF_Lkas_LdwsLHWarning", "LKAS11", 0),

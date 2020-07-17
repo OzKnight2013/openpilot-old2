@@ -471,6 +471,22 @@ EVENTS = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
+  EventName.turningIndicatorOn: {
+    ET.WARNING: Alert(
+      "TAKE CONTROL",
+      "Steer Unavailable while Turning",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .0, .2),
+  },
+
+  EventName.lkasButtonOff: {
+    ET.WARNING: Alert(
+      "lkasButtonOff",
+      "LKAS button off",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .1),
+  },
+
   # ********** events that affect controls state transitions **********
 
   EventName.pcmEnable: {
@@ -490,12 +506,15 @@ EVENTS = {
   },
 
   EventName.brakeHold: {
-    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
-    ET.NO_ENTRY: NoEntryAlert("Brake Hold Active"),
+    ET.WARNING: Alert(
+      "Auto Hold Active",
+      "Press Gas to continue",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
   },
 
   EventName.parkBrake: {
-    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.WARNING: EngagementAlert(AudibleAlert.chimeDisengage),
     ET.NO_ENTRY: NoEntryAlert("Park Brake Engaged"),
   },
 
@@ -518,11 +537,9 @@ EVENTS = {
   EventName.steerTempUnavailable: {
     ET.WARNING: Alert(
       "TAKE CONTROL",
-      "Steering Temporarily Unavailable",
+      "Steering Unavailable above 90deg",
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 0., 0., .2),
-    ET.NO_ENTRY: NoEntryAlert("Steering Temporarily Unavailable",
-                              duration_hud_alert=0.),
   },
 
   EventName.posenetInvalid: {
@@ -622,6 +639,11 @@ EVENTS = {
     ET.NO_ENTRY: NoEntryAlert("ESP Off"),
   },
 
+  EventName.brakeUnavailable: {
+    ET.SOFT_DISABLE: SoftDisableAlert("Brakes Unavailable - Restart vehicle"),
+    ET.NO_ENTRY: NoEntryAlert("Brakes Unavailable - Restart vehicle"),
+  },
+
   EventName.lowBattery: {
     ET.SOFT_DISABLE: SoftDisableAlert("Low Battery"),
     ET.NO_ENTRY: NoEntryAlert("Low Battery"),
@@ -647,6 +669,11 @@ EVENTS = {
   EventName.radarFault: {
     ET.SOFT_DISABLE: SoftDisableAlert("Radar Error: Restart the Car"),
     ET.NO_ENTRY : NoEntryAlert("Radar Error: Restart the Car"),
+  },
+
+  EventName.modeldLagging: {
+    ET.SOFT_DISABLE: SoftDisableAlert("Driving model lagging"),
+    ET.NO_ENTRY : NoEntryAlert("Driving model lagging"),
   },
 
   EventName.lowMemory: {
@@ -680,13 +707,13 @@ EVENTS = {
   },
 
   EventName.steerUnavailable: {
-    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("LKAS Fault: Restart the Car"),
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Steer Hard Fault: Turn off Car to sleep and Restart"),
     ET.PERMANENT: Alert(
-      "LKAS Fault: Restart the car to engage",
+      "Steer Hard Fault: Turn off Car to sleep and Restart",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
-    ET.NO_ENTRY: NoEntryAlert("LKAS Fault: Restart the Car"),
+    ET.NO_ENTRY: NoEntryAlert("Turn off Car to sleep and Restart"),
   },
 
   EventName.brakeUnavailable: {
