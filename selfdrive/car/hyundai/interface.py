@@ -186,7 +186,7 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
-    self.CP.enableCruise = self.CC.longcontrol
+    self.CP.enableCruise = self.CC.longcontrol != 0
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
 #    if not self.CP.openpilotLongitudinalControl:
@@ -244,8 +244,8 @@ class CarInterface(CarInterfaceBase):
     #  events.add(car.CarEvent.EventName.belowSteerSpeed)
     if self.CC.turning_indicator_alert:
       events.add(EventName.turningIndicatorOn)
-    if self.lkas_button_alert:
-      events.add(EventName.lkasButtonOff)
+    #if self.lkas_button_alert:
+    #  events.add(EventName.lkasButtonOff)
     if not self.CC.longcontrol and EventName.pedalPressed in events.events:
       events.events.remove(EventName.pedalPressed)
 
