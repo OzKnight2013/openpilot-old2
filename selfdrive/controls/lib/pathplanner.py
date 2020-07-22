@@ -63,7 +63,6 @@ class PathPlanner():
     self.prev_one_blinker = False
     self.pre_auto_LCA_timer = 0.0
 
-
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
     self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, self.steer_rate_cost)
@@ -113,10 +112,10 @@ class PathPlanner():
       self.lane_change_direction = LaneChangeDirection.none
       self.pre_auto_LCA_timer = 0.
     else:
-      
+
       blindspot_detected = ((sm['carState'].leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                             (sm['carState'].rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
-      
+
       if not blindspot_detected:
         self.pre_auto_LCA_timer += DT_MDL
       else:

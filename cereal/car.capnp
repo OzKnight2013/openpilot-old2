@@ -128,6 +128,7 @@ struct CarState {
   spasOn @41 : Bool;
   spasTarget @42 :Float32;
   tempOplongdisable @ 43 :Bool;
+  leadvisible @44 :Bool;
 
   # car speed
   vEgo @1 :Float32;         # best estimate of speed

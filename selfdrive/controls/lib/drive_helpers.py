@@ -6,6 +6,7 @@ ButtonType = car.CarState.ButtonEvent.Type
 ButtonPrev = ButtonType.unknown
 ButtonCnt = 0
 LongPressed = False
+PrevLongDisable = False
 
 # kph
 FIRST_PRESS_TIME = 1
@@ -40,10 +41,11 @@ def get_steer_max(CP, v_ego):
   return interp(v_ego, CP.steerMaxBP, CP.steerMaxV)
 
 
-def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, metric):
+def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, tempOplongdisable, metric, v_cruise_last):
   # handle button presses. TODO: this should be in state_control, but a decelCruise press
   # would have the effect of both enabling and changing speed is checked after the state transition
-  global ButtonCnt, LongPressed, ButtonPrev, PrevDisable, CurrentVspeed, PrevGaspressed
+  global ButtonCnt, LongPressed, ButtonPrev, PrevDisable, CurrentVspeed, PrevGaspressed, PrevLongDisable
+
   if enabled:
     if ButtonCnt:
       ButtonCnt += 1
@@ -72,10 +74,10 @@ def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, met
       ButtonCnt = FIRST_PRESS_TIME
     elif ButtonCnt == FIRST_PRESS_TIME and not LongPressed and not PrevDisable:
       if ButtonPrev == ButtonType.accelCruise:
-        v_cruise = CurrentVspeed if gas_pressed and not PrevGaspressed and (v_cruise < CurrentVspeed) else (v_cruise + 1)
+        v_cruise = CurrentVspeed if (gas_pressed and not PrevGaspressed and (v_cruise < CurrentVspeed)) else (v_cruise + 1)
         PrevGaspressed = gas_pressed
       elif ButtonPrev == ButtonType.decelCruise:
-        v_cruise = CurrentVspeed if gas_pressed and not PrevGaspressed else (v_cruise - 1)
+        v_cruise = CurrentVspeed if ((gas_pressed and not PrevGaspressed) or (v_cruise < CurrentVspeed - 6)) else (v_cruise - 1)
         PrevGaspressed = gas_pressed
     elif not gas_pressed:
       PrevGaspressed = False
@@ -87,7 +89,12 @@ def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, met
     v_cruise_kph = v_cruise if metric else v_cruise * CV.MPH_TO_KPH
 
     v_cruise_kph = int(round(v_cruise_kph))
+
+    if not tempOplongdisable and PrevLongDisable:
+      v_cruise_kph = initialize_v_cruise(v_ego, buttonEvents, v_cruise_last)
+
     PrevDisable = False
+    PrevLongDisable = tempOplongdisable
   else:
     PrevDisable = True
   return v_cruise_kph

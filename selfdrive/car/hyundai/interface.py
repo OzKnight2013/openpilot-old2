@@ -193,9 +193,11 @@ class CarInterface(CarInterfaceBase):
 #      ret.cruiseState.enabled = ret.cruiseState.available
     ret.cruiseState.enabled = ret.cruiseState.available
 
+    ret.leadvisible = self.CC.lead_visible != 0
+
     self.CC.turning_indicator_alert = self.CC.acc_paused and not self.CC.prev_acc_paused
 
-    ret.tempOplongdisable = self.CC.acc_paused != 0
+    ret.tempOplongdisable = self.CC.acc_paused_due_brake != 0
 
     ret.spasTarget = self.CC.target
 

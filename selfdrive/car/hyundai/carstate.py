@@ -18,7 +18,7 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = True
+    self.lkas_button_on = False
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
@@ -81,12 +81,12 @@ class CarState(CarStateBase):
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
 #    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
-    self.lkas_button_enable = 0
+#    self.lkas_button_enable = 0
 
-    if self.lkas_button_on and not self.prev_lkas_button_on:
-      self.lkas_button_enable = 2
-    elif not self.lkas_button_on and self.prev_lkas_button_on:
-      self.lkas_button_enable = 1
+#    if self.lkas_button_on and not self.prev_lkas_button_on:
+#      self.lkas_button_enable = 2
+#    elif not self.lkas_button_on and self.prev_lkas_button_on:
+#      self.lkas_button_enable = 1
 
     # cruise state
 #    ret.cruiseState.available = True
@@ -197,12 +197,12 @@ class CarState(CarStateBase):
       ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
 
 
-    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
-      self.lkas_button_enable = 2
-      self.lkas_button_init_on_Gear = 1
-    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
-      self.lkas_button_enable = 1
-      self.lkas_button_init_on_Gear = 0
+#    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
+#      self.lkas_button_enable = 2
+#      self.lkas_button_init_on_Gear = 1
+#    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
+#      self.lkas_button_enable = 1
+#      self.lkas_button_init_on_Gear = 0
     self.prev_spas_hmi_state = self.spas_hmi_state
     self.spas_hmi_state = cp_cam.vl["SPAS12"]["CF_Spas_HMI_Stat"]
     self.prev_spasOn = self.spasOn
