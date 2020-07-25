@@ -224,7 +224,7 @@ EVENTS = {
       "Be ready to take over at any time",
       "Always keep hands on wheel and eyes on road",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 2.),
   },
 
   EventName.startupWhitePanda: {
@@ -232,7 +232,7 @@ EVENTS = {
       "WARNING: White panda is deprecated",
       "Upgrade to comma two or black panda",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 2.),
   },
 
   EventName.startupMaster: {
@@ -478,18 +478,18 @@ EVENTS = {
 
   EventName.turningIndicatorOn: {
     ET.WARNING: Alert(
-      "TAKE CONTROL",
-      "Long Control Diabled",
+      "TAKE CONTROL, OP Long Control Disengaged",
+      "OP Long Control Disabled",
       AlertStatus.userPrompt, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .0, 2.),
   },
 
   EventName.lkasButtonOff: {
-    ET.WARNING: Alert(
-      "lkasButtonOff",
-      "LKAS button off",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .1),
+    ET.PERMANENT: Alert(
+      "LKAS Button is turned off",
+      "Press LKAS Button to engage OP",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
   },
 
   # ********** events that affect controls state transitions **********

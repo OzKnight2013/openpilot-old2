@@ -27,6 +27,7 @@ class CarInterfaceBase():
       self.CS = CarState(CP)
       self.cp = self.CS.get_can_parser(CP)
       self.cp_cam = self.CS.get_cam_can_parser(CP)
+      self.cp_body = self.CS.get_body_can_parser(CP)
 
     self.CC = None
     if CarController is not None:
@@ -93,7 +94,7 @@ class CarInterfaceBase():
     #  events.add(EventName.seatbeltNotLatched)
     #if cs_out.gearShifter != GearShifter.drive and cs_out.gearShifter not in extra_gears:
     #  events.add(EventName.wrongGear)
-    if not cs_out.spasOn and cs_out.gearShifter == GearShifter.reverse:
+    if cs_out.gearShifter == GearShifter.reverse:
       events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
@@ -142,13 +143,12 @@ class RadarInterfaceBase():
     self.pts = {}
     self.delay = 0
     self.radar_ts = CP.radarTimeStep
+    self.no_radar_sleep = 'NO_RADAR_SLEEP' in os.environ
 
   def update(self, can_strings):
     ret = car.RadarData.new_message()
-
-    if 'NO_RADAR_SLEEP' not in os.environ:
+    if not self.no_radar_sleep:
       time.sleep(self.radar_ts)  # radard runs on RI updates
-
     return ret
 
 class CarStateBase:
@@ -180,4 +180,8 @@ class CarStateBase:
 
   @staticmethod
   def get_cam_can_parser(CP):
+    return None
+
+  @staticmethod
+  def get_body_can_parser(CP):
     return None

@@ -18,17 +18,12 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = False
+    self.lkas_button_on = True
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
     self.cruise_buttons = 0
     self.prev_cruise_buttons = 0
-    self.spas_hmi_state = 0
-    self.prev_spas_hmi_state = 0
-    self.front_sensor_state = 0
-    self.rear_sensor_state = 0
-    self.spasOn = 0
     self.brakeHold = 0
     self.lkas_button_init_on_Gear = 0
     self.lkas_button_enable = 0
@@ -203,22 +198,6 @@ class CarState(CarStateBase):
 #    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
 #      self.lkas_button_enable = 1
 #      self.lkas_button_init_on_Gear = 0
-    self.prev_spas_hmi_state = self.spas_hmi_state
-    self.spas_hmi_state = cp_cam.vl["SPAS12"]["CF_Spas_HMI_Stat"]
-    self.prev_spasOn = self.spasOn
-    self.spasOn = cp_cam.vl["SPAS12"]["CF_Spas_Disp"] > 1
-
-    if not self.spasOn and self.prev_spasOn:
-      self.spasOn = False if ret.gearShifter == GearShifter.park or ret.gasPressed or ret.brakePressed else True
-
-    ret.spasOn = self.spasOn != 0
-
-    self.prev_front_sensor_state = self.front_sensor_state
-    self.front_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
-                                  cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
-    self.prev_rear_sensor_state = self.rear_sensor_state
-    self.rear_sensor_state = max(cp_cam.vl["SPAS12"]["CF_Spas_FIL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FIR_Ind"],
-                                  cp_cam.vl["SPAS12"]["CF_Spas_FOL_Ind"], cp_cam.vl["SPAS12"]["CF_Spas_FOR_Ind"])
 
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = cp_cam.vl["LKAS11"]
@@ -542,19 +521,6 @@ class CarState(CarStateBase):
       ("CF_Lkas_FusionState", "LKAS11", 0),
       ("CF_Lkas_FcwOpt_USM", "LKAS11", 0),
       ("CF_Lkas_LdwsOpt_USM", "LKAS11", 0),
-
-      ("CF_Spas_HMI_Stat", "SPAS12", 0),
-      ("CF_Spas_Disp", "SPAS12", 0),
-
-      ("CF_Spas_FIL_Ind", "SPAS12", 0),
-      ("CF_Spas_FIR_Ind", "SPAS12", 0),
-      ("CF_Spas_FOL_Ind", "SPAS12", 0),
-      ("CF_Spas_FOR_Ind", "SPAS12", 0),
-
-      ("CF_Spas_RIL_Ind", "SPAS12", 0),
-      ("CF_Spas_RIR_Ind", "SPAS12", 0),
-      ("CF_Spas_ROL_Ind", "SPAS12", 0),
-      ("CF_Spas_ROR_Ind", "SPAS12", 0)
     ]
 
     checks = []

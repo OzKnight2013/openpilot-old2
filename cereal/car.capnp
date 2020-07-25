@@ -125,10 +125,8 @@ struct CarState {
   events @13 :List(CarEvent);
 
   leadDistance @37 : Float32;
-  spasOn @41 : Bool;
-  spasTarget @42 :Float32;
-  tempOplongdisable @ 43 :Bool;
-  leadvisible @44 :Bool;
+  tempOplongdisable @ 41 :Bool;
+  leadvisible @42 :Bool;
 
   # car speed
   vEgo @1 :Float32;         # best estimate of speed

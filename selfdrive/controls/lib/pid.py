@@ -159,31 +159,32 @@ class PIDController:
   def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0., freeze_integrator=False, leadvisible=False):
     self.speed = speed
 
-    error = float(apply_deadzone(setpoint - measurement, deadzone))
-
-    self.p = error * self.k_p
     self.f = feedforward * self.k_f
 
     if self.f < 0:
      self.f = max(self.f, self.last_kf - 0.03)
 
     if setpoint < measurement:
-      if (setpoint - measurement) < -20.:
-        setpoint = max(setpoint, measurement - 20.)
+      if (setpoint - measurement) < -15.:
+        setpoint = max(setpoint, measurement - 15.)
 
       if not leadvisible:
-        setpoint = max(setpoint, self.last_setpoint - 0.005)
+        setpoint = max(setpoint, self.last_setpoint - 0.01)
       else:
         setpoint = max(setpoint, self.last_setpoint - 0.15)
     else:
       if 1.8 > (setpoint - measurement) > 0:
-        setpoint = max(setpoint, self.last_setpoint + 0.005)
+        setpoint = min(setpoint, self.last_setpoint + 0.005)
+
+    error = float(apply_deadzone(setpoint - measurement, deadzone))
+
+    self.p = error * self.k_p
 
     if override:
       self.id -= self.i_unwind_rate * float(np.sign(self.id))
     else:
       i = self.id + error * self.k_i * self.rate
-      if self.last_error > 0.8 >= error and i > 0:
+      if self.last_error > 1.8 >= error and i > 0:
         i = 0
       i = min(i, 0.2)
       control = self.p + self.f + i

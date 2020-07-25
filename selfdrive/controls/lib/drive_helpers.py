@@ -77,7 +77,7 @@ def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, tem
         v_cruise = CurrentVspeed if (gas_pressed and not PrevGaspressed and (v_cruise < CurrentVspeed)) else (v_cruise + 1)
         PrevGaspressed = gas_pressed
       elif ButtonPrev == ButtonType.decelCruise:
-        v_cruise = CurrentVspeed if ((gas_pressed and not PrevGaspressed) or (v_cruise < CurrentVspeed - 6)) else (v_cruise - 1)
+        v_cruise = CurrentVspeed if (gas_pressed and not PrevGaspressed) else (v_cruise - 1)
         PrevGaspressed = gas_pressed
     elif not gas_pressed:
       PrevGaspressed = False
