@@ -243,6 +243,9 @@ FW_VERSIONS = {
     (Ecu.eps, 0x7D4, None): [b'\xf1\x00OS  MDPS C 1.00 1.04 56310K4000\x00 4OEDC104'],
     (Ecu.fwdCamera, 0x7C4, None): [b'\xf1\x00OSE LKAS AT KOR LHD 1.00 1.00 95740-K4100 W40'],
   },
+  CAR.IONIQ: {
+    (Ecu.eps, 0x7D4, None): [b'\xf1\x00AE  MDPS C 1.00 1.07 56310/G2301 4AEHC107'],
+  },
 }
 
 CHECKSUM = {
