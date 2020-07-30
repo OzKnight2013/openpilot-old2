@@ -23,19 +23,18 @@ RATE = 100.0
 
 
 def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, gas_pressed, avh_active, op_paused, standstill, dRel):
+                             output_gb, brake_pressed, gas_pressed, avh_active, op_paused, standstill, dRel, cruise_on):
   """Update longitudinal control state machine"""
 #  stopping_condition = #(v_ego < 2.0 and cruise_standstill) or \
-  stopping_condition = (dRel < 2.5 and
+  stopping_condition = (dRel < 6 and
                         v_ego < STOPPING_EGO_SPEED and
                         ((v_pid < STOPPING_TARGET_SPEED and v_target < STOPPING_TARGET_SPEED) or
                          brake_pressed))
 
   starting_condition = v_target > STARTING_TARGET_SPEED and not standstill
 
-  if (not active) or brake_pressed or gas_pressed or avh_active or op_paused:
+  if (not active) or brake_pressed or gas_pressed or avh_active or op_paused or (not cruise_on):
     long_control_state = LongCtrlState.off
-
   else:
     if long_control_state == LongCtrlState.off:
       if active:
@@ -93,7 +92,7 @@ class LongControl():
                                                        v_target_future, self.v_pid, output_gb,
                                                        CS.brakePressed, CS.gasPressed, CS.brakeHold,
                                                        CS.tempOplongdisable,
-                                                       CS.standstill, CS.leadDistance)
+                                                       CS.standstill, CS.leadDistance, CS.cruiseMainbutton)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 

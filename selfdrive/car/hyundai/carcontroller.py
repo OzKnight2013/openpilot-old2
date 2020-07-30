@@ -81,7 +81,7 @@ class CarController():
     self.gapcount = 0
     self.acc_paused_due_brake = False
     self.acc_paused = False
-    self.prev_acc_paused = False
+    self.prev_acc_paused_due_brake = False
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
@@ -221,7 +221,10 @@ class CarController():
 
 #    self.prev_acc_paused = self.acc_paused
 
-#    if CS.out.brakePressed or CS.out.gasPressed or CS.out.brakeHold or (CS.cruise_buttons == 4) or (not CS.rawcruiseStateavailable):
+#    if self.longcontrol and CS.rawcruiseStateavailable and (CS.out.brakePressed or CS.out.brakeHold or
+#                                                            (CS.cruise_buttons == 4) or (CS.out.gasPressed and
+#                                                                                         not (CS.cruise_buttons == 1 or
+#                                                                                              CS.cruise_buttons == 2))):
 #      self.acc_paused = True
 #      self.acc_paused_due_brake = (CS.cruise_buttons == 4) or (CS.out.brakePressed and (2. < CS.out.vEgo < 15.)) or self.acc_paused_due_brake
 #    elif CS.cruise_buttons == 1 or CS.cruise_buttons == 2 or (not self.acc_paused_due_brake):
@@ -235,6 +238,7 @@ class CarController():
 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,
                                     self.acc_standstill, self.acc_paused,
+                                    CS.out.cruiseMainbutton,
                                     self.scc12_cnt, CS.scc12))
 
       can_sends.append(create_scc11(self.packer, frame, enabled,

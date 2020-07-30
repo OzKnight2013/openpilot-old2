@@ -127,6 +127,7 @@ struct CarState {
   leadDistance @37 : Float32;
   tempOplongdisable @ 41 :Bool;
   leadvisible @42 :Bool;
+  cruiseMainbutton @43 :Bool;
 
   # car speed
   vEgo @1 :Float32;         # best estimate of speed
