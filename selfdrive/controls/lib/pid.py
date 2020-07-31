@@ -155,6 +155,7 @@ class PIDController:
     self.last_setpoint = 0.0
     self.last_error = 0.0
     self.last_kf = 0.0
+    self.hasreset = True
 
   def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0., freeze_integrator=False, leadvisible=False):
     self.speed = speed
@@ -164,17 +165,20 @@ class PIDController:
     if self.f < 0:
      self.f = max(self.f, self.last_kf - 0.03)
 
-    if setpoint < measurement:
-      if (setpoint - measurement) < -15.:
-        setpoint = max(setpoint, measurement - 15.)
+    if not self.hasreset:
+      if setpoint < measurement:
+        if (setpoint - measurement) < -15.:
+          setpoint = max(setpoint, measurement - 15.)
 
-      if not leadvisible:
-        setpoint = max(setpoint, self.last_setpoint - 0.01)
+        if not leadvisible:
+          setpoint = max(setpoint, self.last_setpoint - 0.01)
+        else:
+          setpoint = max(setpoint, self.last_setpoint - 0.15)
       else:
-        setpoint = max(setpoint, self.last_setpoint - 0.15)
+        if 1.8 > (setpoint - measurement) > 0 and 5. < setpoint:
+          setpoint = min(setpoint, self.last_setpoint + 0.005)
     else:
-      if 1.8 > (setpoint - measurement) > 0:
-        setpoint = min(setpoint, self.last_setpoint + 0.005)
+      self.hasreset = False
 
     error = float(apply_deadzone(setpoint - measurement, deadzone))
 

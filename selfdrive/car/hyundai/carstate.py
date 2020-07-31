@@ -18,6 +18,7 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
+#    self.lkas_button_on = False
     self.lkas_button_on = True
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
@@ -88,7 +89,9 @@ class CarState(CarStateBase):
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
 #    ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 #    self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
-#    self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+#    ret.cruiseMainbutton = self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+
+#    self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
 
     self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
@@ -103,6 +106,7 @@ class CarState(CarStateBase):
 #    ret.cruiseState.available = (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
+    ret.cruiseMainbutton = (self.cruiseStateavailable != 0)
     ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0)
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable

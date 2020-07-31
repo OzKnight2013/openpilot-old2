@@ -46,7 +46,7 @@ def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, tem
   # would have the effect of both enabling and changing speed is checked after the state transition
   global ButtonCnt, LongPressed, ButtonPrev, PrevDisable, CurrentVspeed, PrevGaspressed, PrevLongDisable
 
-  if enabled and cruise_on:
+  if enabled:
     if ButtonCnt:
       ButtonCnt += 1
     for b in buttonEvents:
@@ -90,11 +90,11 @@ def update_v_cruise(v_cruise_kph, v_ego, gas_pressed, buttonEvents, enabled, tem
 
     v_cruise_kph = int(round(v_cruise_kph))
 
-    if not tempOplongdisable and PrevLongDisable:
+    if not tempOplongdisable and cruise_on and PrevLongDisable:
       v_cruise_kph = initialize_v_cruise(v_ego, buttonEvents, v_cruise_last)
 
     PrevDisable = False
-    PrevLongDisable = tempOplongdisable
+    PrevLongDisable = tempOplongdisable or not cruise_on
   else:
     PrevDisable = True
   return v_cruise_kph
