@@ -58,8 +58,8 @@ class CarState(CarStateBase):
     ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle']
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
     ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
-    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0 or cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0
-    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0 or cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0
+    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0
+    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
@@ -213,6 +213,9 @@ class CarState(CarStateBase):
     self.steer_state = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiActive'] #0 NOT ACTIVE, 1 ACTIVE
     ret.leadDistance = self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
     self.Vrel_radar = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
+
+    self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
+    self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
 
     return ret
 
