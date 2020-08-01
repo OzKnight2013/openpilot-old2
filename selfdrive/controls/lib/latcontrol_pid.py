@@ -35,9 +35,13 @@ class LatControlPID():
         # TODO: feedforward something based on path_plan.rateSteers
         steer_feedforward -= path_plan.angleOffset   # subtract the offset, since it does not contribute to resistive torque
         steer_feedforward *= CS.vEgo**2  # proportional to realigning tire momentum (~ lateral accel)
-      deadzone = 0.0
+      
+      if CS.vEgo > 25.:
+        deadzone = 1.5      
+      else:
+        deadzone = 0.
 
-      check_saturation = (CS.vEgo > 10) and not CS.steeringRateLimited and not CS.steeringPressed
+      check_saturation = (CS.vEgo > 25) and not CS.steeringRateLimited and not CS.steeringPressed
       output_steer = self.pid.update(self.angle_steers_des, CS.steeringAngle, check_saturation=check_saturation, override=CS.steeringPressed,
                                      feedforward=steer_feedforward, speed=CS.vEgo, deadzone=deadzone)
       pid_log.active = True
