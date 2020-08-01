@@ -481,7 +481,7 @@ EVENTS = {
       "TAKE CONTROL, OP Long Control Disengaged",
       "OP Long Control Disabled",
       AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2, 1., 2., 3.),
   },
 
   EventName.lkasButtonOff: {
@@ -543,8 +543,8 @@ EVENTS = {
     ET.WARNING: Alert(
       "Manual Steering",
       "Turn off indicator for OP steer",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2, 1., 2., 3.),
   },
 
   EventName.focusRecoverActive: {
