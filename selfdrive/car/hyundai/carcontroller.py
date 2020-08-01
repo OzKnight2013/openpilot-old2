@@ -132,9 +132,9 @@ class CarController():
     if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdps_bus:
       lkas_active = False
 
-    if CS.out.steeringPressed and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and (CS.out.leftBlinker or CS.out.rightBlinker):
+    if enabled and CS.out.steeringPressed and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and (CS.out.leftBlinker or CS.out.rightBlinker):
       self.manual_steering = True
-    elif self.manual_steering and not CS.out.leftBlinker and not CS.out.rightBlinker and not CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
+    elif (self.manual_steering and not CS.out.leftBlinker and not CS.out.rightBlinker) or not CS.out.vEgo < LANE_CHANGE_SPEED_MIN or not enabled:
       self.manual_steering = False
 
     if self.manual_steering:

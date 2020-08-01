@@ -476,12 +476,12 @@ EVENTS = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
-  EventName.turningIndicatorOn: {
+  EventName.opLongdisabled: {
     ET.WARNING: Alert(
       "TAKE CONTROL, OP Long Control Disengaged",
       "OP Long Control Disabled",
       AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .0, 2.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimePrompt, 1., 2., 3.),
   },
 
   EventName.lkasButtonOff: {
@@ -541,10 +541,10 @@ EVENTS = {
 
   EventName.steerTempUnavailable: {
     ET.WARNING: Alert(
-      "TAKE CONTROL",
-      "Steering Unavailable above 90deg",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 0., 0., .2),
+      "Manual Steering",
+      "Turn off indicator for OP steer",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1),
   },
 
   EventName.focusRecoverActive: {

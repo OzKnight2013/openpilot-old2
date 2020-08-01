@@ -223,8 +223,6 @@ class CarInterface(CarInterfaceBase):
 
     ret.leadvisible = self.CC.lead_visible != 0
 
-    self.CC.turning_indicator_alert = self.CC.acc_paused_due_brake and not self.CC.prev_acc_paused_due_brake
-
     ret.tempOplongdisable = self.CC.acc_paused_due_brake != 0
 
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
@@ -264,12 +262,14 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
-    if self.CC.turning_indicator_alert:
-      events.add(EventName.turningIndicatorOn)
-    #if self.lkas_button_alert:
-    #  events.add(EventName.lkasButtonOff)
+    if self.CC.acc_paused_due_brake and not self.CC.prev_acc_paused_due_brake:
+      events.add(EventName.opLongdisabled)
+    if self.lkas_button_alert:
+      events.add(EventName.lkasButtonOff)
     if not self.CC.longcontrol and EventName.pedalPressed in events.events:
       events.events.remove(EventName.pedalPressed)
+    if self.CC.manual_steering:
+      events.add(EventName.steerTempUnavailable)
 
     # handle button presses
     if self.CP.enableCruise:
