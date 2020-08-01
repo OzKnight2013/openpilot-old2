@@ -141,6 +141,7 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kfBP = [0., 30.]
       ret.lateralTuning.pid.kfV = [0.00003, 0.00006]
     elif candidate in [CAR.IONIQ, CAR.IONIQ_EV_LTD]:
+      ret.steermaxLimit = 409
       ret.mass = 1490. + STD_CARGO_KG   #weight per hyundai site https://www.hyundaiusa.com/ioniq-electric/specifications.aspx
       ret.wheelbase = 2.7
       ret.steerRatio = 13.73 * 1.15   #Spec
