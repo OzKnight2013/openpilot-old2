@@ -70,7 +70,6 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.55  # 13.8 is spec end-to-end
       tire_stiffness_factor = 0.82
     elif candidate == CAR.SONATA:
-      ret.steermaxLimit = 409
       ret.mass = 1513. + STD_CARGO_KG
       ret.wheelbase = 2.84
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
@@ -80,7 +79,6 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.804
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
     elif candidate == CAR.PALISADE:
-      ret.steermaxLimit = 409
       ret.mass = 1999. + STD_CARGO_KG
       ret.wheelbase = 2.90
       ret.steerRatio = 13.75 * 1.15
@@ -89,14 +87,12 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.78
       ret.steerRatio = 14.4 * 1.1   # 10% higher at the center seems reasonable
     elif candidate in [CAR.ELANTRA, CAR.ELANTRA_GT_I30]:
-      ret.steermaxLimit = 409
       ret.mass = 1275. + STD_CARGO_KG
       ret.wheelbase = 2.7
       ret.steerRatio = 15.4            # 14 is Stock | Settled Params Learner values are steerRatio: 15.401566348670535
       tire_stiffness_factor = 0.385    # stiffnessFactor settled on 1.0081302973865127
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
     elif candidate == CAR.HYUNDAI_GENESIS:
-      ret.steermaxLimit = 409
       ret.steerActuatorDelay = 0.3
       ret.steerRateCost = 0.45
       ret.mass = 2060. + STD_CARGO_KG
@@ -104,14 +100,12 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 16.5
       ret.minSteerSpeed = 60 * CV.KPH_TO_MS
     elif candidate == CAR.GENESIS_G80:
-      ret.steermaxLimit = 409
       ret.steerActuatorDelay = 0.4
       ret.steerRateCost = 0.45
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
     elif candidate == CAR.GENESIS_G90:
-      ret.steermaxLimit = 409
       ret.steerActuatorDelay = 0.4
       ret.steerRateCost = 0.45
       ret.mass = 2060. + STD_CARGO_KG
@@ -141,7 +135,6 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.pid.kfBP = [0., 30.]
       ret.lateralTuning.pid.kfV = [0.00003, 0.00006]
     elif candidate in [CAR.IONIQ, CAR.IONIQ_EV_LTD]:
-      ret.steermaxLimit = 409
       ret.mass = 1490. + STD_CARGO_KG   #weight per hyundai site https://www.hyundaiusa.com/ioniq-electric/specifications.aspx
       ret.wheelbase = 2.7
       ret.steerRatio = 13.73 * 1.15   #Spec
