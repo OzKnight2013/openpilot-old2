@@ -11,6 +11,7 @@ from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.longcontrol import LongCtrlState
+from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -38,8 +39,6 @@ def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
   if sys_warning:
       sys_warning = 4 if fingerprint in [CAR.HYUNDAI_GENESIS, CAR.GENESIS_G90, CAR.GENESIS_G80] else 3
 
-   
- 
   if enabled or sys_warning:
       sys_state = 3
   else:
@@ -82,6 +81,7 @@ class CarController():
     self.acc_paused_due_brake = False
     self.acc_paused = False
     self.prev_acc_paused_due_brake = False
+    self.manual_steering = False
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
@@ -130,6 +130,14 @@ class CarController():
 
     # fix for Genesis hard fault at low speed
     if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdps_bus:
+      lkas_active = False
+
+    if CS.out.steeringPressed and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and (CS.out.leftBlinker or CS.out.rightBlinker):
+      self.manual_steering = True
+    elif self.manual_steering and not CS.out.leftBlinker and not CS.out.rightBlinker and not CS.out.vEgo < LANE_CHANGE_SPEED_MIN:
+      self.manual_steering = False
+
+    if self.manual_steering:
       lkas_active = False
 
     if not lkas_active:
