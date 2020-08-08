@@ -7,15 +7,18 @@ const int HYUNDAI_DRIVER_TORQUE_ALLOWANCE = 50;
 const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
 const int HYUNDAI_STANDSTILL_THRSLD = 30;  // ~1kph
 const CanMsg HYUNDAI_TX_MSGS[] = {
-  {832, 0, 8},  // LKAS11 Bus 0
-  {1265, 0, 4}, // CLU11 Bus 0
+  {832, 0, 8}, {832, 1, 8}, // LKAS11 Bus 0, 1
+  {1265, 0, 4}, {1265, 1, 4}, {1265, 2, 4}, // CLU11 Bus 0, 1, 2
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
-  {832, 1, 8},{1265, 1, 4}, {1265, 2, 4}, {593, 2, 8}, {1057, 0, 8}, {790, 1, 8}, {912, 0, 7}, {912,1, 7}, {1268, 0, 8}, {1268,1, 8},
+  {593, 2, 8},  // MDPS12, Bus 2
   {1056, 0, 8}, //   SCC11,  Bus 0
   {1057, 0, 8}, //   SCC12,  Bus 0
   {1290, 0, 8}, //   SCC13,  Bus 0
   {905, 0, 8},  //   SCC14,  Bus 0
-  {1186, 0, 8}  //   4a2SCC, Bus 0
+  {1186, 0, 8},  //   4a2SCC, Bus 0
+  {790, 1, 8}, // EMS11, Bus 1
+  {912, 0, 7}, {912,1, 7}, // SPAS11, Bus 0, 1
+  {1268, 0, 8}, {1268,1, 8}, // SPAS12, Bus 0, 1
  };
 
 // TODO: missing checksum for wheel speeds message,worst failure case is
@@ -254,7 +257,7 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
       }
     }
     if (bus_num == 2) {
-      if (addr != 832 || !OP_LKAS_live) {
+      if (!OP_LKAS_live || (addr != 832 && addr != 1157)) {
         if (!OP_SCC_live || (addr != 1056 && addr != 1057 && addr != 1290 && addr != 905)) {
           bus_fwd = hyundai_forward_bus1 ? 10 : 0;
         } else {
@@ -262,10 +265,10 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
           OP_SCC_live -= 1;
         }
       } else if (!hyundai_mdps_bus) {
-        bus_fwd = fwd_to_bus1; // EON create LKAS for Car
+        bus_fwd = fwd_to_bus1; // EON create LKAS and LFA for Car
         OP_LKAS_live -= 1; 
       } else {
-        OP_LKAS_live -= 1; // EON create LKAS for Car and MDPS
+        OP_LKAS_live -= 1; // EON create LKAS and LFA for Car and MDPS
       }
     }
   } else {
