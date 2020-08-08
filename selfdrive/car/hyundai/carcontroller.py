@@ -191,9 +191,10 @@ class CarController():
     if frame % 2 and CS.mdps_bus == 1: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    if pcm_cancel_cmd and not self.longcontrol:
-      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
-    elif CS.out.cruiseState.standstill and not self.longcontrol:
+    #if pcm_cancel_cmd and not self.longcontrol:
+    #  can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+    #el
+    if CS.out.cruiseState.standstill and not self.longcontrol:
       # SCC won't resume anyway when the lead distace is less than 3.7m
       # send resume at a max freq of 5Hz
       if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:

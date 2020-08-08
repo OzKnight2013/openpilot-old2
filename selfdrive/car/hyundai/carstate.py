@@ -80,7 +80,7 @@ class CarState(CarStateBase):
 
     if self.lkas_button_on and not self.prev_lkas_button_on and (self.mdps_bus > 0):
       self.lkas_button_enable = 2
-    elif not self.lkas_button_on and self.prev_lkas_button_on:
+    elif not self.lkas_button_on and self.prev_lkas_button_on and (self.mdps_bus > 0):
       self.lkas_button_enable = 1
 
     # cruise state
