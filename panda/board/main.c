@@ -130,17 +130,17 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       can_silent = ALL_CAN_SILENT;
       break;
     case SAFETY_NOOUTPUT:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       if (board_has_obd()) {
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_LIVE;
       break;
     case SAFETY_ELM327:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_NORMAL);
+        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
       }
       can_silent = ALL_CAN_LIVE;
       break;
@@ -148,7 +148,11 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       set_intercept_relay(true);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_NORMAL);
+        if (mode_copy == SAFETY_HYUNDAI_LEGACY || mode_copy == SAFETY_HYUNDAI) {
+          current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        } else {
+          current_board->set_can_mode(CAN_MODE_NORMAL);
+        }
       }
       can_silent = ALL_CAN_LIVE;
       break;
@@ -708,9 +712,10 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
       if (current_safety_mode != SAFETY_ALLOUTPUT) {
         set_safety_mode(SAFETY_ALLOUTPUT, 0U); // MDPS will hard if SAFETY_NOOUTPUT
       }
-      if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
-        set_power_save_state(POWER_SAVE_STATUS_ENABLED);
-      }
+	 // MDPS will if panda sleep
+     // if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
+     //   set_power_save_state(POWER_SAVE_STATUS_ENABLED);
+     // }
 
       // Also disable IR when the heartbeat goes missing
       current_board->set_ir_power(0U);
