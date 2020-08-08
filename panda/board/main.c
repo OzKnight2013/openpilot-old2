@@ -712,7 +712,7 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
       if (current_safety_mode != SAFETY_ALLOUTPUT) {
         set_safety_mode(SAFETY_ALLOUTPUT, 0U); // MDPS will hard if SAFETY_NOOUTPUT
       }
-	 // MDPS will if panda sleep
+     // MDPS will if panda sleep
      // if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
      //   set_power_save_state(POWER_SAVE_STATUS_ENABLED);
      // }

@@ -98,7 +98,7 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
-      ret.minSteerSpeed = 60 * CV.KPH_TO_MS
+      ret.minSteerSpeed = 55 * CV.KPH_TO_MS
     elif candidate == CAR.GENESIS_G80:
       ret.steerActuatorDelay = 0.4
       ret.steerRateCost = 0.45
@@ -275,6 +275,9 @@ class CarInterface(CarInterfaceBase):
       events.events.remove(EventName.pedalPressed)
     if self.CC.manual_steering:
       events.add(EventName.steerTempUnavailable)
+
+    if self.low_speed_alert:
+      events.add(car.CarEvent.EventName.belowSteerSpeed)
 
     # handle button presses
     if self.CP.enableCruise:
