@@ -289,7 +289,7 @@ class CarInterface(CarInterfaceBase):
     if self.CP.enableCruise:
       for b in self.buttonEvents:
         # do enable on both accel and decel buttons
-        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable and not self.low_speed_alert:
+        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable and self.CP.minSteerSpeed < 10.:
           events.add(EventName.buttonEnable)
           self.countenable += 1
         # do disable on button down
