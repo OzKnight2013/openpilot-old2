@@ -18,7 +18,7 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = CP.mdpsBus == 0
+    self.lkas_button_on = self.mdps_bus == 0
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
@@ -78,7 +78,7 @@ class CarState(CarStateBase):
     self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
     self.lkas_button_enable = 0
 
-    if self.lkas_button_on and not self.prev_lkas_button_on and (CP.mdpsBus > 0):
+    if self.lkas_button_on and not self.prev_lkas_button_on and (self.mdps_bus > 0):
       self.lkas_button_enable = 2
     elif not self.lkas_button_on and self.prev_lkas_button_on:
       self.lkas_button_enable = 1
