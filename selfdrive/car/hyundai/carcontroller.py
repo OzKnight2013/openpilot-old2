@@ -191,8 +191,15 @@ class CarController():
     if frame % 2 and CS.mdps_bus == 1: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    #if pcm_cancel_cmd and not self.longcontrol:
-    #  can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+    if pcm_cancel_cmd and not self.longcontrol:
+      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+    elif CS.out.cruiseState.standstill and not self.longcontrol:
+      # SCC won't resume anyway when the lead distace is less than 3.7m
+      # send resume at a max freq of 5Hz
+      if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:
+        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL))
+        self.last_resume_frame = frame
+
     if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
@@ -224,15 +231,8 @@ class CarController():
                                     self.gapsettingdance,
                                     CS.out.standstill, CS.scc11))
 
-    if CS.out.cruiseState.standstill and not self.longcontrol:
-      # SCC won't resume anyway when the lead distace is less than 3.7m
-      # send resume at a max freq of 5Hz
-      if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:
-        can_sends.append(create_clu11(self.packer, frame, CS.clu11, Buttons.RES_ACCEL))
-        self.last_resume_frame = frame
-
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.car_fingerprint in FEATURES["send_lfa_mfa"]:
-      can_sends.append(create_lfa_mfa(self.packer, frame, lkas_active))
+      can_sends.append(create_lfa_mfa(self.packer, frame, enabled))
 
     return can_sends
