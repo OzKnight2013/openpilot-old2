@@ -10,11 +10,9 @@ STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-STOPPING_BRAKE_RATE = 0.1  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 0.5  # brake_travel/s while releasing on restart
-
-BRAKE_STOPPING_TARGET_BP = [1.7, 1.2, .7, .0]
-BRAKE_STOPPING_TARGET_D = [.2, .07, .065, .045]  # apply at least this amount of brake to maintain the vehicle stationary
+STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
+STARTING_BRAKE_RATE = 0.8  # brake_travel/s while releasing on restart
+BRAKE_STOPPING_TARGET = 0.2  # apply at least this amount of brake to maintain the vehicle stationary
 
 _MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
 _MAX_SPEED_ERROR_V = [1.5, .8]  # max positive v_pid error VS actual speed; this avoids controls windup due to slow pedal resp
@@ -34,6 +32,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
 
   if (not active) or brake_pressed or gas_pressed or avh_active or op_paused or (not cruise_on):
     long_control_state = LongCtrlState.off
+
   else:
     if long_control_state == LongCtrlState.off:
       if active:
@@ -83,7 +82,6 @@ class LongControl():
     # Actuation limits
     gas_max = interp(CS.vEgo, CP.gasMaxBP, CP.gasMaxV)
     brake_max = interp(CS.vEgo, CP.brakeMaxBP, CP.brakeMaxV)
-    stop_decel = interp(CS.vEgo, BRAKE_STOPPING_TARGET_BP, BRAKE_STOPPING_TARGET_D)
 
     # Update state machine
     output_gb = self.last_output_gb
@@ -119,7 +117,8 @@ class LongControl():
       prevent_overshoot = not CP.stoppingControl and CS.vEgo < 1.5 and v_target_future < 0.7
       deadzone = interp(v_ego_pid, CP.longitudinalTuning.deadzoneBP, CP.longitudinalTuning.deadzoneV)
 
-      output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target, freeze_integrator=prevent_overshoot, leadvisible=CS.leadvisible)
+      output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target,
+                                  freeze_integrator=prevent_overshoot, leadvisible=hasLead, leaddistance=dRel)
 
       if prevent_overshoot:
         output_gb = min(output_gb, 0.0)
@@ -130,7 +129,7 @@ class LongControl():
       factor = 1
       if hasLead:
         factor = interp(dRel,[2.0,3.0,4.0,5.0,6.0,7.0,8.0], [5.0,2.5,1.0,0.5,0.25,0.05,0.0])
-      if output_gb > -stop_decel:
+      if not CS.standstill or output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= STOPPING_BRAKE_RATE / RATE * factor
       output_gb = clip(output_gb, -brake_max, gas_max)
 

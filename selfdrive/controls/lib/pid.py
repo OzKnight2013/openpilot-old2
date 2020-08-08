@@ -1,6 +1,9 @@
 import numpy as np
 from common.numpy_fast import clip, interp
 
+TR_DBP = [4., 12., 30., 50.]
+TR_DT = [5., 1., .5, .2]
+
 def apply_deadzone(error, deadzone):
   if error > deadzone:
     error -= deadzone
@@ -156,14 +159,15 @@ class PIDController:
     self.last_error = 0.0
     self.last_kf = 0.0
     self.hasreset = True
+    self.atargetfuture = 0
+    self.locktarget = False
 
-  def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0., freeze_integrator=False, leadvisible=False):
+
+  def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0.,
+             freeze_integrator=False, leadvisible=False, leaddistance=0):
     self.speed = speed
 
-    self.f = feedforward * self.k_f
-
-    if self.f < 0:
-     self.f = max(self.f, self.last_kf - 0.03)
+    self.atargetfuture = feedforward * self.k_f
 
     if not self.hasreset:
       if setpoint < measurement:
@@ -174,11 +178,28 @@ class PIDController:
           setpoint = max(setpoint, self.last_setpoint - 0.01)
         else:
           setpoint = max(setpoint, self.last_setpoint - 0.15)
+
+        if leadvisible and (self.locktarget or
+                            (measurement > 10. and leaddistance > (measurement * 2)) or
+                            (leaddistance < (measurement * .8))):
+          self.locktarget = True
+          self.dTR = interp(leaddistance, TR_DBP, TR_DT)
+          if (measurement > 10. and leaddistance > (measurement * 2)):
+             self.atargetfuture = max(self.atargetfuture, (0.5 * (setpoint**2 - measurement**2))
+                                      / max(.1, leaddistance - measurement * self.dTR))
+          elif (leaddistance < (measurement * .8)):
+             self.atargetfuture = min(self.atargetfuture, (0.5 * (setpoint**2 - measurement**2))
+                                      / max(.1, leaddistance - measurement * self.dTR))
+        else:
+          self.locktarget = False
       else:
         if 1.8 > (setpoint - measurement) > 0 and 5. < setpoint:
           setpoint = min(setpoint, self.last_setpoint + 0.005)
+        self.locktarget = False
     else:
       self.hasreset = False
+
+    self.f = self.atargetfuture
 
     error = float(apply_deadzone(setpoint - measurement, deadzone))
 
