@@ -16,9 +16,10 @@ class CarState(CarStateBase):
     self.mdps_bus = CP.mdpsBus
     self.sas_bus = CP.sasBus
     self.scc_bus = CP.sccBus
+    self.steerminspeed = CP.minSteerSpeed
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = self.mdps_bus == 0
+    self.lkas_button_on = self.steerminspeed > 10.
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
@@ -75,7 +76,7 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
-    if self.mdps_bus > 0:
+    if self.steerminspeed < 10.:
       self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
     self.lkas_button_enable = 0
 
@@ -108,7 +109,7 @@ class CarState(CarStateBase):
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
     # cruise state
-    ret.cruiseState.enabled = (self.cruiseStateavailable != 0 and self.mdps_bus > 0) or (cp.vl["SCC12"]['ACCMode'] != 0)
+    ret.cruiseState.enabled = (self.cruiseStateavailable != 0 and self.steerminspeed < 10.) or (cp.vl["SCC12"]['ACCMode'] != 0)
     ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
