@@ -18,7 +18,7 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = False
+    self.lkas_button_on = True
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
@@ -87,12 +87,10 @@ class CarState(CarStateBase):
 #    ret.cruiseState.available = True
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
 #    ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
-#    self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
-#    ret.cruiseMainbutton = self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+    self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
+    ret.cruiseMainbutton = self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
-#    self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
-
-    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) and self.lkas_button_on
+    self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
 
     if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
@@ -102,18 +100,23 @@ class CarState(CarStateBase):
       elif not self.prev_cruiseStateavailable:
         self.cruiseStateavailable = 0
 
-#    ret.cruiseState.available = (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
+    ret.cruiseState.available = (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
-    ret.cruiseMainbutton = (self.cruiseStateavailable != 0)
-    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
+    # cruise state
+    ret.cruiseState.enabled = (self.cruiseStateavailable != 0 and self.mdps_bus != 0) or (cp.vl["SCC12"]['ACCMode'] != 0)
+    ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
+
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
 
-    speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-    ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
+    if ret.cruiseState.enabled:
+      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+      ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
+    else:
+      ret.cruiseState.speed = 0
 
     # TODO: Find brake pressure
     ret.brake = 0
