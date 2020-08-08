@@ -75,7 +75,8 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
-    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0) and (self.mdps_bus > 0)
+    if self.mdps_bus > 0:
+      self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
     self.lkas_button_enable = 0
 
     if self.lkas_button_on and not self.prev_lkas_button_on:
