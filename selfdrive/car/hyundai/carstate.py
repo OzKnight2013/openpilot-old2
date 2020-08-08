@@ -18,7 +18,8 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = False
+    self.lkas_button_on = True
+#    self.lkas_button_on = False
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
