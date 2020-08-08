@@ -271,8 +271,7 @@ void handle_message(UIState *s, SubMaster &sm) {
     auto event = sm["controlsState"];
     scene.controls_state = event.getControlsState();
     s->controls_timeout = 1 * UI_FREQ;
-    scene.frontview = scene.controls_state.getRearViewCam();
-    if (!scene.frontview){ s->controls_seen = true; }
+    s->controls_seen = true;
 
     s->scene.angleSteers = scene.controls_state.getAngleSteers();
     s->scene.steerOverride= scene.controls_state.getSteerOverride();
@@ -380,15 +379,28 @@ void handle_message(UIState *s, SubMaster &sm) {
     scene.driver_state = sm["driverState"].getDriverState();
   }
   if (sm.updated("dMonitoringState")) {
-    auto data = sm["dMonitoringState"].getDMonitoringState();
-    scene.is_rhd = data.getIsRHD();
-    s->preview_started = data.getIsPreview();
-  } else if (sm.updated("carState")) {
-    auto data = sm["carState"].getCarState();
-    s->scene.brakeLights = data.getBrakeLights();
+    scene.dmonitoring_state = sm["dMonitoringState"].getDMonitoringState();
+    scene.is_rhd = scene.dmonitoring_state.getIsRHD();
+    scene.frontview = scene.dmonitoring_state.getIsPreview();
   } 
-  
-  s->started = scene.thermal.getStarted() || s->preview_started;
+  if (sm.updated("carState")) {
+    auto data = sm["carState"].getCarState();
+    if(scene.leftBlinker!=data.getLeftBlinker() || scene.rightBlinker!=data.getRightBlinker()){
+      scene.blinker_blinkingrate = 100;
+    }
+    scene.brakeLights = data.getBrakeLights();
+    scene.leftBlinker = data.getLeftBlinker();
+    scene.rightBlinker = data.getRightBlinker();
+    scene.leftblindspot = data.getLeftBlindspot();
+    scene.rightblindspot = data.getRightBlindspot();
+
+  } 
+  // timeout on frontview
+  if ((sm.frame - sm.rcv_frame("dMonitoringState")) > 1*UI_FREQ) {
+    scene.frontview = false;
+  }
+
+  s->started = scene.thermal.getStarted() || scene.frontview;
   // Handle onroad/offroad transition
   if (!s->started) {
     if (s->status != STATUS_STOPPED) {
@@ -835,7 +847,7 @@ int main(int argc, char* argv[]) {
 
     if (s->controls_timeout > 0) {
       s->controls_timeout--;
-    } else if (s->started) {
+    } else if (s->started && !s->scene.frontview) {
       if (!s->controls_seen) {
         // car is started, but controlsState hasn't been seen at all
         s->scene.alert_text1 = "openpilot Unavailable";

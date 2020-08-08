@@ -56,7 +56,7 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kfV = [1., 1., 1.3, .9, .2]
 
     ret.lateralTuning.pid.kiBP = [0., 10., 30.]
-    ret.lateralTuning.pid.kpV = [0.01, 0.06, 0.13]
+    ret.lateralTuning.pid.kpV = [0.04, 0.08, 0.13]
     ret.lateralTuning.pid.kpBP = [0., 10., 30.]
     ret.lateralTuning.pid.kiV = [0.001, 0.003, 0.005]
     ret.lateralTuning.pid.kfBP = [0., 10., 30.]
@@ -69,7 +69,7 @@ class CarInterface(CarInterfaceBase):
       # Values from optimizer
       ret.steerRatio = 16.55  # 13.8 is spec end-to-end
       tire_stiffness_factor = 0.82
-    elif candidate == CAR.SONATA:
+    elif candidate in [CAR.SONATA, CAR.SONATA_HEV]:
       ret.mass = 1513. + STD_CARGO_KG
       ret.wheelbase = 2.84
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
@@ -111,7 +111,7 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
-    elif candidate in [CAR.KIA_OPTIMA, CAR.KIA_OPTIMA_H]:
+    elif candidate in [CAR.KIA_OPTIMA, CAR.KIA_OPTIMA_HEV]:
       ret.mass = 3558. * CV.LB_TO_KG
       ret.wheelbase = 2.80
       ret.steerRatio = 13.75 * 1.15
@@ -134,7 +134,7 @@ class CarInterface(CarInterfaceBase):
       tire_stiffness_factor = 0.385
       ret.lateralTuning.pid.kfBP = [0., 30.]
       ret.lateralTuning.pid.kfV = [0.00003, 0.00006]
-    elif candidate in [CAR.IONIQ, CAR.IONIQ_EV_LTD]:
+    elif candidate in [CAR.IONIQ_HEV, CAR.IONIQ_EV_LTD]:
       ret.mass = 1490. + STD_CARGO_KG   #weight per hyundai site https://www.hyundaiusa.com/ioniq-electric/specifications.aspx
       ret.wheelbase = 2.7
       ret.steerRatio = 13.73 * 1.15   #Spec
@@ -156,6 +156,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 1985. + STD_CARGO_KG
       ret.wheelbase = 2.78
       ret.steerRatio = 14.4 * 1.1   # 10% higher at the center seems reasonable
+    elif candidate == CAR.VELOSTER:
+      ret.mass = 3558. + CV.LB_TO_KG
+      ret.wheelbase = 2.80
+      ret.steerRatio = 13.75 * 1.15
     elif candidate in [CAR.KIA_NIRO_HEV, CAR.KIA_NIRO_EV]:
       ret.steerRatio = 13.73
       ret.mass = 1737. + STD_CARGO_KG
@@ -172,7 +176,8 @@ class CarInterface(CarInterfaceBase):
       ret.steerRateCost = 0.4
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
-    if candidate in [CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ, CAR.KONA_EV, CAR.KIA_SORENTO, CAR.SONATA_2019, CAR.KIA_OPTIMA, CAR.KIA_STINGER]:
+    if candidate in [CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO,
+                     CAR.SONATA_2019, CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER]:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
     ret.centerToFront = ret.wheelbase * 0.4

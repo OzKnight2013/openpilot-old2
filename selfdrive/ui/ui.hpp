@@ -130,6 +130,11 @@ typedef struct UIScene {
   std::string alert_type;
   cereal::ControlsState::AlertSize alert_size;
   // ui add
+  bool rightblindspot;
+  bool leftblindspot;
+  bool leftBlinker;
+  bool rightBlinker;
+  int blinker_blinkingrate;
   float angleSteers;
   float steerRatio;
   bool brakeLights;
@@ -152,7 +157,7 @@ typedef struct UIScene {
   cereal::RadarState::LeadData::Reader lead_data[2];
   cereal::ControlsState::Reader controls_state;
   cereal::DriverState::Reader driver_state;
-  cereal::LiveParametersData::Reader liveParams;
+  cereal::DMonitoringState::Reader dmonitoring_state;
 } UIScene;
 
 typedef struct {
@@ -253,7 +258,6 @@ typedef struct UIState {
   float alert_blinking_alpha;
   bool alert_blinked;
   bool started;
-  bool preview_started;
   bool vision_seen;
   bool livempc_or_radarstate_changed;
 

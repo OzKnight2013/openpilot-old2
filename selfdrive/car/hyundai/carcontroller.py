@@ -7,7 +7,7 @@ from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
                                              create_scc11, create_scc12, create_mdps12
 from selfdrive.car.hyundai.interface import GearShifter
-from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR
+from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.longcontrol import LongCtrlState
@@ -71,11 +71,9 @@ class CarController():
     self.longcontrol = False
     self.fs_error = False
     self.update_live = False
-    self.scc_live = not CP.radarOffCan
     self.lead_visible = False
     self.lead_debounce = 0
     self.apply_accel_last = 0
-    self.visionbrakestart = False
     self.gapsettingdance = 2
     self.gapcount = 0
     self.acc_paused_due_brake = False
@@ -98,24 +96,7 @@ class CarController():
     # gas and brake
     apply_accel = actuators.gas - actuators.brake
 
-    follow_distance = max(4., (CS.out.vEgo * .4))
-
-    accel_dyn_min = ACCEL_MIN
-
-    #if(apply_accel >= 0.):
-    #  self.visionbrakestart = False
-
-    apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
-      #if not self.lead_visible:
-      #  accel_dyn_min = -0.5
-  #    elif (CS.Vrel_radar < 0.) and (3. < CS.lead_distance < 140.) and not self.visionbrakestart:
-  #      accel_dyn_min = ((square(CS.out.vEgo + CS.Vrel_radar) - square(CS.out.vEgo))/(2 * max(.1, (CS.lead_distance - follow_distance))))
-  #      accel_dyn_min = clip(accel_dyn_min, ACCEL_MIN, -0.5)
-      #else:
-      #  if apply_accel < (-0.5 / ACCEL_SCALE):
-      #    self.visionbrakestart = True
-
-    apply_accel = clip(apply_accel * ACCEL_SCALE, accel_dyn_min, ACCEL_MAX)
+    apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
     # Steering Torque
     updated_SteerLimitParams = SteerLimitParams
@@ -191,18 +172,7 @@ class CarController():
     if frame == 0: # initialize counts from last received count signals
       self.lkas11_cnt = CS.lkas11["CF_Lkas_MsgCount"]
       self.scc12_cnt = CS.scc12["CR_VSM_Alive"] + 1 if not CS.no_radar else 0
-      self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-      self.scc_update_frame = frame
 
-    # check if SCC on bus 0 is live
-    if frame % 7 == 0 and not CS.no_radar:
-      if CS.scc11["AliveCounterACC"] == self.prev_scc_cnt:
-        if frame - self.scc_update_frame > 20 and self.scc_live:
-          self.scc_live = False
-      else:
-        self.scc_live = True
-        self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-        self.scc_update_frame = frame
 
     self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
 
@@ -223,7 +193,7 @@ class CarController():
 
     #if pcm_cancel_cmd and not self.longcontrol:
     #  can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
-    if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error if no cancel cmd
+    if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
 
@@ -242,7 +212,7 @@ class CarController():
     self.acc_standstill = True if (LongCtrlState.stopping and CS.out.standstill) else False
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if self.longcontrol and (CS.scc_bus or not self.scc_live) and frame % 2 == 0:
+    if self.longcontrol and (CS.scc_bus == 2) and frame % 2 == 0:
 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,
                                     self.acc_standstill, self.acc_paused,
@@ -262,7 +232,7 @@ class CarController():
         self.last_resume_frame = frame
 
     # 20 Hz LFA MFA message
-    if frame % 5 == 0 and self.car_fingerprint in [CAR.SONATA, CAR.PALISADE, CAR.IONIQ]:
-      can_sends.append(create_lfa_mfa(self.packer, frame, enabled))
+    if frame % 5 == 0 and self.car_fingerprint in FEATURES["send_lfa_mfa"]:
+      can_sends.append(create_lfa_mfa(self.packer, frame, lkas_active))
 
     return can_sends

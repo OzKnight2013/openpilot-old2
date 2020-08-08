@@ -25,13 +25,12 @@ void uno_enable_can_transciever(uint8_t transciever, bool enabled) {
 }
 
 void uno_enable_can_transcievers(bool enabled) {
-  for(uint8_t i=1U; i<=4U; i++){
-    // Leave main CAN always on for CAN-based ignition detection
-    if((car_harness_status == HARNESS_STATUS_FLIPPED) ? (i == 3U) : (i == 1U)){
-      uno_enable_can_transciever(i, true);
-    } else {
-      uno_enable_can_transciever(i, enabled);
-    }
+
+  uint8_t t1 = enabled ? 1U : 2U;  // leave transciever 1 enabled to detect CAN ignition
+  for(uint8_t i=t1; i<=4U; i++) {
+    uno_enable_can_transciever(i, enabled);
+  }
+
   }
 }
 
@@ -240,7 +239,7 @@ void uno_init(void) {
   }
 
   // init multiplexer
-  can_set_obd(car_harness_status, true);
+  can_set_obd(car_harness_status, false);
 
   // Switch to phone usb mode if harness connection is powered by less than 7V
   if(adc_get_voltage() < 7000U){

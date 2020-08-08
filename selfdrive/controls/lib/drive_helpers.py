@@ -7,6 +7,7 @@ ButtonPrev = ButtonType.unknown
 ButtonCnt = 0
 LongPressed = False
 PrevLongDisable = False
+PrevGaspressed = False
 
 # kph
 FIRST_PRESS_TIME = 1

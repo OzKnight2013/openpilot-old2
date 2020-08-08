@@ -112,8 +112,9 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     wrongCruiseMode @87;
     neosUpdateRequired @88;
     modeldLagging @89;
-    opLongdisabled @90;
-    lkasButtonOff @91;
+    deviceFalling @90;
+    opLongdisabled @91;
+    lkasButtonOff @92;
   }
 }
 
