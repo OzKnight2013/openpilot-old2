@@ -74,6 +74,12 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.84
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
       tire_stiffness_factor = 0.65
+      ret.lateralTuning.pid.kiBP = [0., 10., 30.]
+      ret.lateralTuning.pid.kpV = [0.13, 0.13, 0.13]
+      ret.lateralTuning.pid.kpBP = [0., 10., 30.]
+      ret.lateralTuning.pid.kiV = [0.001, 0.003, 0.005]
+      ret.lateralTuning.pid.kfBP = [0., 10., 30.]
+      ret.lateralTuning.pid.kfV = [0.00003, 0.00004, 0.00005]
     elif candidate == CAR.SONATA_2019:
       ret.mass = 4497. * CV.LB_TO_KG
       ret.wheelbase = 2.804
