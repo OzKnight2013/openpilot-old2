@@ -296,10 +296,10 @@ class CarInterface(CarInterfaceBase):
       if EventName.pcmDisable in events.events:
         events.events.remove(EventName.pcmDisable)
 
-#    if self.CS.lkas_button_on and self.CS.lkas_button_enable == 2:
-#      events.add(EventName.buttonEnable)
-#    elif self.CS.lkas_button_enable == 1:
-#      events.add(EventName.buttonCancel)
+    if self.CS.lkas_button_on and self.CS.lkas_button_enable == 2:
+      events.add(EventName.buttonEnable)
+    elif self.CS.lkas_button_enable == 1:
+      events.add(EventName.buttonCancel)
 
     ret.events = events.to_msg()
 

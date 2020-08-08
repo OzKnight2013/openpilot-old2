@@ -18,8 +18,7 @@ class CarState(CarStateBase):
     self.scc_bus = CP.sccBus
     self.leftBlinker = False
     self.rightBlinker = False
-    self.lkas_button_on = True
-#    self.lkas_button_on = False
+    self.lkas_button_on = False
     self.cruise_main_button = 0
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
@@ -76,13 +75,13 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
-#    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
-#    self.lkas_button_enable = 0
+    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
+    self.lkas_button_enable = 0
 
-#    if self.lkas_button_on and not self.prev_lkas_button_on:
-#      self.lkas_button_enable = 2
-#    elif not self.lkas_button_on and self.prev_lkas_button_on:
-#      self.lkas_button_enable = 1
+    if self.lkas_button_on and not self.prev_lkas_button_on:
+      self.lkas_button_enable = 2
+    elif not self.lkas_button_on and self.prev_lkas_button_on:
+      self.lkas_button_enable = 1
 
     # cruise state
 #    ret.cruiseState.available = True
@@ -93,7 +92,7 @@ class CarState(CarStateBase):
 
 #    self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
 
-    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) and self.lkas_button_on
 
     if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
@@ -107,7 +106,7 @@ class CarState(CarStateBase):
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
     ret.cruiseMainbutton = (self.cruiseStateavailable != 0)
-    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0)
+    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
