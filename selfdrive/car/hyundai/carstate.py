@@ -110,7 +110,7 @@ class CarState(CarStateBase):
     if self.minSteerSpeed < 10.:
       ret.cruiseState.enabled = (self.cruiseStateavailable != 0)
     else:
-      ret.cruiseState.enabled =  (cp.vl["SCC12"]['ACCMode'] != 0)
+      ret.cruiseState.enabled =  (cp.vl["SCC12"]['ACCMode'] != 0) or (self.minSteerSpeed < ret.vEgo)
 
     ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
