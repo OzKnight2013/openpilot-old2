@@ -133,20 +133,20 @@ class CarController():
 #    else:
 #      self.longcontrol = False
 
-#    if self.longcontrol:
-#      self.gapcount += 1
-#      if self.gapcount == 50 and self.gapsettingdance == 2:
-#        self.gapsettingdance = 1
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 1:
-#        self.gapsettingdance = 4
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 4:
-#        self.gapsettingdance = 3
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 3:
-#        self.gapsettingdance = 2
-#        self.gapcount = 0
+    if self.longcontrol:
+      self.gapcount += 1
+      if self.gapcount == 50 and self.gapsettingdance == 2:
+        self.gapsettingdance = 1
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 1:
+        self.gapsettingdance = 4
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 4:
+        self.gapsettingdance = 3
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 3:
+        self.gapsettingdance = 2
+        self.gapcount = 0
 
     self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
@@ -187,7 +187,6 @@ class CarController():
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning, self.fs_error, 1))
-
     if frame % 2 and CS.mdps_bus == 1: # send clu11 to mdps if it is not on bus 0
       can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
@@ -205,17 +204,17 @@ class CarController():
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
 
 
-#    self.prev_acc_paused = self.acc_paused
+    self.prev_acc_paused_due_brake = self.acc_paused_due_brake
 
-#    if self.longcontrol and CS.rawcruiseStateavailable and (CS.out.brakePressed or CS.out.brakeHold or
-#                                                            (CS.cruise_buttons == 4) or (CS.out.gasPressed and
-#                                                                                         not (CS.cruise_buttons == 1 or
-#                                                                                              CS.cruise_buttons == 2))):
-#      self.acc_paused = True
-#      self.acc_paused_due_brake = (CS.cruise_buttons == 4) or (CS.out.brakePressed and (2. < CS.out.vEgo < 15.)) or self.acc_paused_due_brake
-#    elif CS.cruise_buttons == 1 or CS.cruise_buttons == 2 or (not self.acc_paused_due_brake):
-#      self.acc_paused = False
-#      self.acc_paused_due_brake = False
+    if self.longcontrol and CS.rawcruiseStateavailable and (CS.out.brakePressed or CS.out.brakeHold or
+                                                            (CS.cruise_buttons == 4) or (CS.out.gasPressed and
+                                                                                         not (CS.cruise_buttons == 1 or
+                                                                                              CS.cruise_buttons == 2))):
+      self.acc_paused = True
+      self.acc_paused_due_brake = (CS.cruise_buttons == 4) or (CS.out.brakePressed and (2. < CS.out.vEgo < 15.)) or self.acc_paused_due_brake
+    elif CS.cruise_buttons == 1 or CS.cruise_buttons == 2 or (not self.acc_paused_due_brake) or (not self.longcontrol):
+      self.acc_paused = False
+      self.acc_paused_due_brake = False
 
     self.acc_standstill = True if (LongCtrlState.stopping and CS.out.standstill) else False
 

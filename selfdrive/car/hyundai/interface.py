@@ -201,7 +201,6 @@ class CarInterface(CarInterfaceBase):
     ret.sccBus = 0 if 1056 in fingerprint[0] else 1 if 1056 in fingerprint[1] and 1296 not in fingerprint[1] \
                                                                      else 2 if 1056 in fingerprint[2] else -1
     ret.radarOffCan = ret.sccBus == -1
-#    ret.openpilotLongitudinalControl = True 
     ret.openpilotLongitudinalControl = False 
     ret.autoLcaEnabled = True
 
@@ -223,6 +222,7 @@ class CarInterface(CarInterfaceBase):
     # most HKG cars has no long control, it is safer and easier to engage by main on
 #    if not self.CP.openpilotLongitudinalControl:
 #      ret.cruiseState.enabled = ret.cruiseState.available
+    ret.cruiseState.enabled = ret.cruiseState.available
 
     ret.leadvisible = self.CC.lead_visible != 0
 
@@ -281,7 +281,7 @@ class CarInterface(CarInterfaceBase):
     if self.CP.enableCruise:
       for b in self.buttonEvents:
         # do enable on both accel and decel buttons
-        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable and self.CP.minSteerSpeed < 10.:
+        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
           events.add(EventName.buttonEnable)
           self.countenable += 1
         # do disable on button down

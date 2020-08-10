@@ -76,8 +76,7 @@ class CarState(CarStateBase):
 
     self.cruise_main_button = int(cp.vl["CLU11"]["CF_Clu_CruiseSwMain"])
     self.cruise_buttons = int(cp.vl["CLU11"]["CF_Clu_CruiseSwState"])
-    if self.minSteerSpeed < 10.:
-      self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
+    self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
     self.lkas_button_enable = 0
 
     if self.lkas_button_on and not self.prev_lkas_button_on:
@@ -94,7 +93,7 @@ class CarState(CarStateBase):
 
     self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
 
-    if self.cruiseStateavailable and self.minSteerSpeed < 10.:
+    if self.cruiseStateavailable:
       if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
         self.cruiseStateavailable = self.cruiseStateavailable
       elif self.cruise_buttons == 4:
@@ -106,21 +105,12 @@ class CarState(CarStateBase):
 
     self.prev_cruiseStateavailable = self.cruiseStateavailable
 
-    # cruise state
-    if self.minSteerSpeed < 10.:
-      ret.cruiseState.enabled = (self.cruiseStateavailable != 0)
-    else:
-      ret.cruiseState.enabled =  (cp.vl["SCC12"]['ACCMode'] != 0) or (self.minSteerSpeed < ret.vEgo)
-
     ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
 
-    if ret.cruiseState.enabled:
-      speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
-    else:
-      ret.cruiseState.speed = 0
+    speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
+    ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
 
     # TODO: Find brake pressure
     ret.brake = 0
@@ -205,12 +195,12 @@ class CarState(CarStateBase):
       ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
 
 
-#    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
-#      self.lkas_button_enable = 2
-#      self.lkas_button_init_on_Gear = 1
-#    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
-#      self.lkas_button_enable = 1
-#      self.lkas_button_init_on_Gear = 0
+    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
+      self.lkas_button_enable = 2
+      self.lkas_button_init_on_Gear = 1
+    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
+      self.lkas_button_enable = 1
+      self.lkas_button_init_on_Gear = 0
 
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = cp_cam.vl["LKAS11"]
