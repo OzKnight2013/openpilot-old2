@@ -99,6 +99,10 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
       ret.minSteerSpeed = 55 * CV.KPH_TO_MS
+    elif candidate == CAR.GENESIS_G70: 
+      ret.mass = 1640. + STD_CARGO_KG 
+      ret.wheelbase = 2.84 
+      ret.steerRatio = 16.5 
     elif candidate == CAR.GENESIS_G80:
       ret.steerActuatorDelay = 0.4
       ret.steerRateCost = 0.45
@@ -175,7 +179,7 @@ class CarInterface(CarInterfaceBase):
       ret.steerRateCost = 0.4
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
-    if candidate in [CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO,
+    if candidate in [CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO,
                      CAR.SONATA_2019, CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER]:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
