@@ -35,7 +35,7 @@ AddrCheckStruct hyundai_legacy_rx_checks[] = {
 const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]);
 
 bool hyundai_legacy = false;
-bool hyundai_mdps_harness_present = True;
+bool hyundai_mdps_harness_present = true;
 bool hyundai_radar_harness_present = false; 
 static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
@@ -128,8 +128,8 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     // sample gas and brake pedal state
     if (addr == 916) {
-      gas_pressed = False; //((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
-      brake_pressed = False; //(GET_BYTE(to_push, 6) >> 7) != 0;
+      gas_pressed = false; //((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
+      brake_pressed = false; //(GET_BYTE(to_push, 6) >> 7) != 0;
     }
 
     generic_rx_checks((addr == 832));
