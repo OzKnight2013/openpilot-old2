@@ -113,8 +113,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     neosUpdateRequired @88;
     modeldLagging @89;
     deviceFalling @90;
-    opLongdisabled @91;
-    lkasButtonOff @92;
+    lkasButtonOff @91;
   }
 }
 
@@ -124,11 +123,6 @@ struct CarEvent @0x9b1657f34caf3ad3 {
 struct CarState {
   errorsDEPRECATED @0 :List(CarEvent.EventName);
   events @13 :List(CarEvent);
-
-  leadDistance @37 : Float32;
-  tempOplongdisable @ 41 :Bool;
-  leadvisible @42 :Bool;
-  cruiseMainbutton @43 :Bool;
 
   # car speed
   vEgo @1 :Float32;         # best estimate of speed
@@ -418,9 +412,8 @@ struct CarParams {
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
   mdpsBus @51: Int8;
   sasBus @52: Int8;
-  sccBus @53: Int8;
-  autoLcaEnabled @54: Bool;
-  steermaxLimit @55: Float32;
+  autoLcaEnabled @53: Bool;
+  steermaxLimit @54: Float32;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
@@ -443,8 +436,6 @@ struct CarParams {
     kiV @3 :List(Float32);
     deadzoneBP @4 :List(Float32);
     deadzoneV @5 :List(Float32);
-    kfBP @6 :List(Float32);
-    kfV @7 :List(Float32);
   }
 
   struct LateralINDITuning {

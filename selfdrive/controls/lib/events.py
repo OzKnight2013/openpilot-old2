@@ -476,14 +476,6 @@ EVENTS = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
-  EventName.opLongdisabled: {
-    ET.WARNING: Alert(
-      "TAKE CONTROL, OP Long Control Disengaged",
-      "OP Long Control Disabled",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2, 1., 1., 1.),
-  },
-
   EventName.lkasButtonOff: {
     ET.PERMANENT: Alert(
       "LKAS Button is turned off",

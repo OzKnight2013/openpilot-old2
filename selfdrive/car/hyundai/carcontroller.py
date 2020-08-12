@@ -1,36 +1,13 @@
-from numpy.core._multiarray_umath import square
-
 from cereal import car
 from common.realtime import DT_CTRL
-from common.numpy_fast import clip, interp
 from selfdrive.car import apply_std_steer_torque_limits
-from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
-                                             create_scc11, create_scc12
-from selfdrive.car.hyundai.interface import GearShifter
+from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
-from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.longcontrol import LongCtrlState
 from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
-# Accel Hard limits
-ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
-ACCEL_MAX = 3.  # 1.5 m/s2
-ACCEL_MIN = -5.  # 3   m/s2
-ACCEL_SCALE = 10.
-
-def accel_hysteresis(accel, accel_steady):
-
-  # for small accel oscillations within ACCEL_HYST_GAP, don't change the accel command
-  if accel > accel_steady + ACCEL_HYST_GAP:
-    accel_steady = accel - ACCEL_HYST_GAP
-  elif accel < accel_steady - ACCEL_HYST_GAP:
-    accel_steady = accel + ACCEL_HYST_GAP
-  accel = accel_steady
-
-  return accel, accel_steady
 
 def process_hud_alert(enabled, fingerprint, visual_alert, left_lane,
                       right_lane, left_lane_depart, right_lane_depart, lkas_button):
@@ -61,22 +38,9 @@ class CarController():
     self.car_fingerprint = CP.carFingerprint
     self.steermaxLimit = int(CP.steermaxLimit)
     self.packer = CANPacker(dbc_name)
-    self.accel_steady = 0
     self.steer_rate_limited = False
     self.lkas11_cnt = 0
-    self.scc12_cnt = 0
-    self.resume_cnt = 0
     self.last_resume_frame = 0
-    self.last_lead_distance = 0
-    self.longcontrol = False
-    self.lead_visible = False
-    self.lead_debounce = 0
-    self.apply_accel_last = 0
-    self.gapsettingdance = 2
-    self.gapcount = 0
-    self.acc_paused_due_brake = False
-    self.acc_paused = False
-    self.prev_acc_paused_due_brake = False
     self.manual_steering = False
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
@@ -88,20 +52,6 @@ class CarController():
       self.lfa_available = True
     else:
       self.lfa_available = False
-
-    if lead_visible:
-      self.lead_visible = True
-      self.lead_debounce = 50
-    elif self.lead_debounce > 0:
-      self.lead_debounce -= 1
-    else:
-      self.lead_visible = lead_visible
-
-    # gas and brake
-    apply_accel = actuators.gas - actuators.brake
-
-    apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
-
     # Steering Torque
     updated_SteerLimitParams = SteerLimitParams
     updated_SteerLimitParams.STEER_MAX = self.steermaxLimit
@@ -128,31 +78,6 @@ class CarController():
     if not lkas_active:
       apply_steer = 0
 
-#    self.prev_longcontrol = self.longcontrol
-#    if CS.lkas_button_on:
-#      if not CS.rawcruiseStateavailable:
-#        self.longcontrol = True
-#      else:
-#        self.longcontrol = self.prev_longcontrol
-#    else:
-#      self.longcontrol = False
-
-    if self.longcontrol:
-      self.gapcount += 1
-      if self.gapcount == 50 and self.gapsettingdance == 2:
-        self.gapsettingdance = 1
-        self.gapcount = 0
-      elif self.gapcount == 50 and self.gapsettingdance == 1:
-        self.gapsettingdance = 4
-        self.gapcount = 0
-      elif self.gapcount == 50 and self.gapsettingdance == 4:
-        self.gapsettingdance = 3
-        self.gapcount = 0
-      elif self.gapcount == 50 and self.gapsettingdance == 3:
-        self.gapsettingdance = 2
-        self.gapcount = 0
-
-    self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
 
     sys_warning, sys_state, left_lane_warning, right_lane_warning =\
@@ -163,18 +88,6 @@ class CarController():
     enabled_speed = 38 if CS.is_set_speed_in_mph  else 60
     if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter == GearShifter.reverse:
       enabled_speed = clu11_speed
-
-    if CS.is_set_speed_in_mph:
-      set_speed *= CV.MS_TO_MPH
-    else:
-      set_speed *= CV.MS_TO_KPH
-
-    if frame == 0: # initialize counts from last received count signals
-      self.scc12_cnt = CS.scc12["CR_VSM_Alive"] + 1 if not CS.no_radar else 0
-
-    self.prev_scc_cnt = CS.scc11["AliveCounterACC"]
-
-    self.scc12_cnt %= 0xF
 
     can_sends = []
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
@@ -191,42 +104,14 @@ class CarController():
       if frame % 2: # send clu11 to mdps if it is not on bus 0
         can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
-    #if pcm_cancel_cmd and not self.longcontrol:
-    #  can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
-    #el
-    if CS.out.cruiseState.standstill and not self.longcontrol:
+    if pcm_cancel_cmd:
+      can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
+    elif CS.out.cruiseState.standstill:
       # SCC won't resume anyway when the lead distace is less than 3.7m
       # send resume at a max freq of 5Hz
       if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:
         can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         self.last_resume_frame = frame
-
-    self.prev_acc_paused_due_brake = self.acc_paused_due_brake
-
-    if self.longcontrol and CS.rawcruiseStateavailable and (CS.out.brakePressed or CS.out.brakeHold or
-                                                            (CS.cruise_buttons == 4) or (CS.out.gasPressed and
-                                                                                         not (CS.cruise_buttons == 1 or
-                                                                                              CS.cruise_buttons == 2))):
-      self.acc_paused = True
-      self.acc_paused_due_brake = (CS.cruise_buttons == 4) or (CS.out.brakePressed and (2. < CS.out.vEgo < 15.)) or self.acc_paused_due_brake
-    elif CS.cruise_buttons == 1 or CS.cruise_buttons == 2 or (not self.acc_paused_due_brake) or (not self.longcontrol):
-      self.acc_paused = False
-      self.acc_paused_due_brake = False
-
-    self.acc_standstill = True if (LongCtrlState.stopping and CS.out.standstill) else False
-
-    # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if CS.scc_bus == 2:
-        if frame % 2 == 0:
-          can_sends.append(create_scc12(self.packer, apply_accel, enabled,
-                                    self.acc_standstill, self.acc_paused,
-                                    CS.out.cruiseMainbutton,
-                                    self.scc12_cnt, CS.scc12, self.longcontrol))
-
-          can_sends.append(create_scc11(self.packer, frame, enabled,
-                                    set_speed, self.lead_visible,
-                                    self.gapsettingdance,
-                                    CS.out.standstill, CS.scc11, self.longcontrol))
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.lfa_available:

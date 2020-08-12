@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
-from numpy import interp
-
 from cereal import car
 from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
-from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
-GearShifter = car.CarState.GearShifter
 EventName = car.CarEvent.EventName
 ButtonType = car.CarState.ButtonEvent.Type
 
@@ -30,30 +26,17 @@ class CarInterface(CarInterfaceBase):
 
     ret.carName = "hyundai"
     ret.safetyModel = car.CarParams.SafetyModel.hyundai
+    ret.radarOffCan = True
 
     # Most Hyundai car ports are community features for now
     ret.communityFeature = candidate not in [CAR.SONATA]
 
     ret.steerActuatorDelay = 0.35  # Default delay
-    ret.steerRateCost = 0.5
+    ret.steerRateCost = 0.45
     ret.steerLimitTimer = 0.8
     tire_stiffness_factor = 1.
 
-    ret.steermaxLimit = 409  # stock
-
-    #Long tuning Params -  make individual params for cars, baseline Hyundai genesis
-    ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
-    ret.longitudinalTuning.kpV = [0.85, 1.3, .85, .65]
-    ret.longitudinalTuning.kiBP = [0., 15., 35.]
-    ret.longitudinalTuning.kiV = [.15, .10, .065]
-    ret.longitudinalTuning.deadzoneBP = [0., .5]
-    ret.longitudinalTuning.deadzoneV = [0.00, 0.00]
-    ret.gasMaxBP = [0., 1., 1.1, 15., 40.]
-    ret.gasMaxV = [.12, .24, .2, .168, .13]
-    ret.brakeMaxBP = [0., 5., 5.1]
-    ret.brakeMaxV = [1., 1., 0.35]  # safety limits to stop unintended deceleration
-    ret.longitudinalTuning.kfBP = [0., 5., 10., 20., 30.]
-    ret.longitudinalTuning.kfV = [1., 1., 1.3, .9, .2]
+    ret.steermaxLimit = 255  # stock
 
     ret.lateralTuning.pid.kiBP = [0., 10., 30.]
     ret.lateralTuning.pid.kpV = [0.04, 0.08, 0.13]
@@ -179,8 +162,8 @@ class CarInterface(CarInterfaceBase):
       ret.steerRateCost = 0.4
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
-    if candidate in [CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO,
-                     CAR.SONATA_2019, CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER]:
+    if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO, CAR.SONATA_2019, 
+                     CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER, CAR.GENESIS_G70, CAR.SONATA_HEV]:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
     ret.centerToFront = ret.wheelbase * 0.4
@@ -196,16 +179,9 @@ class CarInterface(CarInterfaceBase):
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
 
-    ret.stoppingControl = True
-    ret.startAccel = 0.0
-
-    # ignore CAN2 address if L-CAN on the same BUS
-    ret.mdpsBus = 1 #if 593 in fingerprint[1] and 1296 not in fingerprint[1] else 0
+    # ignore CAN1 address if L-CAN on the same BUS
+    ret.mdpsBus = 1 if 593 in fingerprint[1] and 1296 not in fingerprint[1] else 0
     ret.sasBus = 1 if 688 in fingerprint[1] and 1296 not in fingerprint[1] else 0
-    ret.sccBus = 0 if 1057 in fingerprint[0] else 1 if 1057 in fingerprint[1] and 1296 not in fingerprint[1] \
-                                                                     else 2 if 1057 in fingerprint[2] else -1
-    ret.radarOffCan = ret.sccBus == -1
-    ret.openpilotLongitudinalControl = False 
     ret.autoLcaEnabled = True
 
     if ret.mdpsBus != 0:
@@ -221,16 +197,7 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
-    self.CP.enableCruise = self.CC.longcontrol != 0
 
-    # most HKG cars has no long control, it is safer and easier to engage by main on
-#    if not self.CP.openpilotLongitudinalControl:
-#      ret.cruiseState.enabled = ret.cruiseState.available
-    ret.cruiseState.enabled = ret.cruiseState.available
-
-    ret.leadvisible = self.CC.lead_visible != 0
-
-    ret.tempOplongdisable = self.CC.acc_paused_due_brake != 0
 
     # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
     if ret.vEgo < (self.CP.minSteerSpeed + .5) and self.CP.minSteerSpeed > 10.:
@@ -285,12 +252,9 @@ class CarInterface(CarInterfaceBase):
 
     for b in self.buttonEvents:
       # do enable on both accel and decel buttons
-      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
+      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and ret.cruiseState.enabled:
         events.add(EventName.buttonEnable)
         self.countenable += 1
-      # do disable on button down
-      if b.type == ButtonType.cancel and b.pressed:
-        events.add(EventName.buttonCancel)
 
     if self.CS.lkas_button_enable == 1:
       events.add(EventName.buttonCancel)
