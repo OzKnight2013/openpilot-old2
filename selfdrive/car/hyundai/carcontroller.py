@@ -69,8 +69,6 @@ class CarController():
     self.last_resume_frame = 0
     self.last_lead_distance = 0
     self.longcontrol = False
-    self.fs_error = False
-    self.update_live = False
     self.lead_visible = False
     self.lead_debounce = 0
     self.apply_accel_last = 0
@@ -85,6 +83,12 @@ class CarController():
              left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible):
 
     # *** compute control surfaces ***
+
+    if self.car_fingerprint in FEATURES["send_lfa_mfa"]:
+      self.lfa_available = True
+    else:
+      self.lfa_available = False
+
     if lead_visible:
       self.lead_visible = True
       self.lead_debounce = 50
@@ -150,10 +154,6 @@ class CarController():
 
     self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
-  
-    if self.update_live or (CS.lkas11["CF_Lkas_FusionState"] == 0):
-       self.fs_error = CS.lkas11["CF_Lkas_FusionState"]
-       self.update_live = True
 
     sys_warning, sys_state, left_lane_warning, right_lane_warning =\
       process_hud_alert(enabled, self.car_fingerprint, visual_alert,
@@ -180,15 +180,16 @@ class CarController():
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
-                                   left_lane_warning, right_lane_warning, self.fs_error, 0))
+                                   left_lane_warning, right_lane_warning, self.lfa_available, 0))
 
     if CS.mdps_bus: # send lkas11 bus 1 if mdps
       can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
-                                   left_lane_warning, right_lane_warning, self.fs_error, 1))
-    if frame % 2 and CS.mdps_bus == 1: # send clu11 to mdps if it is not on bus 0
-      can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
+                                   left_lane_warning, right_lane_warning, self.lfa_available, 1))
+
+      if frame % 2: # send clu11 to mdps if it is not on bus 0
+        can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
     #if pcm_cancel_cmd and not self.longcontrol:
     #  can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.CANCEL, clu11_speed))
@@ -199,10 +200,6 @@ class CarController():
       if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:
         can_sends.append(create_clu11(self.packer, frame, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         self.last_resume_frame = frame
-
-    if CS.mdps_bus: # send mdps12 to LKAS to prevent LKAS error
-      can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))
-
 
     self.prev_acc_paused_due_brake = self.acc_paused_due_brake
 
@@ -232,7 +229,7 @@ class CarController():
                                     CS.out.standstill, CS.scc11))
 
     # 20 Hz LFA MFA message
-    if frame % 5 == 0 and self.car_fingerprint in FEATURES["send_lfa_mfa"]:
+    if frame % 5 == 0 and self.lfa_available:
       can_sends.append(create_lfa_mfa(self.packer, frame, enabled))
 
     return can_sends

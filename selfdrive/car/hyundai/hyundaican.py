@@ -7,7 +7,7 @@ hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
                   lkas11, sys_warning, sys_state, enabled,
                   left_lane, right_lane,
-                  left_lane_depart, right_lane_depart, fs_error, bus):
+                  left_lane_depart, right_lane_depart, lfa_available, bus):
   values = lkas11
   values["CF_Lkas_LdwsSysState"] = 3 if steer_req else sys_state
   values["CF_Lkas_SysWarning"] = sys_warning
@@ -17,10 +17,9 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   values["CF_Lkas_ActToi"] = steer_req
   values["CF_Lkas_ToiFlt"] = 0
   values["CF_Lkas_MsgCount"] = frame % 0x10
-  values["CF_Lkas_FusionState"] = fs_error
   values["CF_Lkas_Chksum"] = 0
 
-  if car_fingerprint in [CAR.SONATA, CAR.PALISADE]:
+  if lfa_available:
     values["CF_Lkas_LdwsActivemode"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
 
@@ -66,7 +65,8 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
 def create_clu11(packer, frame, bus, clu11, button, speed):
   values = clu11
 
-#  values["CF_Clu_CruiseSwState"] = button
+  if bus != 1:
+    values["CF_Clu_CruiseSwState"] = button
   values["CF_Clu_Vanz"] = speed
   values["CF_Clu_AliveCnt1"] = frame // 2 % 0x10
   return packer.make_can_msg("CLU11", bus, values)
@@ -93,19 +93,6 @@ def create_scc12(packer, apply_accel, enabled, standstill, accpause, cruise_on, 
   values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
 
   return packer.make_can_msg("SCC12", 0, values)
-
-def create_mdps12(packer, frame, mdps12):
-  values = mdps12
-  values["CF_Mdps_ToiActive"] = 0
-  values["CF_Mdps_ToiUnavail"] = 1
-  values["CF_Mdps_MsgCount2"] = frame % 0x100
-  values["CF_Mdps_Chksum2"] = 0
-
-  dat = packer.make_can_msg("MDPS12", 2, values)[2]
-  checksum = sum(dat) % 256
-  values["CF_Mdps_Chksum2"] = checksum
-
-  return packer.make_can_msg("MDPS12", 2, values)
 
 def create_lfa_mfa(packer, frame, enabled):
   values = {

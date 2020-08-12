@@ -28,8 +28,8 @@ const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_c
 
 // older hyundai models have less checks due to missing counters and checksums
 AddrCheckStruct hyundai_legacy_rx_checks[] = {
-  {.msg = {{902, 0, 8, .expected_timestep = 20000U}}},
-  {.msg = {{916, 0, 8, .expected_timestep = 20000U}}},
+  {.msg = {{902, 0, 8, .expected_timestep = 10000U}}},
+  {.msg = {{916, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
 };
 const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]);
@@ -127,8 +127,8 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     // sample gas and brake pedal state
     if (addr == 916) {
-      gas_pressed = false; //((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
-      brake_pressed = false; //(GET_BYTE(to_push, 6) >> 7) != 0;
+      gas_pressed = ((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
+      brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
     }
 
     generic_rx_checks((addr == 832));
