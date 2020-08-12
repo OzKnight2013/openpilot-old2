@@ -85,9 +85,9 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   bool valid;
   if (hyundai_legacy) {
-    valid = true; //addr_safety_check(to_push, hyundai_legacy_rx_checks, HYUNDAI_LEGACY_RX_CHECK_LEN,
-                  //            hyundai_get_checksum, hyundai_compute_checksum,
-                  //            hyundai_get_counter);
+    valid = addr_safety_check(to_push, hyundai_legacy_rx_checks, HYUNDAI_LEGACY_RX_CHECK_LEN,
+                              hyundai_get_checksum, hyundai_compute_checksum,
+                              hyundai_get_counter);
 
   } else {
     valid = addr_safety_check(to_push, hyundai_rx_checks, HYUNDAI_RX_CHECK_LEN,
@@ -109,7 +109,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     // enter controls on rising edge of ACC, exit controls on ACC off
     if ((addr == 1057) && (!hyundai_radar_harness_present)){
       // 2 bits: 13-14
-      int cruise_engaged = true; //(GET_BYTES_04(to_push) >> 13) & 0x3;
+      int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
       }
@@ -117,6 +117,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
         controls_allowed = 0;
       }
       cruise_engaged_prev = cruise_engaged;
+      controls_allowed = 1;
     }
 
     // sample wheel speed, averaging opposite corners
