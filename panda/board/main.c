@@ -123,7 +123,7 @@ void set_safety_mode(uint16_t mode, int16_t param) {
   }
   switch (mode_copy) {
     case SAFETY_SILENT:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       if (board_has_obd()) {
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
