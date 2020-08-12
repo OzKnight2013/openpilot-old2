@@ -216,17 +216,17 @@ class CarController():
     self.acc_standstill = True if (LongCtrlState.stopping and CS.out.standstill) else False
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if self.longcontrol and (CS.scc_bus == 2) and frame % 2 == 0:
-
-      can_sends.append(create_scc12(self.packer, apply_accel, enabled,
+    if CS.scc_bus == 2:
+        if frame % 2 == 0:
+          can_sends.append(create_scc12(self.packer, apply_accel, enabled,
                                     self.acc_standstill, self.acc_paused,
                                     CS.out.cruiseMainbutton,
-                                    self.scc12_cnt, CS.scc12))
+                                    self.scc12_cnt, CS.scc12, self.longcontrol))
 
-      can_sends.append(create_scc11(self.packer, frame, enabled,
+          can_sends.append(create_scc11(self.packer, frame, enabled,
                                     set_speed, self.lead_visible,
                                     self.gapsettingdance,
-                                    CS.out.standstill, CS.scc11))
+                                    CS.out.standstill, CS.scc11, self.longcontrol))
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.lfa_available:

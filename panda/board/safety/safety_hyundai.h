@@ -1,7 +1,7 @@
-const int HYUNDAI_MAX_STEER = 409;             // like stock
-const int HYUNDAI_MAX_RT_DELTA = 200;          // max delta torque allowed for real time checks
+const int HYUNDAI_MAX_STEER = 255;             // like stock
+const int HYUNDAI_MAX_RT_DELTA = 112;          // max delta torque allowed for real time checks
 const uint32_t HYUNDAI_RT_INTERVAL = 250000;   // 250ms between real time checks
-const int HYUNDAI_MAX_RATE_UP = 4;
+const int HYUNDAI_MAX_RATE_UP = 3;
 const int HYUNDAI_MAX_RATE_DOWN = 7;
 const int HYUNDAI_DRIVER_TORQUE_ALLOWANCE = 50;
 const int HYUNDAI_DRIVER_TORQUE_FACTOR = 2;
@@ -117,7 +117,6 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
         controls_allowed = 0;
       }
       cruise_engaged_prev = cruise_engaged;
-      controls_allowed = 1;
     }
 
     // sample wheel speed, averaging opposite corners
@@ -151,7 +150,7 @@ static int hyundai_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     // enter controls on rising edge of ACC, exit controls on ACC off
     if ((addr == 1057) && (!hyundai_radar_harness_present)){
       // 2 bits: 13-14
-      int cruise_engaged = true; //(GET_BYTES_04(to_push) >> 13) & 0x3;
+      int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
       if (cruise_engaged && !cruise_engaged_prev) {
         controls_allowed = 1;
       }
@@ -261,10 +260,10 @@ static int hyundai_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
         bus_fwd = 20;
     }
     if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
-      if (hyundai_mdps_harness_present) {
-        bus_fwd = 10;
+      if ((hyundai_mdps_harness_present) && (addr != 1056) && (addr != 1057)) {
+          bus_fwd = 10;
       }
-      else if ((!hyundai_radar_harness_present) || ((addr != 1056) && (addr != 1057))){
+      else {
         bus_fwd = 0;
       }
     }
