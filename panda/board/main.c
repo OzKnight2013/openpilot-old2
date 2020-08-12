@@ -123,7 +123,7 @@ void set_safety_mode(uint16_t mode, int16_t param) {
   }
   switch (mode_copy) {
     case SAFETY_SILENT:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       if (board_has_obd()) {
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
@@ -709,11 +709,11 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
       if (current_safety_mode != SAFETY_ALLOUTPUT) {
         set_safety_mode(SAFETY_ALLOUTPUT, 0U);
       }
-
+/*
       if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
         set_power_save_state(POWER_SAVE_STATUS_ENABLED);
       }
-
+*/
       // Also disable IR when the heartbeat goes missing
       current_board->set_ir_power(0U);
 
