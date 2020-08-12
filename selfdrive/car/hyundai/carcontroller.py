@@ -39,7 +39,6 @@ class CarController():
     self.steermaxLimit = int(CP.steermaxLimit)
     self.packer = CANPacker(dbc_name)
     self.steer_rate_limited = False
-    self.lkas11_cnt = 0
     self.last_resume_frame = 0
     self.manual_steering = False
 
