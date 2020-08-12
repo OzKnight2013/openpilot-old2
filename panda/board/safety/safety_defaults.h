@@ -27,6 +27,8 @@ static int nooutput_tx_lin_hook(int lin_num, uint8_t *data, int len) {
 
 static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   UNUSED(to_push);
+  UNUSED(to_fwd);
+
   int bus_fwd = -1;
   if (bus_num == 0) {
      if (hyundai_mdps_harness_present) {
