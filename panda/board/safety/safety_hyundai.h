@@ -35,8 +35,6 @@ AddrCheckStruct hyundai_legacy_rx_checks[] = {
 const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]);
 
 bool hyundai_legacy = false;
-bool hyundai_mdps_harness_present = true;
-bool hyundai_radar_harness_present = false; 
 static uint8_t hyundai_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
 
