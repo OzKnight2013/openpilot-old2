@@ -24,7 +24,6 @@ class CarState(CarStateBase):
     self.cruiseStateavailable = 0
     self.prev_cruiseStateavailable = 0
     self.cruise_buttons = 0
-    self.prev_cruise_buttons = 0
     self.brakeHold = 0
     self.lkas_button_init_on_Gear = 0
     self.lkas_button_enable = 0
@@ -79,31 +78,18 @@ class CarState(CarStateBase):
     self.lkas_button_on = (cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"] != 0)
     self.lkas_button_enable = 0
 
-    if self.lkas_button_on and not self.prev_lkas_button_on:
-      self.lkas_button_enable = 2
-    elif not self.lkas_button_on and self.prev_lkas_button_on:
+    if not self.lkas_button_on and self.prev_lkas_button_on:
       self.lkas_button_enable = 1
 
     # cruise state
 #    ret.cruiseState.available = True
 #    ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
-#    ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
     self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
     ret.cruiseMainbutton = self.rawcruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
 
     self.cruiseStateavailable = self.rawcruiseStateavailable and self.lkas_button_on
 
-    if self.cruiseStateavailable:
-      if (self.cruise_buttons > 0) and ((self.prev_cruise_buttons == 1) or (self.prev_cruise_buttons == 2)):
-        self.cruiseStateavailable = self.cruiseStateavailable
-      elif self.cruise_buttons == 4:
-        self.cruiseStateavailable = 0
-      elif not self.prev_cruiseStateavailable:
-        self.cruiseStateavailable = 0
-
-    ret.cruiseState.available = (self.cruiseStateavailable != 0) or (self.lkas_button_on != 0)
-
-    self.prev_cruiseStateavailable = self.cruiseStateavailable
+    ret.cruiseState.available = (self.cruiseStateavailable != 0)
 
     ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
@@ -193,14 +179,6 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint in FEATURES["use_bsm"]:
       ret.leftBlindspot = cp.vl["LCA11"]["CF_Lca_IndLeft"] != 0
       ret.rightBlindspot = cp.vl["LCA11"]["CF_Lca_IndRight"] != 0
-
-
-    if self.lkas_button_init_on_Gear != 1 and ret.gearShifter == GearShifter.drive and self.lkas_button_on:
-      self.lkas_button_enable = 2
-      self.lkas_button_init_on_Gear = 1
-    elif self.lkas_button_init_on_Gear != 0 and ret.gearShifter == GearShifter.reverse and self.lkas_button_on:
-      self.lkas_button_enable = 1
-      self.lkas_button_init_on_Gear = 0
 
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = cp_cam.vl["LKAS11"]

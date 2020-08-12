@@ -282,25 +282,17 @@ class CarInterface(CarInterfaceBase):
       events.add(car.CarEvent.EventName.belowSteerSpeed)
 
     # handle button presses
-    if self.CP.enableCruise:
-      for b in self.buttonEvents:
-        # do enable on both accel and decel buttons
-        if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
-          events.add(EventName.buttonEnable)
-          self.countenable += 1
-        # do disable on button down
-        if b.type == ButtonType.cancel and b.pressed:
-          events.add(EventName.buttonCancel)
-        if b.type == ButtonType.altButton3 and b.pressed:
-          events.add(EventName.pcmDisable)
-      if EventName.wrongCarMode in events.events:
-        events.events.remove(EventName.wrongCarMode)
-      if EventName.pcmDisable in events.events:
-        events.events.remove(EventName.pcmDisable)
 
-    if self.CS.lkas_button_on and self.CS.lkas_button_enable == 2:
-      events.add(EventName.buttonEnable)
-    elif self.CS.lkas_button_enable == 1:
+    for b in self.buttonEvents:
+      # do enable on both accel and decel buttons
+      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed and self.CS.cruiseStateavailable:
+        events.add(EventName.buttonEnable)
+        self.countenable += 1
+      # do disable on button down
+      if b.type == ButtonType.cancel and b.pressed:
+        events.add(EventName.buttonCancel)
+
+    if self.CS.lkas_button_enable == 1:
       events.add(EventName.buttonCancel)
 
     ret.events = events.to_msg()
