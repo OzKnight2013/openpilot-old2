@@ -137,20 +137,20 @@ class CarController():
 #    else:
 #      self.longcontrol = False
 
-#    if self.longcontrol:
-#      self.gapcount += 1
-#      if self.gapcount == 50 and self.gapsettingdance == 2:
-#        self.gapsettingdance = 1
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 1:
-#        self.gapsettingdance = 4
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 4:
-#        self.gapsettingdance = 3
-#        self.gapcount = 0
-#      elif self.gapcount == 50 and self.gapsettingdance == 3:
-#        self.gapsettingdance = 2
-#        self.gapcount = 0
+    if self.longcontrol:
+      self.gapcount += 1
+      if self.gapcount == 50 and self.gapsettingdance == 2:
+        self.gapsettingdance = 1
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 1:
+        self.gapsettingdance = 4
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 4:
+        self.gapsettingdance = 3
+        self.gapcount = 0
+      elif self.gapcount == 50 and self.gapsettingdance == 3:
+        self.gapsettingdance = 2
+        self.gapcount = 0
 
     self.apply_accel_last = apply_accel
     self.apply_steer_last = apply_steer
