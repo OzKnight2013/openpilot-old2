@@ -708,10 +708,11 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
       if (current_safety_mode != SAFETY_SILENT) {
         set_safety_mode(SAFETY_SILENT, 0U);
       }
-      if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
+/* cancel power save mode to allow continuous port forwarding*/
+/*      if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
         set_power_save_state(POWER_SAVE_STATUS_ENABLED);
       }
-
+*/
       // Also disable IR when the heartbeat goes missing
       current_board->set_ir_power(0U);
 
