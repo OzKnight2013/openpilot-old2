@@ -28,8 +28,8 @@ const int HYUNDAI_RX_CHECK_LEN = sizeof(hyundai_rx_checks) / sizeof(hyundai_rx_c
 
 // older hyundai models have less checks due to missing counters and checksums
 AddrCheckStruct hyundai_legacy_rx_checks[] = {
-  {.msg = {{902, 0, 8, .expected_timestep = 10000U}}},
-  {.msg = {{916, 0, 8, .expected_timestep = 10000U}}},
+  {.msg = {{902, 0, 8, .expected_timestep = 20000U}}},
+  {.msg = {{916, 0, 8, .expected_timestep = 20000U}}},
   {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
 };
 const int HYUNDAI_LEGACY_RX_CHECK_LEN = sizeof(hyundai_legacy_rx_checks) / sizeof(hyundai_legacy_rx_checks[0]);
@@ -151,6 +151,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   int tx = 1;
   int addr = GET_ADDR(to_send);
+  int bus = GET_BUS(to_send);
 
   if (!msg_allowed(to_send, HYUNDAI_TX_MSGS, sizeof(HYUNDAI_TX_MSGS)/sizeof(HYUNDAI_TX_MSGS[0]))) {
     tx = 0;
@@ -210,7 +211,7 @@ static int hyundai_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // FORCE CANCEL: safety check only relevant when spamming the cancel button.
   // ensuring that only the cancel button press is sent (VAL 4) when controls are off.
   // This avoids unintended engagements while still allowing resume spam
-  if ((addr == 1265) && !controls_allowed) {
+  if ((addr == 1265) && !controls_allowed && ((bus == 0) || (!hyundai_mdps_harness_present))) {
     if ((GET_BYTES_04(to_send) & 0x7) != 4) {
       tx = 0;
     }
