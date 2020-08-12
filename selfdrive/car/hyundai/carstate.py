@@ -279,7 +279,7 @@ class CarState(CarStateBase):
       ("TauGapSet", "SCC11", 4),
       ("ACC_ObjStatus", "SCC11", 0),
       ("ACC_ObjLatPos", "SCC11", 0),
-      ("ACC_ObjDist", "SCC11", 150), #TK211X value is 204.6
+      ("ACC_ObjDist", "SCC11", 150),
       ("ACC_ObjRelSpd", "SCC11", 0),
       ("Navi_SCC_Curve_Status", "SCC11", 0),
       ("Navi_SCC_Curve_Act", "SCC11", 0),
