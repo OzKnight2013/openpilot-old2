@@ -37,6 +37,8 @@ class CarInterface(CarInterfaceBase):
     tire_stiffness_factor = 1.
 
     ret.steermaxLimit = 255  # stock
+    ret.longitudinalTuning.kfBP = [0.]
+    ret.longitudinalTuning.kfV = [1.]
 
     ret.lateralTuning.pid.kiBP = [0., 10., 30.]
     ret.lateralTuning.pid.kpV = [0.04, 0.08, 0.13]
