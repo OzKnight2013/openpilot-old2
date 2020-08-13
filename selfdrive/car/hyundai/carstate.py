@@ -112,7 +112,7 @@ class CarState(CarStateBase):
 
     ret.espDisabled = (cp.vl["TCS15"]['ESC_Off_Step'] != 0)
 
-    ret.parkBrake = cp.vl["CGW1"]['CF_Gway_ParkBrakeSw']
+    ret.parkBrake = (cp.vl["CGW1"]['CF_Gway_ParkBrakeSw'] != 0)
 
     # TODO: refactor gear parsing in function
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
