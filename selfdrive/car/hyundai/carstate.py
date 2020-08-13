@@ -63,7 +63,7 @@ class CarState(CarStateBase):
 
 
     # if no lead then allow AVH and wait for gas press to disable AVH
-    if (cp.vl["ESP11"]['AVH_STAT'] == 1) and (cp_scc.vl["SCC11"]['ACC_ObjStatus'] == 0):
+    if (cp.vl["ESP11"]['AVH_STAT'] == 1) and (cp.vl["SCC11"]['ACC_ObjStatus'] == 0):
       self.brakeHold = True
     elif ret.gasPressed or ret.vEgo > 0.3:
       self.brakeHold = False
@@ -80,8 +80,8 @@ class CarState(CarStateBase):
 
     # cruise state
 #    ret.cruiseState.available = True
-    self.rawcruiseStateenabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
-    self.cruiseStateavailable = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
+    self.rawcruiseStateenabled = (cp.vl["SCC12"]['ACCMode'] != 0)
+    self.cruiseStateavailable = (cp.vl["SCC11"]["MainMode_ACC"] != 0)
 
     ret.cruiseState.available = (self.cruiseStateavailable != 0)
 
@@ -182,7 +182,7 @@ class CarState(CarStateBase):
     self.clu11 = cp.vl["CLU11"]
     self.mdps12 = cp_mdps.vl["MDPS12"]
     self.steer_state = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiActive'] #0 NOT ACTIVE, 1 ACTIVE
-    self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
+    self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
 
     self.left_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigLh']
     self.right_blinker_flash = cp.vl["CGW1"]['CF_Gway_TurnSigRh']
