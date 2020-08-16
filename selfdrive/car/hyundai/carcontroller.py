@@ -103,8 +103,7 @@ class CarController():
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning, self.lfa_available, 1))
 
-      if frame % 2: # send clu11 to mdps if it is not on bus 0
-        can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
+      can_sends.append(create_clu11(self.packer, frame, CS.mdps_bus, CS.clu11, Buttons.NONE, enabled_speed))
 
     if pcm_cancel_cmd:
       can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, clu11_speed))

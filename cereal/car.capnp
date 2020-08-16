@@ -140,9 +140,8 @@ struct CarState {
   brake @5 :Float32;      # this is user pedal only
   brakePressed @6 :Bool;  # this is user pedal only
   brakeLights @19 :Bool;
-  brakeUnavailable @37 :Bool;
-  brakeHold @38 :Bool;
-  parkBrake @39 :Bool;
+  brakeHold @37 :Bool;
+  parkBrake @38 :Bool;
 
   # steering wheel
   steeringAngle @7 :Float32;       # deg
