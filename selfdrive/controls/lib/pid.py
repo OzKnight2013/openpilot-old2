@@ -1,6 +1,12 @@
 import numpy as np
 from common.numpy_fast import clip, interp
 
+GainSaS_BP = [0., 2., 5., 10.]
+Gain_g = [0., .01, .08, .12]
+
+GainV_BP = [0., 10., 10.01, 30.]
+Gain_V = [0.3, .6, .9, 1.3]
+
 def apply_deadzone(error, deadzone):
   if error > deadzone:
     error -= deadzone
@@ -63,8 +69,10 @@ class PIController:
   def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0., freeze_integrator=False):
     self.speed = speed
 
+    self.nl_p = interp(abs(setpoint), GainSaS_BP, Gain_g) * interp(self.speed, GainV_BP, Gain_V)
+
     error = float(apply_deadzone(setpoint - measurement, deadzone))
-    self.p = error * self.k_p
+    self.p = error * (self.k_p + self.nl_p)
     self.f = feedforward * self.k_f
 
     if override:
