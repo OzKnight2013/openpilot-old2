@@ -286,6 +286,7 @@ struct ThermalData {
   networkType @22 :NetworkType;
   offroadPowerUsage @23 :UInt32;  # Power usage since going offroad in uWh
   networkStrength @24 :NetworkStrength;
+  carBatteryCapacity @25 :UInt32;  # Estimated remaining car battery capacity in uWh
 
   fanSpeed @10 :UInt16;
   started @11 :Bool;
@@ -373,6 +374,8 @@ struct HealthData {
     interruptRateTim3 @17;
     registerDivergent @18;
     interruptRateKlineInit @19;
+    interruptRateClockSource @20;
+    interruptRateTim9 @21;
     # Update max fault type in boardd when adding faults
   }
 
