@@ -4,8 +4,8 @@ from common.numpy_fast import clip, interp
 GainSaS_BP = [0., 2., 5., 10.]
 Gain_g = [0., .01, .08, .12]
 
-GainV_BP = [0., 10., 10.01, 30.]
-Gain_V = [0.3, .6, .9, 1.3]
+GainV_BP = [0., 20., 20.01, 30.]
+Gain_V = [0.3, .6, .9, 1.1]
 
 def apply_deadzone(error, deadzone):
   if error > deadzone:
