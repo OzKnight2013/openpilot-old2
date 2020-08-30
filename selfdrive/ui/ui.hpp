@@ -12,7 +12,11 @@
 #define nvgCreate nvgCreateGLES3
 #endif
 #include <atomic>
+
+#include <string>
+#include <sstream>
 #include <pthread.h>
+
 #include "nanovg.h"
 
 #include "common/mat.h"
@@ -20,6 +24,7 @@
 #include "common/visionimg.h"
 #include "common/framebuffer.h"
 #include "common/modeldata.h"
+#include "common/params.h"
 #include "sound.hpp"
 
 #define STATUS_STOPPED 0
@@ -32,35 +37,40 @@
 #define NET_DISCONNECTED 1
 #define NET_ERROR 2
 
-# define COLOR_BLACK nvgRGBA(0, 0, 0, 255)
-# define COLOR_BLACK_ALPHA(x) nvgRGBA(0, 0, 0, x)
-# define COLOR_WHITE nvgRGBA(255, 255, 255, 255)
-# define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
-# define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
-# define COLOR_OCHRE_ALPHA(x) nvgRGBA(218, 111, 37, x)
-# define COLOR_GREEN nvgRGBA(0, 255, 0, 255)
-# define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
-# define COLOR_ORANGE nvgRGBA(255, 175, 3, 255)
-# define COLOR_ORANGE_ALPHA(x) nvgRGBA(255, 175, 3, x)
-# define COLOR_RED nvgRGBA(201, 34, 49, 255)
-# define COLOR_RED_ALPHA(x) nvgRGBA(201, 34, 49, x)
-# define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
-# define COLOR_YELLOW_ALPHA(x) nvgRGBA(218, 202, 37, x)
+#define COLOR_BLACK nvgRGBA(0, 0, 0, 255)
+#define COLOR_BLACK_ALPHA(x) nvgRGBA(0, 0, 0, x)
+#define COLOR_WHITE nvgRGBA(255, 255, 255, 255)
+#define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
+#define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
+#define COLOR_RED nvgRGBA(201, 34, 49, 255)
+#define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
+#define COLOR_OCHRE_ALPHA(x) nvgRGBA(218, 111, 37, x)
+#define COLOR_GREEN nvgRGBA(0, 255, 0, 255)
+#define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_ORANGE nvgRGBA(255, 175, 3, 255)
+#define COLOR_ORANGE_ALPHA(x) nvgRGBA(255, 175, 3, x)
+#define COLOR_RED_ALPHA(x) nvgRGBA(201, 34, 49, x)
+#define COLOR_YELLOW_ALPHA(x) nvgRGBA(218, 202, 37, x)
 
 #ifndef QCOM
   #define UI_60FPS
 #endif
 
 #define UI_BUF_COUNT 4
-//#define SHOW_SPEEDLIMIT 1
-//#define DEBUG_TURN
 
+// TODO: Detect dynamically
+#ifdef QCOM2
+const int vwp_w = 2160;
+#else
 const int vwp_w = 1920;
+#endif
+
 const int vwp_h = 1080;
 const int nav_w = 640;
 const int nav_ww= 760;
 const int sbr_w = 300;
 const int bdr_s = 30;
+
 const int box_x = sbr_w+bdr_s;
 const int box_y = bdr_s;
 const int box_w = vwp_w-sbr_w-(bdr_s*2);
@@ -99,8 +109,6 @@ typedef struct UIScene {
   int frontview;
   int fullview;
 
-  ModelData model;
-
   float mpc_x[50];
   float mpc_y[50];
 
@@ -111,9 +119,7 @@ typedef struct UIScene {
   bool speedlimit_valid;
 
   bool is_rhd;
-  bool map_valid;
   bool uilayout_sidebarcollapsed;
-  bool uilayout_mapenabled;
   // responsive layout
   int ui_viz_rx;
   int ui_viz_rw;
@@ -158,11 +164,15 @@ typedef struct UIScene {
   cereal::ControlsState::Reader controls_state;
   cereal::DriverState::Reader driver_state;
   cereal::DMonitoringState::Reader dmonitoring_state;
+  cereal::ModelData::Reader model;
+  float left_lane_points[MODEL_PATH_DISTANCE];
+  float path_points[MODEL_PATH_DISTANCE];
+  float right_lane_points[MODEL_PATH_DISTANCE];
 } UIScene;
 
 typedef struct {
   float x, y;
-}vertex_data;
+} vertex_data;
 
 typedef struct {
   vertex_data v[MODEL_PATH_MAX_VERTICES_CNT];
@@ -192,7 +202,6 @@ typedef struct UIState {
   int img_wheel;
   int img_turn;
   int img_face;
-  int img_map;
   int img_brake;
   int img_button_settings;
   int img_button_home;
@@ -202,7 +211,6 @@ typedef struct UIState {
 
   // sockets
   SubMaster *sm;
-  PubMaster *pm;
 
   cereal::UiLayoutState::App active_app;
 
@@ -236,30 +244,18 @@ typedef struct UIState {
   UIScene scene;
   bool awake;
 
-  // timeouts
   int awake_timeout;
-  int controls_timeout;
-  int speed_lim_off_timeout;
-  int is_metric_timeout;
-  int longitudinal_control_timeout;
-  int limit_set_speed_timeout;
-  int hardware_timeout;
-  int last_athena_ping_timeout;
-
   bool controls_seen;
 
   uint64_t last_athena_ping;
   int status;
   bool is_metric;
   bool longitudinal_control;
-  bool limit_set_speed;
-  float speed_lim_off;
   bool is_ego_over_limit;
   float alert_blinking_alpha;
   bool alert_blinked;
   bool started;
   bool vision_seen;
-  bool livempc_or_radarstate_changed;
 
   std::atomic<float> light_sensor;
 
@@ -275,12 +271,37 @@ typedef struct UIState {
   Sound sound;
 } UIState;
 
-// API
-void ui_draw_vision_alert(UIState *s, cereal::ControlsState::AlertSize va_size, int va_color,
-                          const char* va_text1, const char* va_text2);
-void ui_draw(UIState *s);
-void ui_draw_sidebar(UIState *s);
-void ui_draw_image(NVGcontext *vg, float x, float y, float w, float h, int image, float alpha);
-void ui_draw_rect(NVGcontext *vg, float x, float y, float w, float h, NVGcolor color, float r = 0, int width = 0);
-void ui_draw_rect(NVGcontext *vg, float x, float y, float w, float h, NVGpaint &paint, float r = 0);
-void ui_nvg_init(UIState *s);
+
+void ui_init(UIState *s);
+void ui_update(UIState *s);
+void ui_update_sizes(UIState *s);
+
+void* vision_connect_thread(void *args);
+void check_messages(UIState *s);
+void update_status(UIState *s, int status);
+
+
+int write_param_float(float param, const char* param_name, bool persistent_param = false);
+template <class T>
+int read_param(T* param, const char *param_name, bool persistent_param = false){
+  T param_orig = *param;
+  char *value;
+  size_t sz;
+
+  int result = read_db_value(param_name, &value, &sz, persistent_param);
+  if (result == 0){
+    std::string s = std::string(value, sz); // value is not null terminated
+    free(value);
+
+    // Parse result
+    std::istringstream iss(s);
+    iss >> *param;
+
+    // Restore original value if parsing failed
+    if (iss.fail()) {
+      *param = param_orig;
+      result = -1;
+    }
+  }
+  return result;
+}

@@ -2,16 +2,19 @@
 #include <assert.h>
 #include <map>
 #include <cmath>
+#include <iostream>
 #include "common/util.h"
 
 #define NANOVG_GLES3_IMPLEMENTATION
-
 #include "nanovg_gl.h"
 #include "nanovg_gl_utils.h"
 
 extern "C"{
 #include "common/glutil.h"
 }
+
+#include "paint.hpp"
+#include "sidebar.hpp"
 
 // TODO: this is also hardcoded in common/transformations/camera.py
 const mat3 intrinsic_matrix = (mat3){{
@@ -142,7 +145,7 @@ static void ui_draw_lane_line(UIState *s, const model_path_vertices_data *pvd, N
 
 static void update_track_data(UIState *s, bool is_mpc, track_vertices_data *pvd) {
   const UIScene *scene = &s->scene;
-  const PathData path = scene->model.path;
+  const float *points = scene->path_points;
   const float *mpc_x_coords = &scene->mpc_x[0];
   const float *mpc_y_coords = &scene->mpc_y[0];
 
@@ -150,6 +153,7 @@ static void update_track_data(UIState *s, bool is_mpc, track_vertices_data *pvd)
   float lead_d = scene->lead_data[0].getDRel()*2.;
   float path_height = is_mpc?(lead_d>5.)?fmin(lead_d, 25.)-fmin(lead_d*0.35, 10.):20.
                             :(lead_d>0.)?fmin(lead_d, 50.)-fmin(lead_d*0.35, 10.):49.;
+  path_height = fmin(path_height, scene->model.getPath().getValidLen());
   pvd->cnt = 0;
   // left side up
   for (int i=0; i<=path_height; i++) {
@@ -160,7 +164,7 @@ static void update_track_data(UIState *s, bool is_mpc, track_vertices_data *pvd)
       py = mpc_y_coords[i] - off;
     } else {
       px = lerp(i+1.0, i, i/100.0);
-      py = path.points[i] - off;
+      py = points[i] - off;
     }
 
     vec4 p_car_space = (vec4){{px, py, 0., 1.}};
@@ -182,7 +186,7 @@ static void update_track_data(UIState *s, bool is_mpc, track_vertices_data *pvd)
       py = mpc_y_coords[i] + off;
     } else {
       px = lerp(i+1.0, i, i/100.0);
-      py = path.points[i] + off;
+      py = points[i] + off;
     }
 
     vec4 p_car_space = (vec4){{px, py, 0., 1.}};
@@ -207,7 +211,6 @@ static void update_all_track_data(UIState *s) {
   }
 }
 
-
 static void ui_draw_track(UIState *s, bool is_mpc, track_vertices_data *pvd) {
  if (pvd->cnt == 0) return;
 
@@ -221,71 +224,9 @@ static void ui_draw_track(UIState *s, bool is_mpc, track_vertices_data *pvd) {
   NVGpaint track_bg;
   if (is_mpc) {
     // Draw colored MPC track
-    if (s->scene.steerOverride) {
-      track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-        nvgRGBA(0, 191, 255, 255), nvgRGBA(0, 95, 128, 50));
-    } else {
-      int torque_scale = (int)fabs(510*(float)s->scene.output_scale);
-      int red_lvl = fmin(255, torque_scale);
-      int green_lvl = fmin(255, 510-torque_scale);
-      track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-        nvgRGBA(          red_lvl,            green_lvl,  0, 255),
-        nvgRGBA((int)(0.5*red_lvl), (int)(0.5*green_lvl), 0, 50));
-    }
-  } else {
-    // Draw white vision track
+    const uint8_t *clr = bg_colors[s->status];
     track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-      COLOR_WHITE, COLOR_WHITE_ALPHA(0));
-  }
-  nvgFillPaint(s->vg, track_bg);
-  nvgFill(s->vg);
-}
-
-static void ui_draw_track_right(UIState *s, bool is_mpc, track_vertices_data *pvd) {
- if (pvd->cnt == 0) return;
-
-  nvgBeginPath(s->vg);
-  float offset = 0;
-  nvgMoveTo(s->vg, pvd->v[0].x + offset, pvd->v[0].y);
-  for (int i=1; i<pvd->cnt; i++) {
-    if (pvd->v[i].y < pvd->v[i-1].y) offset = 100;
-    nvgLineTo(s->vg, pvd->v[i].x + offset, pvd->v[i].y);
-  }
-  nvgClosePath(s->vg);
-
-  NVGpaint track_bg;
-  if (is_mpc) {
-    // Draw colored MPC track
-    //const uint8_t *clr = bg_colors[s->status];
-    track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-        nvgRGBA(155, 0, 0, 255), nvgRGBA(55, 0, 0, 50));
-  } else {
-    // Draw white vision track
-    track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-      COLOR_WHITE, COLOR_WHITE_ALPHA(0));
-  }
-  nvgFillPaint(s->vg, track_bg);
-  nvgFill(s->vg);
-}
-
-static void ui_draw_track_left(UIState *s, bool is_mpc, track_vertices_data *pvd) {
- if (pvd->cnt == 0) return;
-
-  nvgBeginPath(s->vg);
-  float offset = -100;
-  nvgMoveTo(s->vg, pvd->v[0].x + offset, pvd->v[0].y);
-  for (int i=1; i<pvd->cnt; i++) {
-    if (pvd->v[i].y < pvd->v[i-1].y) offset = 0;
-    nvgLineTo(s->vg, pvd->v[i].x + offset, pvd->v[i].y);
-  }
-  nvgClosePath(s->vg);
-
-  NVGpaint track_bg;
-  if (is_mpc) {
-    // Draw colored MPC track
-    //const uint8_t *clr = bg_colors[s->status];
-    track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
-        nvgRGBA(155, 0, 0, 255), nvgRGBA(55, 0, 0, 50));
+      nvgRGBA(clr[0], clr[1], clr[2], 255), nvgRGBA(clr[0], clr[1], clr[2], 255/2));
   } else {
     // Draw white vision track
     track_bg = nvgLinearGradient(s->vg, vwp_w, vwp_h, vwp_w, vwp_h*.4,
@@ -335,8 +276,8 @@ static void draw_frame(UIState *s) {
 
 static inline bool valid_frame_pt(UIState *s, float x, float y) {
   return x >= 0 && x <= s->rgb_width && y >= 0 && y <= s->rgb_height;
-
 }
+
 static void update_lane_line_data(UIState *s, const float *points, float off, model_path_vertices_data *pvd, float valid_len) {
   pvd->cnt = 0;
   int rcount = fmin(MODEL_PATH_MAX_VERTICES_CNT / 2, valid_len);
@@ -364,13 +305,12 @@ static void update_lane_line_data(UIState *s, const float *points, float off, mo
   }
 }
 
-static void update_all_lane_lines_data(UIState *s, const PathData &path, model_path_vertices_data *pstart) {
-  update_lane_line_data(s, path.points, 0.025*path.prob, pstart, path.validLen);
-  float var = fmin(path.std, 0.7);
-  update_lane_line_data(s, path.points, var, pstart + 1, path.validLen);
+static void update_all_lane_lines_data(UIState *s, const cereal::ModelData::PathData::Reader &path, const float *points, model_path_vertices_data *pstart) {
+  update_lane_line_data(s, points, 0.025*path.getProb(), pstart, path.getValidLen());
+  update_lane_line_data(s, points, fmin(path.getStd(), 0.7), pstart + 1, path.getValidLen());
 }
 
-static void ui_draw_lane(UIState *s, const PathData *path, model_path_vertices_data *pstart, NVGcolor color) {
+static void ui_draw_lane(UIState *s,  model_path_vertices_data *pstart, NVGcolor color) {
   ui_draw_lane_line(s, pstart, color);
   color.a /= 25;
   ui_draw_lane_line(s, pstart + 1, color);
@@ -380,34 +320,28 @@ static void ui_draw_vision_lanes(UIState *s) {
   const UIScene *scene = &s->scene;
   model_path_vertices_data *pvd = &s->model_path_vertices[0];
   if(s->sm->updated("model")) {
-    update_all_lane_lines_data(s, scene->model.left_lane, pvd);
-    update_all_lane_lines_data(s, scene->model.right_lane, pvd + MODEL_LANE_PATH_CNT);
+    update_all_lane_lines_data(s, scene->model.getLeftLane(), scene->left_lane_points, pvd);
+    update_all_lane_lines_data(s, scene->model.getRightLane(), scene->right_lane_points, pvd + MODEL_LANE_PATH_CNT);
   }
+
   // Draw left lane edge
   ui_draw_lane(
-      s, &scene->model.left_lane,
-      pvd,
-      nvgRGBAf(1.0, 1.0, 1.0, scene->model.left_lane.prob));
+      s, pvd,
+      nvgRGBAf(1.0, 1.0, 1.0, scene->model.getLeftLane().getProb()));
 
   // Draw right lane edge
   ui_draw_lane(
-      s, &scene->model.right_lane,
-      pvd + MODEL_LANE_PATH_CNT,
-      nvgRGBAf(1.0, 1.0, 1.0, scene->model.right_lane.prob));
+      s, pvd + MODEL_LANE_PATH_CNT,
+      nvgRGBAf(1.0, 1.0, 1.0, scene->model.getRightLane().getProb()));
 
   if(s->sm->updated("radarState")) {
     update_all_track_data(s);
   }
+
   // Draw vision path
   ui_draw_track(s, false, &s->track_vertices[0]);
   if (scene->controls_state.getEnabled()) {
     // Draw MPC path when engaged
-    if (scene->rightblindspot){
-      ui_draw_track_right(s, true, &s->track_vertices[1]);
-    }
-    if (scene->leftblindspot){
-      ui_draw_track_left(s, true, &s->track_vertices[1]);
-    }
     ui_draw_track(s, true, &s->track_vertices[1]);
   }
 }
@@ -419,7 +353,7 @@ static void ui_draw_world(UIState *s) {
     return;
   }
 
-  const int inner_height = viz_w*9/16;
+  const int inner_height = float(viz_w) * vwp_h / vwp_w;
   const int ui_viz_rx = scene->ui_viz_rx;
   const int ui_viz_rw = scene->ui_viz_rw;
   const int ui_viz_ro = scene->ui_viz_ro;
@@ -429,10 +363,13 @@ static void ui_draw_world(UIState *s) {
 
   nvgTranslate(s->vg, ui_viz_rx+ui_viz_ro, box_y + (box_h-inner_height)/2.0);
   nvgScale(s->vg, (float)viz_w / s->fb_w, (float)inner_height / s->fb_h);
-  nvgTranslate(s->vg, 240.0f, 0.0);
-  nvgTranslate(s->vg, -1440.0f / 2, -1080.0f / 2);
+
+  float w = 1440.0f; // Why 1440?
+  nvgTranslate(s->vg, (vwp_w - w) / 2.0f, 0.0);
+
+  nvgTranslate(s->vg, -w / 2, -1080.0f / 2);
   nvgScale(s->vg, 2.0, 2.0);
-  nvgScale(s->vg, 1440.0f / s->rgb_width, 1080.0f / s->rgb_height);
+  nvgScale(s->vg, w / s->rgb_width, 1080.0f / s->rgb_height);
 
   // Draw lane edges and vision/mpc tracks
   ui_draw_vision_lanes(s);
@@ -450,25 +387,20 @@ static void ui_draw_world(UIState *s) {
 }
 
 static void ui_draw_vision_maxspeed(UIState *s) {
-  /*if (!s->longitudinal_control){
-    return;
-  }*/
   char maxspeed_str[32];
   float maxspeed = s->scene.controls_state.getVCruise();
   int maxspeed_calc = maxspeed * 0.6225 + 0.5;
   float speedlimit = s->scene.speedlimit;
   int speedlim_calc = speedlimit * 2.2369363 + 0.5;
-  int speed_lim_off = s->speed_lim_off * 2.2369363 + 0.5;
   if (s->is_metric) {
     maxspeed_calc = maxspeed + 0.5;
     speedlim_calc = speedlimit * 3.6 + 0.5;
-    speed_lim_off = s->speed_lim_off * 3.6 + 0.5;
   }
 
   bool is_cruise_set = (maxspeed != 0 && maxspeed != SET_SPEED_NA);
   bool is_speedlim_valid = s->scene.speedlimit_valid;
   bool is_set_over_limit = is_speedlim_valid && s->scene.controls_state.getEnabled() &&
-                       is_cruise_set && maxspeed_calc > (speedlim_calc + speed_lim_off);
+                           is_cruise_set && maxspeed_calc > speedlim_calc;
 
   int viz_maxspeed_w = 184;
   int viz_maxspeed_h = 202;
@@ -476,12 +408,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   int viz_maxspeed_y = (box_y + (bdr_s*1.5));
   int viz_maxspeed_xo = 180;
 
-#ifdef SHOW_SPEEDLIMIT
-  viz_maxspeed_w += viz_maxspeed_xo;
-  viz_maxspeed_x += viz_maxspeed_w - (viz_maxspeed_xo * 2);
-#else
   viz_maxspeed_xo = 0;
-#endif
 
   // Draw Background
   ui_draw_rect(s->vg, viz_maxspeed_x, viz_maxspeed_y, viz_maxspeed_w, viz_maxspeed_h,
@@ -508,65 +435,6 @@ static void ui_draw_vision_maxspeed(UIState *s) {
     ui_draw_text(s->vg, text_x, 242, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
   }
 }
-
-#ifdef SHOW_SPEEDLIMIT
-static void ui_draw_vision_speedlimit(UIState *s) {
-  char speedlim_str[32];
-  float speedlimit = s->scene.speedlimit;
-  int speedlim_calc = speedlimit * 2.2369363 + 0.5;
-  if (s->is_metric) {
-    speedlim_calc = speedlimit * 3.6 + 0.5;
-  }
-
-  bool is_speedlim_valid = s->scene.speedlimit_valid;
-  float hysteresis_offset = 0.5;
-  if (s->is_ego_over_limit) {
-    hysteresis_offset = 0.0;
-  }
-  s->is_ego_over_limit = is_speedlim_valid && s->scene.controls_state.getVEgo() > (speedlimit + s->speed_lim_off + hysteresis_offset);
-
-  int viz_speedlim_w = 180;
-  int viz_speedlim_h = 202;
-  int viz_speedlim_x = (s->scene.ui_viz_rx + (bdr_s*2));
-  int viz_speedlim_y = (box_y + (bdr_s*1.5));
-  if (!is_speedlim_valid) {
-    viz_speedlim_w -= 5;
-    viz_speedlim_h -= 10;
-    viz_speedlim_x += 9;
-    viz_speedlim_y += 5;
-  }
-  // Draw Background
-  NVGcolor color = COLOR_WHITE_ALPHA(100);
-  if (is_speedlim_valid && s->is_ego_over_limit) {
-    color = nvgRGBA(218, 111, 37, 180);
-  } else if (is_speedlim_valid) {
-    color = COLOR_WHITE;
-  }
-  ui_draw_rect(s->vg, viz_speedlim_x, viz_speedlim_y, viz_speedlim_w, viz_speedlim_h, color, is_speedlim_valid ? 30 : 15);
-
-  // Draw Border
-  if (is_speedlim_valid) {
-    ui_draw_rect(s->vg, viz_speedlim_x, viz_speedlim_y, viz_speedlim_w, viz_speedlim_h,
-                 s->is_ego_over_limit ? COLOR_OCHRE : COLOR_WHITE, 20, 10);
-  }
-  const float text_x = viz_speedlim_x + viz_speedlim_w / 2;
-  const float text_y = viz_speedlim_y + (is_speedlim_valid ? 50 : 45);
-  // Draw "Speed Limit" Text
-  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  color = is_speedlim_valid && s->is_ego_over_limit ? COLOR_WHITE : COLOR_BLACK;
-  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y, "SMART", 50, color, s->font_sans_semibold);
-  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y + 40, "SPEED", 50, color, s->font_sans_semibold);
-
-  // Draw Speed Text
-  color = s->is_ego_over_limit ? COLOR_WHITE : COLOR_BLACK;
-  if (is_speedlim_valid) {
-    snprintf(speedlim_str, sizeof(speedlim_str), "%d", speedlim_calc);
-    ui_draw_text(s->vg, text_x, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), speedlim_str, 48*2.5, color, s->font_sans_bold);
-  } else {
-    ui_draw_text(s->vg, text_x, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), "N/A", 42*2.5, color, s->font_sans_semibold);
-  }
-}
-#endif
 
 static void ui_draw_vision_speed(UIState *s) {
   const UIScene *scene = &s->scene;
@@ -638,15 +506,6 @@ static void ui_draw_vision_event(UIState *s) {
   }
 }
 
-#ifdef SHOW_SPEEDLIMIT
-static void ui_draw_vision_map(UIState *s) {
-  const int map_size = 96;
-  const int map_x = (s->scene.ui_viz_rx + (map_size * 3) + (bdr_s * 3));
-  const int map_y = (footer_y + ((footer_h - map_size) / 2));
-  ui_draw_circle_image(s->vg, map_x, map_y, map_size, s->img_map, s->scene.map_valid);
-}
-#endif
-
 static void ui_draw_vision_face(UIState *s) {
   const int face_size = 96;
   const int face_x = (s->scene.ui_viz_rx + face_size + (bdr_s * 2));
@@ -686,6 +545,7 @@ static void ui_draw_driver_view(UIState *s) {
     } else {
       fbox_x = valid_frame_x + valid_frame_w - box_h / 2 + (face_x + 0.5) * (box_h / 2) - 0.5 * 0.6 * box_h / 2;
     }
+
     if (std::abs(face_x) <= 0.35 && std::abs(face_y) <= 0.4) {
       ui_draw_rect(s->vg, fbox_x, fbox_y, 0.6 * box_h / 2, 0.6 * box_h / 2,
                    nvgRGBAf(1.0, 1.0, 1.0, 0.8 - ((std::abs(face_x) > std::abs(face_y) ? std::abs(face_x) : std::abs(face_y))) * 0.6 / 0.375),
@@ -742,9 +602,6 @@ static void ui_draw_vision_header(UIState *s) {
 
   ui_draw_vision_maxspeed(s);
 
-#ifdef SHOW_SPEEDLIMIT
-  ui_draw_vision_speedlimit(s);
-#endif
   ui_draw_vision_speed(s);
   ui_draw_vision_event(s);
 }
@@ -956,10 +813,6 @@ static void ui_draw_vision_footer(UIState *s) {
 
   ui_draw_vision_face(s);
   ui_draw_vision_brake(s);
-
-#ifdef SHOW_SPEEDLIMIT
-  // ui_draw_vision_map(s);
-#endif
   bb_ui_draw_UI(s);
 }
 
@@ -972,15 +825,13 @@ void ui_draw_vision_alert(UIState *s, cereal::ControlsState::AlertSize va_size, 
       {cereal::ControlsState::AlertSize::FULL, vwp_h}};
 
   const UIScene *scene = &s->scene;
-  const bool hasSidebar = !scene->uilayout_sidebarcollapsed;
-  const bool mapEnabled = scene->uilayout_mapenabled;
   bool longAlert1 = strlen(va_text1) > 15;
 
   const uint8_t *color = alert_colors[va_color];
   int alr_s = alert_size_map[va_size];
 
-  const int alr_x = scene->ui_viz_rx-(mapEnabled?(hasSidebar?nav_w:(nav_ww)):0)-bdr_s;
-  const int alr_w = scene->ui_viz_rw+(mapEnabled?(hasSidebar?nav_w:(nav_ww)):0)+(bdr_s*2);
+  const int alr_x = scene->ui_viz_rx- bdr_s;
+  const int alr_w = scene->ui_viz_rw + (bdr_s*2);
   const int alr_h = alr_s+(va_size==cereal::ControlsState::AlertSize::NONE?0:bdr_s);
   const int alr_y = vwp_h-alr_h;
 
@@ -1037,9 +888,9 @@ static void ui_draw_vision(UIState *s) {
   if (scene->alert_size != cereal::ControlsState::AlertSize::NONE) {
     // Controls Alerts
     ui_draw_vision_alert(s, scene->alert_size, s->status,
-                            scene->alert_text1.c_str(), scene->alert_text2.c_str());
-  } else {
-    if (!scene->frontview){ui_draw_vision_footer(s);}
+                         scene->alert_text1.c_str(), scene->alert_text2.c_str());
+  } else if (!scene->frontview) {
+    ui_draw_vision_footer(s);
   }
 }
 
@@ -1182,8 +1033,6 @@ void ui_nvg_init(UIState *s) {
   assert(s->img_turn != 0);
   s->img_face = nvgCreateImage(s->vg, "../assets/img_driver_face.png", 1);
   assert(s->img_face != 0);
-  s->img_map = nvgCreateImage(s->vg, "../assets/img_map.png", 1);
-  assert(s->img_map != 0);
   s->img_brake = nvgCreateImage(s->vg, "../assets/img_brake_disc.png", 1);
   assert(s->img_brake >= 0);
   s->img_button_settings = nvgCreateImage(s->vg, "../assets/images/button_settings.png", 1);

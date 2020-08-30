@@ -42,8 +42,9 @@ class CarController():
     self.packer = CANPacker(dbc_name)
     self.steer_rate_limited = False
     self.last_resume_frame = 0
-    self.manual_steering = False
     self.longcontrol = False
+    self.manual_steering = False
+    self.manual_steering_timer = 0
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
@@ -70,7 +71,10 @@ class CarController():
       lkas_active = False
 
     if enabled and CS.out.steeringPressed and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and (CS.out.leftBlinker or CS.out.rightBlinker):
-      self.manual_steering = True
+      self.manual_steering_timer += 1
+      if self.manual_steering_timer > 50:
+         self.manual_steering = True
+         self.manual_steering_timer = 50
     elif (self.manual_steering and not CS.out.leftBlinker and not CS.out.rightBlinker) or not CS.out.vEgo < LANE_CHANGE_SPEED_MIN or not enabled:
       self.manual_steering = False
 
@@ -108,9 +112,8 @@ class CarController():
     if pcm_cancel_cmd:
       can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, clu11_speed))
     elif CS.out.cruiseState.standstill:
-      # SCC won't resume anyway when the lead distace is less than 3.7m
       # send resume at a max freq of 5Hz
-      if CS.lead_distance > 3.7 and (frame - self.last_resume_frame)*DT_CTRL > 0.2:
+      if (frame - self.last_resume_frame)*DT_CTRL > 0.2:
         can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         self.last_resume_frame = frame
 

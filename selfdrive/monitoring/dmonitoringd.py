@@ -20,12 +20,10 @@ def dmonitoringd_thread(sm=None, pm=None):
   if sm is None:
     sm = messaging.SubMaster(['driverState', 'liveCalibration', 'carState', 'model'])
 
-  params = Params()
-
   driver_status = DriverStatus()
-  is_rhd = params.get("IsRHD")
-  driver_status.is_rhd_region = is_rhd == b"1"
-  driver_status.is_rhd_region_checked = is_rhd is not None
+  driver_status.is_rhd_region = Params().get("IsRHD") == b"1"
+
+  offroad = Params().get("IsOffroad") == b"1"
 
   sm['liveCalibration'].calStatus = Calibration.INVALID
   sm['liveCalibration'].rpyCalib = [0, 0, 0]
@@ -39,7 +37,6 @@ def dmonitoringd_thread(sm=None, pm=None):
 
   v_cruise_last = 0
   driver_engaged = False
-  offroad = params.get("IsOffroad") == b"1"
 
   # 10Hz <- dmonitoringmodeld
   while True:
@@ -56,7 +53,6 @@ def dmonitoringd_thread(sm=None, pm=None):
         driver_status.update(Events(), True, sm['carState'].cruiseState.enabled, sm['carState'].standstill)
       v_cruise_last = v_cruise
 
-    # Get model meta
     if sm.updated['model']:
       driver_status.set_policy(sm['model'])
 
@@ -80,7 +76,6 @@ def dmonitoringd_thread(sm=None, pm=None):
         "isDistracted": driver_status.driver_distracted,
         "awarenessStatus": driver_status.awareness,
         "isRHD": driver_status.is_rhd_region,
-        "rhdChecked": driver_status.is_rhd_region_checked,
         "posePitchOffset": driver_status.pose.pitch_offseter.filtered_stat.mean(),
         "posePitchValidCount": driver_status.pose.pitch_offseter.filtered_stat.n,
         "poseYawOffset": driver_status.pose.yaw_offseter.filtered_stat.mean(),
