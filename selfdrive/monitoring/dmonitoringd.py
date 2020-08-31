@@ -20,10 +20,12 @@ def dmonitoringd_thread(sm=None, pm=None):
   if sm is None:
     sm = messaging.SubMaster(['driverState', 'liveCalibration', 'carState', 'model'])
 
-  driver_status = DriverStatus()
-  driver_status.is_rhd_region = Params().get("IsRHD") == b"1"
-
+  is_rhd = Params().get("IsRHD")
   offroad = Params().get("IsOffroad") == b"1"
+
+  driver_status = DriverStatus()
+  driver_status.is_rhd_region = is_rhd == b"1"
+  driver_status.is_rhd_region_checked = is_rhd is not None
 
   sm['liveCalibration'].calStatus = Calibration.INVALID
   sm['liveCalibration'].rpyCalib = [0, 0, 0]
@@ -76,6 +78,7 @@ def dmonitoringd_thread(sm=None, pm=None):
         "isDistracted": driver_status.driver_distracted,
         "awarenessStatus": driver_status.awareness,
         "isRHD": driver_status.is_rhd_region,
+        "rhdChecked": driver_status.is_rhd_region_checked,
         "posePitchOffset": driver_status.pose.pitch_offseter.filtered_stat.mean(),
         "posePitchValidCount": driver_status.pose.pitch_offseter.filtered_stat.n,
         "poseYawOffset": driver_status.pose.yaw_offseter.filtered_stat.mean(),

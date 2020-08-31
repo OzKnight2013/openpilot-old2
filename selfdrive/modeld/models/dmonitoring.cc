@@ -2,7 +2,6 @@
 #include "dmonitoring.h"
 #include "common/mat.h"
 #include "common/timing.h"
-#include "common/params.h"
 
 #include <libyuv.h>
 
@@ -23,7 +22,8 @@ void dmonitoring_init(DMonitoringModelState* s) {
   const char* model_path = "../../models/dmonitoring_model.dlc";
 #endif
   s->m = new DefaultRunModel(model_path, (float*)&s->output, OUTPUT_SIZE, USE_DSP_RUNTIME);
-  s->is_rhd = read_db_bool("IsRHD");
+  s->is_rhd = false;
+  s->is_rhd_checked = false;
 }
 
 template <class T>

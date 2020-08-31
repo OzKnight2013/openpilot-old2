@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <signal.h>
 #include <cassert>
-#include <vector>
 
 #if defined(QCOM) && !defined(QCOM_REPLAY)
 #include "cameras/camera_qcom.h"
@@ -14,7 +13,6 @@
 #endif
 
 #include "common/util.h"
-#include "common/params.h"
 #include "common/swaglog.h"
 
 #include "common/ipc.h"
@@ -147,8 +145,8 @@ struct VisionState {
   int rgb_front_width, rgb_front_height, rgb_front_stride;
   VisionBuf rgb_front_bufs[UI_BUF_COUNT];
   cl_mem rgb_front_bufs_cl[UI_BUF_COUNT];
-
   bool rhd_front;
+  bool rhd_front_checked;
   int front_meteringbox_xmin, front_meteringbox_xmax;
   int front_meteringbox_ymin, front_meteringbox_ymax;
 
@@ -183,12 +181,11 @@ struct VisionState {
 void* frontview_thread(void *arg) {
   int err;
   VisionState *s = (VisionState*)arg;
-  s->rhd_front = read_db_bool("IsRHD");
 
   set_thread_name("frontview");
   // we subscribe to this for placement of the AE metering box
   // TODO: the loop is bad, ideally models shouldn't affect sensors
-  SubMaster sm({"driverState"});
+  SubMaster sm({"driverState", "dMonitoringState"});
 
   cl_command_queue q = clCreateCommandQueue(s->context, s->device_id, 0, &err);
   assert(err == 0);
@@ -239,6 +236,12 @@ void* frontview_thread(void *arg) {
     visionbuf_sync(&s->rgb_front_bufs[ui_idx], VISIONBUF_SYNC_FROM_DEVICE);
 
     sm.update(0);
+    // no more check after gps check
+    if (!s->rhd_front_checked && sm.updated("dMonitoringState")) {
+      auto state = sm["dMonitoringState"].getDMonitoringState();
+      s->rhd_front = state.getIsRHD();
+      s->rhd_front_checked = state.getRhdChecked();
+    }
 
 #ifdef NOSCREEN
     if (frame_data.frame_id % 4 == 2) {
