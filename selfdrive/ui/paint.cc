@@ -565,7 +565,7 @@ static void ui_draw_driver_view(UIState *s) {
 static void ui_draw_vision_brake(UIState *s) {
   const UIScene *scene = &s->scene;
   const int brake_size = 96;
-  const int brake_x = (scene->ui_viz_rx + (brake_size * 5) + (bdr_s * 4));
+  const int brake_x = (scene->ui_viz_rx + (brake_size * 3) + (bdr_s * 4));
   const int brake_y = (footer_y + ((footer_h - brake_size) / 2));
   const int brake_img_size = (brake_size * 1.5);
   const int brake_img_x = (brake_x - (brake_img_size / 2));
