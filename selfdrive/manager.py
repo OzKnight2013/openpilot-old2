@@ -570,10 +570,6 @@ def main():
     ("HasCompletedSetup", "0"),
     ("IsUploadRawEnabled", "1"),
     ("IsLdwEnabled", "1"),
-    ("IsGeofenceEnabled", "-1"),
-    ("LongitudinalControl", "0"),
-    ("LimitSetSpeed", "0"),
-    ("LimitSetSpeedNeural", "0"),
     ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
     ("OpenpilotEnabledToggle", "1"),
     ("LaneChangeEnabled", "1"),
@@ -624,8 +620,7 @@ if __name__ == "__main__":
     cloudlog.exception("Manager failed to start")
 
     # Show last 3 lines of traceback
-    error = traceback.format_exc(3)
-
+    error = traceback.format_exc(-3)
     error = "Manager failed to start\n \n" + error
     with TextWindow(error) as t:
       t.wait_for_exit()

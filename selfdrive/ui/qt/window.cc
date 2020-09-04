@@ -49,7 +49,6 @@ void MainWindow::closeSettings(){
 }
 
 
-
 GLWindow::GLWindow(QWidget *parent) : QOpenGLWidget(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -62,30 +61,21 @@ GLWindow::~GLWindow() {
 
 void GLWindow::initializeGL() {
   initializeOpenGLFunctions();
+  std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+  std::cout << "OpenGL vendor: " << glGetString(GL_VENDOR) << std::endl;
+  std::cout << "OpenGL renderer: " << glGetString(GL_RENDERER) << std::endl;
+  std::cout << "OpenGL language version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
   ui_state = new UIState();
   ui_init(ui_state);
   ui_state->fb_w = vwp_w;
   ui_state->fb_h = vwp_h;
 
-  int err = pthread_create(&connect_thread_handle, NULL,
-                           vision_connect_thread, ui_state);
-  assert(err == 0);
-
   timer->start(50);
 }
 
 void GLWindow::timerUpdate(){
-  pthread_mutex_lock(&ui_state->lock);
-
-  ui_update_sizes(ui_state);
-
-  check_messages(ui_state);
-  if (ui_state->vision_connected){
-    ui_update(ui_state);
-  }
-  pthread_mutex_unlock(&ui_state->lock);
-
+  ui_update(ui_state);
   update();
 }
 
@@ -94,9 +84,7 @@ void GLWindow::resizeGL(int w, int h) {
 }
 
 void GLWindow::paintGL() {
-  pthread_mutex_lock(&ui_state->lock);
   ui_draw(ui_state);
-  pthread_mutex_unlock(&ui_state->lock);
 }
 
 void GLWindow::mousePressEvent(QMouseEvent *e) {
@@ -112,7 +100,6 @@ void GLWindow::mousePressEvent(QMouseEvent *e) {
   if (ui_state->started && (e->x() >= ui_state->scene.ui_viz_rx - bdr_s)){
     ui_state->scene.uilayout_sidebarcollapsed = !ui_state->scene.uilayout_sidebarcollapsed;
   }
-
 }
 
 
