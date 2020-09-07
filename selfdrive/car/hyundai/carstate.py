@@ -236,6 +236,7 @@ class CarState(CarStateBase):
         ("VSetDis", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
         ("ACC_ObjDist", "SCC11", 0),
+        ("ACC_ObjRelSpd", "SCC11", 0),
         ("ACCMode", "SCC12", 1),
       ]
       checks += [
