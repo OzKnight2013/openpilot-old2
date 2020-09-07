@@ -208,7 +208,8 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp2, self.cp_cam)
     ret.canValid = self.cp.can_valid and self.cp2.can_valid and self.cp_cam.can_valid
 
-    ret.cruiseState.enabled = ret.cruiseState.available and self.CC.nosccradar
+    if self.CC.nosccradar:
+      ret.cruiseState.enabled = ret.cruiseState.available
 
     events = self.create_common_events(ret)
 
