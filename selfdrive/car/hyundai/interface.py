@@ -24,7 +24,6 @@ class CarInterface(CarInterfaceBase):
 
     ret.carName = "hyundai"
     ret.safetyModel = car.CarParams.SafetyModel.hyundai
-    ret.radarOffCan = True
 
     # Most Hyundai car ports are community features for now
     ret.communityFeature = candidate not in [CAR.SONATA]
@@ -163,11 +162,17 @@ class CarInterface(CarInterfaceBase):
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
 
     ret.radarOffCan = 1057 not in fingerprint[0]
+    print("scc present", not ret.radarOffCan)
     ret.mdpsHarness = True if 593 in fingerprint[1] and 1296 not in fingerprint[1] else False
+    print("mdps H present", not ret.radarOffCan)
     ret.sasBus = 1 if 688 in fingerprint[1] and 1296 not in fingerprint[1] else 0
+    print("sas H present", not ret.radarOffCan)
     ret.fcaAvailable = True if 909 in fingerprint[0] or fingerprint[2] else False
+    print("fca present", not ret.radarOffCan)
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
+    print("bsm present", not ret.radarOffCan)
     ret.lfaAvailable = True if 1157 in fingerprint[0] else False
+    print("lfa present", not ret.radarOffCan)
 
     if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO, CAR.SONATA_2019,
                       CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER, CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.SANTA_FE,
