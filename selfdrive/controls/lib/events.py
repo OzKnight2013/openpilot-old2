@@ -522,9 +522,12 @@ EVENTS = {
 
   EventName.steerTempUnavailable: {
     ET.WARNING: Alert(
-      "Manual Steering",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2, .2, .2, 1.),
+      "TAKE CONTROL",
+      "Steering Temporarily Unavailable",
+      AlertStatus.userPrompt, AlertSize.mid,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3.),
+    ET.NO_ENTRY: NoEntryAlert("Steering Temporarily Unavailable",
+                              duration_hud_alert=0.),
   },
 
   EventName.focusRecoverActive: {

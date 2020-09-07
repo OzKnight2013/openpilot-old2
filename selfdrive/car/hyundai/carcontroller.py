@@ -41,8 +41,6 @@ class CarController():
     self.packer = CANPacker(dbc_name)
     self.steer_rate_limited = False
     self.last_resume_frame = 0
-    self.manual_steering = False
-    self.manual_steering_timer = 0
     self.current_veh_speed = 0
     self.lfainFingerprint = CP.lfaAvailable
     self.nosccradar = CP.radarOffCan
@@ -64,17 +62,6 @@ class CarController():
 
     # fix for Genesis hard fault at low speed
     if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdpsHarness:
-      lkas_active = False
-
-    if enabled and CS.out.steeringPressed and CS.out.vEgo < LANE_CHANGE_SPEED_MIN and (CS.out.leftBlinker or CS.out.rightBlinker):
-      self.manual_steering_timer += 1
-      if self.manual_steering_timer > 50:
-         self.manual_steering = True
-         self.manual_steering_timer = 50
-    elif (self.manual_steering and not CS.out.leftBlinker and not CS.out.rightBlinker) or not CS.out.vEgo < LANE_CHANGE_SPEED_MIN or not enabled:
-      self.manual_steering = False
-
-    if self.manual_steering:
       lkas_active = False
 
     if not lkas_active:
