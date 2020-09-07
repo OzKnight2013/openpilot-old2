@@ -204,17 +204,14 @@ class CarState(CarStateBase):
       ("ACCEnable", "TCS13", 0),
       ("BrakeLight", "TCS13", 0),
       ("DriverBraking", "TCS13", 0),
+      ("DriverOverride", "TCS13",0),
 
       ("ESC_Off_Step", "TCS15", 0),
 
       ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
 
 
-      ("MainMode_ACC", "SCC11", 0),
-      ("VSetDis", "SCC11", 0),
-      ("SCCInfoDisplay", "SCC11", 0),
-      ("ACC_ObjDist", "SCC11", 0),
-      ("ACCMode", "SCC12", 1),
+
     ]
 
     checks = [
@@ -226,9 +223,27 @@ class CarState(CarStateBase):
       ("CGW1", 10),
       ("CGW4", 5),
       ("WHL_SPD11", 50),
-      ("SCC11", 50),
-      ("SCC12", 50),
     ]
+    if CP.radarOffCan:
+      signals += [
+        ("CF_Lvr_CruiseSet", "LVR12", 0),
+      ]
+      checks += [
+        ("LVR12", 50),
+      ]
+    else:
+      signals += [
+        ("MainMode_ACC", "SCC11", 0),
+        ("VSetDis", "SCC11", 0),
+        ("SCCInfoDisplay", "SCC11", 0),
+        ("ACC_ObjDist", "SCC11", 0),
+        ("ACCMode", "SCC12", 1),
+      ]
+        checks += [
+        ("SCC11", 50),
+        ("SCC12", 50),
+      ]
+
     if not CP.mdpsHarness:
       signals += [
         ("CR_Mdps_StrColTq", "MDPS12", 0),
