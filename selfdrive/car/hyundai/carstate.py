@@ -60,6 +60,7 @@ class CarState(CarStateBase):
     else:
       ret.cruiseState.enabled = cp.vl["SCC12"]['ACCMode'] != 0
       ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
+      self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
     if ret.cruiseState.enabled:
@@ -158,7 +159,6 @@ class CarState(CarStateBase):
     self.clu11 = copy.copy(cp.vl["CLU11"])
     self.park_brake = cp.vl["CGW1"]['CF_Gway_ParkBrakeSw']
     self.mdps12 = copy.copy(cp_mdps.vl["MDPS12"])
-    self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
 
     return ret
 
