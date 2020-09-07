@@ -142,7 +142,7 @@ class CarState(CarStateBase):
       else:
         ret.gearShifter = GearShifter.unknown
 
-    if self.CP.carFingerprint in FEATURES["use_fca"]:
+    if self.CP.fcaAvailable:
       ret.stockAeb = cp.vl["FCA11"]['FCA_CmdAct'] != 0
       ret.stockFcw = cp.vl["FCA11"]['CF_VSM_Warn'] == 2
     else:
