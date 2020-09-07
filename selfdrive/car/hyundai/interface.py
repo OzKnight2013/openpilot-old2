@@ -167,7 +167,7 @@ class CarInterface(CarInterfaceBase):
     print("mdps H present", ret.mdpsHarness)
     ret.sasBus = 1 if 688 in fingerprint[1] and 1296 not in fingerprint[1] else 0
     print("sas H present", ret.sasBus)
-    ret.fcaAvailable = True if 909 in fingerprint[0] or fingerprint[2] else False
+    ret.fcaAvailable = True if 909 in fingerprint[0] or 909 in fingerprint[2] else False
     print("fca present", ret.fcaAvailable)
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
     print("bsm present", ret.bsmAvailable)
