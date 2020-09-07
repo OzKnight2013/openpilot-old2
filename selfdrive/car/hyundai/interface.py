@@ -243,7 +243,7 @@ class CarInterface(CarInterfaceBase):
     # handle button presses
     for b in self.buttonEvents:
       if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed \
-              and not ret.brakePressed and ret.radarOffCan:
+              and not ret.brakePressed and self.CC.nosccradar:
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.cancel and b.pressed:
         events.add(EventName.buttonCancel)
