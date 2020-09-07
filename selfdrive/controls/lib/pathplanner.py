@@ -121,7 +121,7 @@ class PathPlanner():
       else:
         self.pre_auto_LCA_timer = 0.
 
-      torque_applied = (CP.autoLcaEnabled and 1.6 > self.pre_auto_LCA_timer > 1.1 and not blindspot_detected) or \
+      torque_applied = (1.6 > self.pre_auto_LCA_timer > 1.1 and not blindspot_detected) or \
                        (sm['carState'].steeringPressed and
                         ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                         (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right)))
