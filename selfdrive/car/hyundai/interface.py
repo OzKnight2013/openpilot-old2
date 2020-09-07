@@ -164,15 +164,15 @@ class CarInterface(CarInterfaceBase):
     ret.radarOffCan = 1057 not in fingerprint[0]
     print("scc present", not ret.radarOffCan)
     ret.mdpsHarness = True if 593 in fingerprint[1] and 1296 not in fingerprint[1] else False
-    print("mdps H present", not ret.radarOffCan)
+    print("mdps H present", ret.mdpsHarness)
     ret.sasBus = 1 if 688 in fingerprint[1] and 1296 not in fingerprint[1] else 0
-    print("sas H present", not ret.radarOffCan)
+    print("sas H present", ret.sasBus)
     ret.fcaAvailable = True if 909 in fingerprint[0] or fingerprint[2] else False
-    print("fca present", not ret.radarOffCan)
+    print("fca present", ret.fcaAvailable)
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
-    print("bsm present", not ret.radarOffCan)
+    print("bsm present", ret.bsmAvailable)
     ret.lfaAvailable = True if 1157 in fingerprint[0] else False
-    print("lfa present", not ret.radarOffCan)
+    print("lfa present", ret.lfaAvailable)
 
     if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO, CAR.SONATA_2019,
                       CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER, CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.SANTA_FE,
