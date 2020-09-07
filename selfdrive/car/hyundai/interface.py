@@ -163,7 +163,7 @@ class CarInterface(CarInterfaceBase):
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
 
     ret.radarOffCan = 1057 not in fingerprint[0]
-    ret.mdpsHArness = True if 593 in fingerprint[1] and 1296 not in fingerprint[1] else False
+    ret.mdpsHarness = True if 593 in fingerprint[1] and 1296 not in fingerprint[1] else False
     ret.sasBus = True if 688 in fingerprint[1] and 1296 not in fingerprint[1] else False
     ret.fcaAvailable = True if 909 in fingerprint[0] or fingerprint[2] else False
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
