@@ -255,7 +255,7 @@ class CarState(CarStateBase):
         ("SAS11", 100)
       ]
 
-    if CP.carFingerprint in FEATURES["use_bsm"]:
+    if CP.bsmAvailable:
       signals += [
         ("CF_Lca_IndLeft", "LCA11", 0),
         ("CF_Lca_IndRight", "LCA11", 0),
