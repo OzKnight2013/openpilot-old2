@@ -232,7 +232,7 @@ EVENTS = {
       "WARNING: White panda is deprecated",
       "Upgrade to comma two or black panda",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 2.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
   },
 
   EventName.startupMaster: {
@@ -476,14 +476,6 @@ EVENTS = {
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1., 2., 3.),
   },
 
-  EventName.lkasButtonOff: {
-    ET.PERMANENT: Alert(
-      "LKAS Button is turned off",
-      "Press LKAS Button to engage OP",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
-  },
-
   # ********** events that affect controls state transitions **********
 
   EventName.pcmEnable: {
@@ -503,15 +495,12 @@ EVENTS = {
   },
 
   EventName.brakeHold: {
-    ET.WARNING: Alert(
-      "Auto Hold Active",
-      "Press Gas to continue",
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.NO_ENTRY: NoEntryAlert("Brake Hold Active"),
   },
 
   EventName.parkBrake: {
-    ET.WARNING: EngagementAlert(AudibleAlert.chimeDisengage),
+    ET.USER_DISABLE: EngagementAlert(AudibleAlert.chimeDisengage),
     ET.NO_ENTRY: NoEntryAlert("Park Brake Engaged"),
   },
 
@@ -534,7 +523,6 @@ EVENTS = {
   EventName.steerTempUnavailable: {
     ET.WARNING: Alert(
       "Manual Steering",
-      "Turn off indicator for OP steer",
       AlertStatus.userPrompt, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeWarning2, .2, .2, 1.),
   },
@@ -544,7 +532,7 @@ EVENTS = {
       "TAKE CONTROL",
       "Attempting Refocus: Camera Focus Invalid",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3.),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3., creation_delay=3.1),
   },
 
   EventName.outOfSpace: {
@@ -602,7 +590,12 @@ EVENTS = {
   },
 
   EventName.calibrationInvalid: {
-    ET.SOFT_DISABLE: SoftDisableAlert("Calibration Invalid: Reposition Device and Recalibrate"),
+    ET.PERMANENT: Alert(
+      "Calibration Invalid",
+      "Reposition Device and Recalibrate",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
+    ET.SOFT_DISABLE: SoftDisableAlert("Calibration Invalid: Reposition Device & Recalibrate"),
     ET.NO_ENTRY: NoEntryAlert("Calibration Invalid: Reposition Device & Recalibrate"),
   },
 
@@ -625,11 +618,6 @@ EVENTS = {
   EventName.espDisabled: {
     ET.SOFT_DISABLE: SoftDisableAlert("ESP Off"),
     ET.NO_ENTRY: NoEntryAlert("ESP Off"),
-  },
-
-  EventName.brakeUnavailable: {
-    ET.SOFT_DISABLE: SoftDisableAlert("Brakes Unavailable - Restart vehicle"),
-    ET.NO_ENTRY: NoEntryAlert("Brakes Unavailable - Restart vehicle"),
   },
 
   EventName.lowBattery: {

@@ -1,5 +1,6 @@
-bool hyundai_mdps_harness_present = false;
-bool hyundai_radar_harness_present = false; 
+bool hyundai_community_mdps_harness_present = false;
+bool hyundai_community_radar_harness_present = false;
+bool hyundai_community_non_scc_car = true;
 int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
@@ -7,20 +8,21 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   // check if we have a LCAN or MDPS on Bus1
   if (bus == 1) {
     if (addr == 1296) {
-      hyundai_mdps_harness_present = false;
+      hyundai_community_mdps_harness_present = false;
     }
     else if (addr == 593 || addr == 897) {
-      hyundai_mdps_harness_present = true;
+      hyundai_community_mdps_harness_present = true;
     }
   }
-  // check if we have a SCC on Bus2
+  // check if we have a SCC
 
-  if ((addr == 1056) && (addr == 1057)) {
+  if (addr == 1057) {
+    hyundai_community_non_scc_car = false;
     if (bus == 2) {
-      hyundai_radar_harness_present = true;
+      hyundai_community_radar_harness_present = true;
     }
     else {
-      hyundai_radar_harness_present = false;
+      hyundai_community_radar_harness_present = false;
     }
   }
 
