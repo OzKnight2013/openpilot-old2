@@ -220,7 +220,7 @@ class CarInterface(CarInterfaceBase):
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = self.CS.cruise_buttons != 0 
       but = self.CS.cruise_buttons
-      if but == Buttons.RES_ACCEL:    # TODO avoid speed increase due to res spam when stopped behind target
+      if but == Buttons.RES_ACCEL:
         be.type = ButtonType.accelCruise
       elif but == Buttons.SET_DECEL:
         be.type = ButtonType.decelCruise
@@ -240,7 +240,7 @@ class CarInterface(CarInterfaceBase):
       buttonEvents.append(be)
       self.buttonEvents = buttonEvents
 
-    # handle button presses
+    # handle button press
     for b in self.buttonEvents:
       if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed \
               and not ret.brakePressed and self.CC.nosccradar:

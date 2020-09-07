@@ -40,9 +40,9 @@ class CarController():
     self.car_fingerprint = CP.carFingerprint
     self.packer = CANPacker(dbc_name)
     self.steer_rate_limited = False
-    self.last_resume_frame = 0
     self.current_veh_speed = 0
     self.lfainFingerprint = CP.lfaAvailable
+    self.vdiff = 0
     self.nosccradar = CP.radarOffCan
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
@@ -97,12 +97,14 @@ class CarController():
       can_sends.append(create_clu11(self.packer, frame, CS.mdpsHarness, CS.clu11, Buttons.NONE, enabled_speed))
 
     if pcm_cancel_cmd and not self.nosccradar:
+      self.vdiff = 0.
       can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, self.current_veh_speed))
-    elif CS.out.cruiseState.standstill:
-      # send resume at a max freq of 5Hz
-      if (frame - self.last_resume_frame)*DT_CTRL > 0.2:
+    elif CS.out.cruiseState.standstill and CS.vrelative > 0:
+      self.vdiff += (CS.vrelative - self.vdiff)
+      if self.vdiff > 1. or CS.lead_distance > 8.:
         can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed))
-        self.last_resume_frame = frame
+    else:
+      self.vdiff = 0.
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.lfa_available:

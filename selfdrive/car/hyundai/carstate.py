@@ -61,6 +61,8 @@ class CarState(CarStateBase):
       ret.cruiseState.enabled = cp.vl["SCC12"]['ACCMode'] != 0
       ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
       self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
+      self.vrelative = cp.vl["SCC11"]['ACC_ObjRelSpd']
+
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
     if ret.cruiseState.enabled:
@@ -209,9 +211,6 @@ class CarState(CarStateBase):
       ("ESC_Off_Step", "TCS15", 0),
 
       ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
-
-
-
     ]
 
     checks = [
