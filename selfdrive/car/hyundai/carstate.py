@@ -18,6 +18,7 @@ class CarState(CarStateBase):
     self.noSccRadar = CP.radarOffCan
     self.cruise_main_button = 0
     self.cruise_buttons = 0
+    self.allow_nonscc_available = False
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdpsHarness else cp
@@ -53,11 +54,17 @@ class CarState(CarStateBase):
     ret.steerWarning = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiUnavail'] != 0
     ret.steerError = cp_mdps.vl["MDPS12"]['CF_Mdps_ToiFlt'] != 0
 
+    self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
+    self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
+
     # cruise state
-    ret.cruiseState.available = True
     if self.noSccRadar:
-      ret.cruiseState.enabled = cp.vl["LVR12"]['CF_Lvr_CruiseSet'] != 0
+      if self.cruise_buttons == 1 or self.cruise_buttons == 2:
+        self.allow_nonscc_available = True
+      ret.cruiseState.available = (self.allow_nonscc_available != False)
+      ret.cruiseState.enabled = (ret.cruiseState.available != False)
     else:
+      ret.cruiseState.available = True
       ret.cruiseState.enabled = cp.vl["SCC12"]['ACCMode'] != 0
       ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
       self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
@@ -73,9 +80,6 @@ class CarState(CarStateBase):
         ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
     else:
       ret.cruiseState.speed = 0
-
-    self.cruise_main_button = cp.vl["CLU11"]["CF_Clu_CruiseSwMain"]
-    self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
     # TODO: Find brake pressure
     ret.brake = 0
@@ -211,6 +215,7 @@ class CarState(CarStateBase):
       ("ESC_Off_Step", "TCS15", 0),
 
       ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
+      ("CF_Lvr_CruiseSet", "LVR12", 0),
     ]
 
     checks = [
@@ -223,14 +228,7 @@ class CarState(CarStateBase):
       ("CGW4", 5),
       ("WHL_SPD11", 50),
     ]
-    if CP.radarOffCan:
-      signals += [
-        ("CF_Lvr_CruiseSet", "LVR12", 0),
-      ]
-      checks += [
-        ("LVR12", 50),
-      ]
-    else:
+    if not CP.radarOffCan:
       signals += [
         ("MainMode_ACC", "SCC11", 0),
         ("VSetDis", "SCC11", 0),
