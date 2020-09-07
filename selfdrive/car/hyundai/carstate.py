@@ -239,7 +239,7 @@ class CarState(CarStateBase):
         ("ACC_ObjDist", "SCC11", 0),
         ("ACCMode", "SCC12", 1),
       ]
-        checks += [
+      checks += [
         ("SCC11", 50),
         ("SCC12", 50),
       ]
