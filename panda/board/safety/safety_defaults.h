@@ -12,7 +12,7 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       hyundai_community_mdps_harness_present = false;
       hyundai_community_lcan_on_bus1 = true;
     }
-    else if (addr == 593 || addr == 897) && (!hyundai_community_lcan_on_bus1) {
+    else if ((addr == 593 || addr == 897) && (!hyundai_community_lcan_on_bus1)) {
       hyundai_community_mdps_harness_present = true;
       hyundai_community_lcan_on_bus1 = false;
     }
