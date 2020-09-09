@@ -561,7 +561,7 @@ def main():
   params.manager_start()
 
   default_params = [
-    ("CommunityFeaturesToggle", "0"),
+    ("CommunityFeaturesToggle", "1"),
     ("CompletedTrainingVersion", "0"),
     ("IsRHD", "0"),
     ("IsMetric", "0"),
