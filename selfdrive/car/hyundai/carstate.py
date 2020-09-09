@@ -19,6 +19,10 @@ class CarState(CarStateBase):
     self.cruise_main_button = 0
     self.cruise_buttons = 0
     self.allow_nonscc_available = False
+  
+    self.lead_distance = 150.
+    self.radar_obj_valid = 0.
+    self.vrelative = 0.
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdpsHarness else cp
@@ -68,6 +72,7 @@ class CarState(CarStateBase):
       ret.cruiseState.standstill = cp.vl["SCC11"]['SCCInfoDisplay'] == 4.
       self.lead_distance = cp.vl["SCC11"]['ACC_ObjDist']
       self.vrelative = cp.vl["SCC11"]['ACC_ObjRelSpd']
+      self.radar_obj_valid = cp.vl["SCC11"]['ACC_ObjStatus']
 
 
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
@@ -232,6 +237,7 @@ class CarState(CarStateBase):
         ("MainMode_ACC", "SCC11", 0),
         ("VSetDis", "SCC11", 0),
         ("SCCInfoDisplay", "SCC11", 0),
+        ("ACC_ObjStatus", "SCC11", 0),
         ("ACC_ObjDist", "SCC11", 0),
         ("ACC_ObjRelSpd", "SCC11", 0),
         ("ACCMode", "SCC12", 1),

@@ -93,7 +93,7 @@ class CarController():
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning, self.lfa_available, 1))
 
-      can_sends.append(create_clu11(self.packer, frame, CS.mdpsHarness, CS.clu11, Buttons.NONE, enabled_speed))
+      can_sends.append(create_clu11(self.packer, frame, 1, CS.clu11, Buttons.NONE, enabled_speed))
 
     if pcm_cancel_cmd and not self.nosccradar:
       self.vdiff = 0.
