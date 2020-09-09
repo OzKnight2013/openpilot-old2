@@ -8,7 +8,7 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   // check if we have a LCAN or MDPS on Bus1
   if (bus == 1) {
-    if (addr == 1296) {
+    if ((addr != 593 || addr != 897 || addr != 688)) {
       hyundai_community_mdps_harness_present = false;
       hyundai_community_lcan_on_bus1 = true;
     }
