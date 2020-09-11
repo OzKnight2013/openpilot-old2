@@ -155,21 +155,6 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     generic_rx_checks((addr == 832));
   }
-
-  if (valid && (bus == 2) && hyundai_community_radar_harness_present && (addr == 1057)) {
-
-    // enter controls on rising edge of ACC, exit controls on ACC off
-      // 2 bits: 13-14
-    int cruise_engaged = GET_BYTES_04(to_push) & 0x1; // ACC main_on signal
-    if (cruise_engaged && !cruise_engaged_prev) {
-      controls_allowed = 1;
-    }
-    if (!cruise_engaged) {
-      controls_allowed = 0;
-    }
-    cruise_engaged_prev = cruise_engaged;
-  }
-
   return valid;
 }
 
