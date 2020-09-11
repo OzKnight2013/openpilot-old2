@@ -99,7 +99,7 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
-    if pcm_cancel_cmd and not CS.nosccradar and not CS.out.standstill:
+    if pcm_cancel_cmd and not CS.nosccradar and not CS.out.standstill and CS.out.cruiseState.enabled:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
       can_sends.append(create_clu11(self.packer, 0, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))

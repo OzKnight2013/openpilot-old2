@@ -343,8 +343,6 @@ class CarState(CarStateBase):
         ("LVR12", 100)
       ]
 
-
-
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 
   @staticmethod
