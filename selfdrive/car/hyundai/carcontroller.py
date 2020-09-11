@@ -41,7 +41,6 @@ class CarController():
     self.current_veh_speed = 0
     self.lfainFingerprint = CP.lfaAvailable
     self.vdiff = 0
-    self.nosccradar = CP.radarOffCan
     self.resumebuttoncnt = 0
     self.lastresumeframe = 0
 

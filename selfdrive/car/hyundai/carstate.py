@@ -15,7 +15,7 @@ class CarState(CarStateBase):
     #Auto detection for setup
     self.mdpsHarness = CP.mdpsHarness
     self.sas_bus = CP.sasBus
-    self.noSccRadar = CP.radarOffCan
+    self.nosccradar = CP.radarOffCan
     self.cruise_main_button = 0
     self.cruise_buttons = 0
     self.allow_nonscc_available = False
@@ -61,7 +61,7 @@ class CarState(CarStateBase):
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
     # cruise state
-    if self.noSccRadar:
+    if self.nosccradar:
       if self.cruise_buttons == 1 or self.cruise_buttons == 2:
         self.allow_nonscc_available = True
       ret.cruiseState.available = (self.allow_nonscc_available != False)
@@ -74,11 +74,10 @@ class CarState(CarStateBase):
       self.vrelative = cp.vl["SCC11"]['ACC_ObjRelSpd']
       self.radar_obj_valid = cp.vl["SCC11"]['ObjValid']
 
-
     self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
     if ret.cruiseState.enabled:
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
-      if self.noSccRadar:
+      if self.nosccradar:
         ret.cruiseState.speed = cp.vl["LVR12"]["CF_Lvr_CruiseSet"] * speed_conv
       else:
         ret.cruiseState.speed = cp.vl["SCC11"]['VSetDis'] * speed_conv
@@ -100,6 +99,7 @@ class CarState(CarStateBase):
       ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100
 
     ret.gasPressed = (cp.vl["TCS13"]["DriverOverride"] == 1)
+    self.parkBrake = (cp.vl["CGW1"]['CF_Gway_ParkBrakeSw'] != 0)
 
     # TODO: refactor gear parsing in function
     # Gear Selection via Cluster - For those Kia/Hyundai which are not fully discovered, we can use the Cluster Indicator for Gear Selection,
@@ -167,7 +167,6 @@ class CarState(CarStateBase):
     # save the entire LKAS11, CLU11, SCC12 and MDPS12
     self.lkas11 = copy.copy(cp_cam.vl["LKAS11"])
     self.clu11 = copy.copy(cp.vl["CLU11"])
-    self.park_brake = cp.vl["CGW1"]['CF_Gway_ParkBrakeSw']
     self.mdps12 = copy.copy(cp_mdps.vl["MDPS12"])
 
     return ret
@@ -247,6 +246,17 @@ class CarState(CarStateBase):
         ("SCC11", 50),
         ("SCC12", 50),
       ]
+      if CP.fcaAvailable:
+        signals += [
+          ("FCA_CmdAct", "FCA11", 0),
+          ("CF_VSM_Warn", "FCA11", 0),
+        ]
+        checks += [("FCA11", 50)]
+      else:
+        signals += [
+          ("AEB_CmdAct", "SCC12", 0),
+          ("CF_VSM_Warn", "SCC12", 0),
+        ]
 
     if not CP.mdpsHarness:
       signals += [
@@ -333,17 +343,7 @@ class CarState(CarStateBase):
         ("LVR12", 100)
       ]
 
-    if CP.fcaAvailable:
-      signals += [
-        ("FCA_CmdAct", "FCA11", 0),
-        ("CF_VSM_Warn", "FCA11", 0),
-      ]
-      checks += [("FCA11", 50)]
-    else:
-      signals += [
-        ("AEB_CmdAct", "SCC12", 0),
-        ("CF_VSM_Warn", "SCC12", 0),
-      ]
+
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 
