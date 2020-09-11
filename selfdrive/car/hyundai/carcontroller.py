@@ -43,6 +43,8 @@ class CarController():
     self.lfainFingerprint = CP.lfaAvailable
     self.vdiff = 0
     self.nosccradar = CP.radarOffCan
+    self.resumebuttoncnt = 0
+    self.lastresumeframe = 0
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
@@ -80,7 +82,7 @@ class CarController():
       if CS.is_set_speed_in_mph:
         self.current_veh_speed = int( CS.out.vEgo * CV.MS_TO_MPH)
       else:
-        self.current_veh_speed = int(CS.out.vEgo * CV.MS_TO_KPH)
+    self.clu11_cnt = frame % 0x10
     can_sends = []
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
@@ -93,17 +95,23 @@ class CarController():
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning, self.lfa_available, 1))
 
-      can_sends.append(create_clu11(self.packer, frame, 1, CS.clu11, Buttons.NONE, enabled_speed))
+      can_sends.append(create_clu11(self.packer, frame, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
     if pcm_cancel_cmd and not self.nosccradar:
       self.vdiff = 0.
-      can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, self.current_veh_speed))
+      self.resumebuttoncnt = 0
+      can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
     elif CS.out.cruiseState.standstill and CS.vrelative > 0:
       self.vdiff += (CS.vrelative - self.vdiff)
-      if self.vdiff > 1. or CS.lead_distance > 8.:
-        can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed))
+      if (frame - self.lastresumeframe > 10) and (self.vdiff > .5 or CS.lead_distance > 6.):
+        can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed, self.resumebuttoncnt))
+        self.resumebuttoncnt += 1
+        if self.resumebuttoncnt > 5:
+          self.lastresumeframe = frame
+          self.resumebuttoncnt = 0
     else:
       self.vdiff = 0.
+      self.resumebuttoncnt = 0
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.lfa_available:

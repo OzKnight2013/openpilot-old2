@@ -36,8 +36,8 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kfBP = [0., 5.]
     ret.longitudinalTuning.kfV = [1., 1.]
 
-    ret.lateralTuning.pid.kiBP = [0., 1., 20.]
-    ret.lateralTuning.pid.kpV = [0.01, 0.03, 0.03]
+    ret.lateralTuning.pid.kiBP = [0., 1., 5.]
+    ret.lateralTuning.pid.kpV = [0.01, 0.03, 0.05]
     ret.lateralTuning.pid.kpBP = [0., 10., 30.]
     ret.lateralTuning.pid.kiV = [0.001, 0.003, 0.003]
     ret.lateralTuning.pid.kfBP = [0., 10., 30.]
@@ -244,7 +244,7 @@ class CarInterface(CarInterfaceBase):
     # handle button press
     for b in self.buttonEvents:
       if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed \
-              and not ret.brakePressed and self.CC.nosccradar:
+              and (not ret.brakePressed or ret.standstill) and self.CC.nosccradar:
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.cancel and b.pressed:
         events.add(EventName.buttonCancel)

@@ -62,7 +62,7 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   return packer.make_can_msg("LKAS11", bus, values)
 
 
-def create_clu11(packer, frame, bus, clu11, button, speed):
+def create_clu11(packer, frame, bus, clu11, button, speed, cnt):
   values = clu11
 
   if bus != 1:
@@ -70,9 +70,8 @@ def create_clu11(packer, frame, bus, clu11, button, speed):
     values["CF_Clu_Vanz"] = speed
   else:
     values["CF_Clu_Vanz"] = speed
-  values["CF_Clu_AliveCnt1"] = frame % 0x10
+  values["CF_Clu_AliveCnt1"] = cnt
   return packer.make_can_msg("CLU11", bus, values)
-
 
 def create_lfa_mfa(packer, frame, enabled):
   values = {
