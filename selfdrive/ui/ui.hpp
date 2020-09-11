@@ -206,7 +206,7 @@ typedef struct UIState {
 
   SubMaster *sm;
 
-  Sound sound;
+  Sound *sound;
   UIStatus status;
   UIScene scene;
   cereal::UiLayoutState::App active_app;
@@ -232,6 +232,7 @@ typedef struct UIState {
   std::atomic<float> light_sensor;
 
   bool started;
+  bool ignition;
   bool is_metric;
   bool longitudinal_control;
   uint64_t last_athena_ping;

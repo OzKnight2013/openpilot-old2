@@ -215,6 +215,7 @@ persistent_processes = [
   'logmessaged',
   'ui',
   'uploader',
+  'deleter',
 ]
 
 if not PC:
@@ -226,7 +227,6 @@ if not PC:
 if ANDROID:
   persistent_processes += [
     'updated',
-    'deleter',
   ]
 
 car_started_processes = [
@@ -234,31 +234,31 @@ car_started_processes = [
   'plannerd',
   'loggerd',
   'radard',
-  'dmonitoringd',
   'calibrationd',
   'paramsd',
   'camerad',
   'modeld',
   'proclogd',
-  'ubloxd',
   'locationd',
   'clocksd',
 ]
 
 driver_view_processes = [
   'camerad',
-  'dmonitoringd',
   'dmonitoringmodeld'
 ]
 
 if WEBCAM:
   car_started_processes += [
+    'dmonitoringd',
     'dmonitoringmodeld',
   ]
 
 if not PC:
   car_started_processes += [
+    'ubloxd',
     'sensord',
+    'dmonitoringd',
     'dmonitoringmodeld',
   ]
 
