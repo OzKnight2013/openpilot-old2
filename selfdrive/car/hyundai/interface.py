@@ -173,8 +173,11 @@ class CarInterface(CarInterfaceBase):
                       CAR.GENESIS_G90]:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
-    if ret.mdpsHarness or (fingerprint in HYBRID_VEH):
+    if ret.mdpsHarness or \
+            candidate in [CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_HEV,
+                          CAR.KIA_CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunity
+
     if ret.radarOffCan:
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc
 
