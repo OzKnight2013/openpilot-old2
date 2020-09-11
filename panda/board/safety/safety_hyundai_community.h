@@ -20,8 +20,6 @@ const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
 // TODO: missing checksum for wheel speeds message,worst failure case is
 //       wheel speeds stuck at 0 and we don't disengage on brake press
 AddrCheckStruct hyundai_community_rx_checks[] = {
-  {.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {881, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{902, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{916, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{1057, 0, 8, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U}}},
@@ -30,8 +28,6 @@ const int HYUNDAI_COMMUNITY_RX_CHECK_LEN = sizeof(hyundai_community_rx_checks) /
 
 // for non SCC hyundai vehicles
 AddrCheckStruct hyundai_community_nonscc_rx_checks[] = {
-  {.msg = {{608, 0, 8, .check_checksum = true, .max_counter = 3U, .expected_timestep = 10000U},
-           {881, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{902, 0, 8, .expected_timestep = 10000U}}},
   {.msg = {{916, 0, 8, .expected_timestep = 10000U}}},
 };
@@ -42,9 +38,7 @@ static uint8_t hyundai_community_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
   int addr = GET_ADDR(to_push);
 
   uint8_t cnt;
-  if (addr == 608) {
-    cnt = (GET_BYTE(to_push, 7) >> 4) & 0x3;
-  } else if (addr == 902) {
+  if (addr == 902) {
     cnt = ((GET_BYTE(to_push, 3) >> 6) << 2) | (GET_BYTE(to_push, 1) >> 6);
   } else if (addr == 916) {
     cnt = (GET_BYTE(to_push, 1) >> 5) & 0x7;
@@ -60,9 +54,7 @@ static uint8_t hyundai_community_get_checksum(CAN_FIFOMailBox_TypeDef *to_push) 
   int addr = GET_ADDR(to_push);
 
   uint8_t chksum;
-  if (addr == 608) {
-    chksum = GET_BYTE(to_push, 7) & 0xF;
-  } else if (addr == 916) {
+  if (addr == 916) {
     chksum = GET_BYTE(to_push, 6) & 0xF;
   } else if (addr == 1057) {
     chksum = GET_BYTE(to_push, 7) >> 4;
@@ -148,14 +140,6 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       cruise_engaged_prev = cruise_engaged;
     }
 
-    if ((addr == 608) || (addr == 881)) {
-      if (addr == 608) {
-        gas_pressed = (GET_BYTE(to_push, 7) >> 6) != 0;
-      } else {
-        gas_pressed = (((GET_BYTE(to_push, 4) & 0x7F) << 1) | GET_BYTE(to_push, 3) >> 7) != 0;
-      }
-    }
-
     // sample wheel speed, averaging opposite corners
     if (addr == 902) {
       int hyundai_community_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
@@ -165,6 +149,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     if (addr == 916) {
+      gas_pressed = ((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
       brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
     }
 
