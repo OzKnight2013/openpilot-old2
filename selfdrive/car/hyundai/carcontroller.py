@@ -5,7 +5,6 @@ from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
-from selfdrive.controls.lib.pathplanner import LANE_CHANGE_SPEED_MIN
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -74,16 +73,20 @@ class CarController():
       process_hud_alert(enabled, self.car_fingerprint, visual_alert,
                         left_lane, right_lane, left_lane_depart, right_lane_depart)
 
+    speed_conv = CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH
+
     clu11_speed = CS.clu11["CF_Clu_Vanz"]
+
     enabled_speed = 38 if CS.is_set_speed_in_mph  else 60
+
     if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
       enabled_speed = clu11_speed
     else:
-      if CS.is_set_speed_in_mph:
-        self.current_veh_speed = int( CS.out.vEgo * CV.MS_TO_MPH)
-      else:
+      self.current_veh_speed = int(CS.out.vEgo * speed_conv)
+
     self.clu11_cnt = frame % 0x10
     can_sends = []
+
     can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
@@ -97,7 +100,7 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, frame, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
-    if pcm_cancel_cmd and not self.nosccradar:
+    if pcm_cancel_cmd and not self.nosccradar and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
       can_sends.append(create_clu11(self.packer, frame, 0, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
