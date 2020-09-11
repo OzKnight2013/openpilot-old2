@@ -67,6 +67,7 @@ def create_clu11(packer, bus, clu11, button, speed, cnt):
 
   if bus != 1:
     values["CF_Clu_CruiseSwState"] = button
+    values["CF_Clu_Vanz"] = speed
   else:
     values["CF_Clu_Vanz"] = speed
   values["CF_Clu_AliveCnt1"] = cnt
