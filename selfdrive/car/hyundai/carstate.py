@@ -30,7 +30,7 @@ class CarState(CarStateBase):
     self.cancel_button_count = 0
     self.cancel_button_timer = 0
     self.leftblinkerflashdebouce = 0
-    self.leftblinkerflashdebouce = 0
+    self.rightftblinkerflashdebouce = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdpsHarness else cp
