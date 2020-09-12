@@ -154,7 +154,7 @@ def create_scc14(packer, enabled, usestockscc, scc14):
   values = scc14
   if not usestockscc:
     if enabled:
-      values["JerkUpperLimit"] = 3.2
+      values["JerkUpperLimit"] = 5.0
       values["JerkLowerLimit"] = 0.1
       values["SCCMode"] = 1
       values["ComfortBandUpper"] = 0.24

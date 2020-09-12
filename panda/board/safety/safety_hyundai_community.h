@@ -86,6 +86,8 @@ static uint8_t hyundai_community_compute_checksum(CAN_FIFOMailBox_TypeDef *to_pu
   return (16U - (chksum %  16U)) % 16U;
 }
 
+bool aeb_cmd_act = false;
+
 static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   bool valid;
@@ -162,6 +164,11 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     generic_rx_checks((addr == 832));
   }
+    // monitor AEB active command to bypass panda accel safety, don't block AEB
+  if ((addr == 1057) && (bus == 2) && (hyundai_community_radar_harness_present)){
+    aeb_cmd_act = (GET_BYTE(to_push, 6) >> 6) != 0;
+  }
+
   return valid;
 }
 
@@ -180,7 +187,7 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   }
 
   // ACCEL: safety check
-  if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car){
+  if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act)) {
     int desired_accel = ((GET_BYTES_04(to_send) >> 24) & 0x7ff) - 1024;
     if (!controls_allowed) {
       if ((-10 > desired_accel) && (desired_accel > 10)) {
