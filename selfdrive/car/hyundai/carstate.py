@@ -29,8 +29,8 @@ class CarState(CarStateBase):
     self.prev_cruise_buttons = 0
     self.cancel_button_count = 0
     self.cancel_button_timer = 0
-    self.leftblinkerflashdebouce = 0
-    self.rightftblinkerflashdebouce = 0
+    self.leftblinkerflashdebounce = 0
+    self.rightblinkerflashdebounce = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdpsHarness else cp
@@ -60,21 +60,21 @@ class CarState(CarStateBase):
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
     ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
 
-    self.leftblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0 and not cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0
-    self.rightblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0 and not cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0
+    self.leftblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0 and cp.vl["CGW1"]['CF_Gway_TSigLHSw'] == 0
+    self.rightblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0 and cp.vl["CGW1"]['CF_Gway_TSigRHSw'] == 0
 
     if self.leftblinkerflash:
-      self.leftblinkerflashdebouce = 50
-    elif self.leftblinkerflashdebouce > 0:
-      self.leftblinkerflashdebouce -= 1
+      self.leftblinkerflashdebounce = 50
+    elif self.leftblinkerflashdebounce > 0:
+      self.leftblinkerflashdebounce -= 1
 
     if self.rightblinkerflash:
-      self.rightblinkerflashdebouce = 50
-    elif self.rightblinkerflashdebouce > 0:
-      self.rightblinkerflashdebouce -= 1
+      self.rightblinkerflashdebounce = 50
+    elif self.rightblinkerflashdebounce > 0:
+      self.rightblinkerflashdebounce -= 1
 
-    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0 or self.leftblinkerflashdebouce > 0
-    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0 or self.rightblinkerflashdebouce > 0
+    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0 or self.leftblinkerflashdebounce > 0
+    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0 or self.rightblinkerflashdebounce > 0
 
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
