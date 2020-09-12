@@ -11,11 +11,7 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       hyundai_community_mdps_harness_present = false;
     }
   }
-  if (bus == 1) {
-    if (addr != 593 && addr != 897 && addr != 688 && hyundai_community_mdps_harness_present) {
-      hyundai_community_mdps_harness_present = false;
-    }
-  }
+
   // check if we have a SCC
 
   if (addr == 1057) {
