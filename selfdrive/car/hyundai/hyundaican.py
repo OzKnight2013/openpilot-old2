@@ -113,21 +113,19 @@ def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstil
 
   return packer.make_can_msg("SCC11", 0, values)
 
-def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, cruise_on, scc12, usestockscc, nosccradar, cnt):
+def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepressed, cruise_on, aebcmdact, scc12,
+                 usestockscc, nosccradar, cnt):
   values = scc12
 
-  if not usestockscc:
-    if enabled and cruise_on:
+  if not usestockscc and not aebcmdact:
+    if enabled and cruise_on and not brakepressed:
       values["ACCMode"] = 2 if gaspressed else 1
-      if apply_accel < 0:
+      if apply_accel < -0.5:
         values["StopReq"] = standstill
-    else:
-      values["ACCMode"] = 0
-
-    if enabled and cruise_on:
       values["aReqRaw"] = apply_accel
       values["aReqValue"] = apply_accel
     else:
+      values["ACCMode"] = 0
       values["aReqRaw"] = 0
       values["aReqValue"] = 0
 
@@ -150,11 +148,11 @@ def create_scc13(packer, scc13):
   values = scc13
   return packer.make_can_msg("SCC13", 0, values)
 
-def create_scc14(packer, enabled, usestockscc, scc14):
+def create_scc14(packer, enabled, usestockscc, aebcmdact, scc14):
   values = scc14
-  if not usestockscc:
+  if not usestockscc and not aebcmdact:
     if enabled:
-      values["JerkUpperLimit"] = 5.0
+      values["JerkUpperLimit"] = 3.2
       values["JerkLowerLimit"] = 0.1
       values["SCCMode"] = 1
       values["ComfortBandUpper"] = 0.24

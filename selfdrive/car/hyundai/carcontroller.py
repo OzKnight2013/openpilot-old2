@@ -192,12 +192,12 @@ class CarController():
                                     CS.out.standstill, CS.scc11, self.usestockscc, CS.nosccradar, frame))
 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,
-                                    self.acc_standstill, CS.out.gasPressed,
-                                    CS.scc11["MainMode_ACC"],
+                                    self.acc_standstill, CS.out.gasPressed, CS.out.brakePressed,
+                                    CS.scc11["MainMode_ACC"], CS.out.stockAeb,
                                     CS.scc12, self.usestockscc, CS.nosccradar, self.scc12cnt))
 
       can_sends.append(create_scc13(self.packer, CS.scc13))
-      can_sends.append(create_scc14(self.packer, enabled, self.usestockscc, CS.scc14))
+      can_sends.append(create_scc14(self.packer, enabled, self.usestockscc, CS.out.stockAeb, CS.scc14))
 
     # 20 Hz LFA MFA message
     if frame % 5 == 0 and self.lfa_available:

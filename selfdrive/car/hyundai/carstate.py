@@ -184,8 +184,8 @@ class CarState(CarStateBase):
         ret.gearShifter = GearShifter.unknown
 
     if self.CP.fcaAvailable:
-      ret.stockAeb = cp.vl["FCA11"]['FCA_CmdAct'] != 0
-      ret.stockFcw = cp.vl["FCA11"]['CF_VSM_Warn'] == 2
+      ret.stockAeb = cp_scc.vl["FCA11"]['FCA_CmdAct'] != 0
+      ret.stockFcw = cp_scc.vl["FCA11"]['CF_VSM_Warn'] == 2
     else:
       ret.stockAeb = cp_scc.vl["SCC12"]['AEB_CmdAct'] != 0
       ret.stockFcw = cp_scc.vl["SCC12"]['CF_VSM_Warn'] == 2
