@@ -28,7 +28,9 @@ class CarState(CarStateBase):
     self.vrelative = 0.
     self.prev_cruise_buttons = 0
     self.cancel_button_count = 0
-    self.timer = 0
+    self.cancel_button_timer = 0
+    self.leftblinkerflashdebouce = 0
+    self.leftblinkerflashdebouce = 0
 
   def update(self, cp, cp2, cp_cam):
     cp_mdps = cp2 if self.mdpsHarness else cp
@@ -57,8 +59,23 @@ class CarState(CarStateBase):
     ret.steeringAngle = cp_sas.vl["SAS11"]['SAS_Angle']
     ret.steeringRate = cp_sas.vl["SAS11"]['SAS_Speed']
     ret.yawRate = cp.vl["ESP12"]['YAW_RATE']
-    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0
-    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0
+
+    self.leftblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigLh'] != 0 and not cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0
+    self.rightblinkerflash = cp.vl["CGW1"]['CF_Gway_TurnSigRh'] != 0 and not cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0
+
+    if self.leftblinkerflash:
+      self.leftblinkerflashdebouce = 50
+    elif self.leftblinkerflashdebouce > 0:
+      self.leftblinkerflashdebouce -= 1
+
+    if self.rightblinkerflash:
+      self.rightblinkerflashdebouce = 50
+    elif self.rightblinkerflashdebouce > 0:
+      self.rightblinkerflashdebouce -= 1
+
+    ret.leftBlinker = cp.vl["CGW1"]['CF_Gway_TSigLHSw'] != 0 or self.leftblinkerflashdebouce > 0
+    ret.rightBlinker = cp.vl["CGW1"]['CF_Gway_TSigRHSw'] != 0 or self.rightblinkerflashdebouce > 0
+
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
@@ -72,12 +89,12 @@ class CarState(CarStateBase):
     if not self.cruise_main_button:
       if self.cruise_buttons == 4 and self.prev_cruise_buttons != 4 and self.cancel_button_count < 3:
         self.cancel_button_count += 1
-        self.timer = 100
+        self.cancel_button_timer = 100
       elif self.cancel_button_count == 3:
           self.cancel_button_count = 0
-      if self.timer <= 100 and self.cancel_button_count:
-        self.timer = max(0, self.timer - 1)
-        if self.timer == 0:
+      if self.cancel_button_timer <= 100 and self.cancel_button_count:
+        self.cancel_button_timer = max(0, self.cancel_button_timer - 1)
+        if self.cancel_button_timer == 0:
           self.cancel_button_count = 0
     else:
       self.cancel_button_count = 0
@@ -186,7 +203,7 @@ class CarState(CarStateBase):
     if self.CP.fcaAvailable:
       ret.stockAeb = cp_scc.vl["FCA11"]['FCA_CmdAct'] != 0
       ret.stockFcw = cp_scc.vl["FCA11"]['CF_VSM_Warn'] == 2
-    else:
+    elif not self.nosccradar:
       ret.stockAeb = cp_scc.vl["SCC12"]['AEB_CmdAct'] != 0
       ret.stockFcw = cp_scc.vl["SCC12"]['CF_VSM_Warn'] == 2
 
@@ -199,8 +216,8 @@ class CarState(CarStateBase):
     self.clu11 = copy.copy(cp.vl["CLU11"])
     self.scc11 = copy.copy(cp_scc.vl["SCC11"])
     self.scc12 = copy.copy(cp_scc.vl["SCC12"])
-    self.scc13 = cp_scc.vl["SCC13"]
-    self.scc14 = cp_scc.vl["SCC14"]
+    self.scc13 = copy.copy(cp_scc.vl["SCC13"])
+    self.scc14 = copy.copy(cp_scc.vl["SCC14"])
 
     return ret
 
@@ -497,9 +514,9 @@ class CarState(CarStateBase):
         ]
       if CP.fcaAvailable:
         signals += [
-        ("FCA_CmdAct", "FCA11", 0),
-        ("CF_VSM_Warn", "FCA11", 0),
+          ("FCA_CmdAct", "FCA11", 0),
+          ("CF_VSM_Warn", "FCA11", 0),
         ]
-        checks += [("FCA11", 50)]
+        checks += [("FCA11", 100)]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 2)
