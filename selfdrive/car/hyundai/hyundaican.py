@@ -91,3 +91,74 @@ def create_lfa_mfa(packer, frame, enabled):
   # HDA_USM: nothing
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
+
+def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstill, scc11, usestockscc, nosccradar, frame):
+  values = scc11
+
+  if not usestockscc:
+    if enabled:
+      values["VSetDis"] = set_speed
+    if standstill:
+      values["SCCInfoDisplay"] = 0
+    values["DriverAlertDisplay"] = 0
+    values["TauGapSet"] = gapsetting
+    values["ObjValid"] = lead_visible
+    values["ACC_ObjStatus"] = lead_visible
+
+    if nosccradar:
+      values["MainMode_ACC"] = 1
+      values["AliveCounterACC"] = frame // 2 % 0x10
+  elif nosccradar:
+    values["AliveCounterACC"] = frame // 2 % 0x10
+
+  return packer.make_can_msg("SCC11", 0, values)
+
+def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, cruise_on, scc12, usestockscc, nosccradar, cnt):
+  values = scc12
+
+  if not usestockscc:
+    if enabled and cruise_on:
+      values["ACCMode"] = 2 if gaspressed else 1
+      if apply_accel < 0:
+        values["StopReq"] = standstill
+    else:
+      values["ACCMode"] = 0
+
+    if enabled and cruise_on:
+      values["aReqRaw"] = apply_accel
+      values["aReqValue"] = apply_accel
+    else:
+      values["aReqRaw"] = 0
+      values["aReqValue"] = 0
+
+    if nosccradar:
+      values["CR_VSM_Alive"] = cnt
+      values["ACCMode"] = 1 if enabled else 0
+
+    values["CR_VSM_ChkSum"] = 0
+    dat = packer.make_can_msg("SCC12", 0, values)[2]
+    values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
+  elif nosccradar:
+    values["CR_VSM_Alive"] = cnt
+    values["CR_VSM_ChkSum"] = 0
+    dat = packer.make_can_msg("SCC12", 0, values)[2]
+    values["CR_VSM_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
+
+  return packer.make_can_msg("SCC12", 0, values)
+
+def create_scc13(packer, scc13):
+  values = scc13
+  return packer.make_can_msg("SCC13", 0, values)
+
+def create_scc14(packer, enabled, usestockscc, scc14):
+  values = scc14
+  if not usestockscc:
+    if enabled:
+      values["JerkUpperLimit"] = 3.2
+      values["JerkLowerLimit"] = 0.1
+      values["SCCMode"] = 1
+      values["ComfortBandUpper"] = 0.24
+      values["ComfortBandLower"] = 0.24
+
+  return packer.make_can_msg("SCC14", 0, values)
+

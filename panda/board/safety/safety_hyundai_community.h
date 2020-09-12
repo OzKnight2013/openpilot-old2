@@ -6,14 +6,21 @@ const int HYUNDAI_COMMUNITY_MAX_RATE_DOWN = 7;
 const int HYUNDAI_COMMUNITY_DRIVER_TORQUE_ALLOWANCE = 50;
 const int HYUNDAI_COMMUNITY_DRIVER_TORQUE_FACTOR = 2;
 const int HYUNDAI_COMMUNITY_STANDSTILL_THRSLD = 30;  // ~1kph
+
+const int HYUNDAI_COMMUNITY_MAX_ACCEL = 150;        // 1.5 m/s2
+const int HYUNDAI_COMMUNITY_MIN_ACCEL = -300;       // -3.0 m/s2
+
+const int HYUNDAI_COMMUNITY_ISO_MAX_ACCEL = 200;        // 2.0 m/s2
+const int HYUNDAI_COMMUNITY_ISO_MIN_ACCEL = -350;       // -3.5 m/s2
+
 const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
   {832, 0, 8}, {832, 1, 8}, // LKAS11 Bus 0, 1
   {1265, 0, 4}, {1265, 1, 4}, {1265, 2, 4},// CLU11 Bus 0, 1, 2
-  {1157, 0, 4}, // LFAHDA_MFC Bus 0
-  {1056, 0, 8}, //   SCC11,  Bus 0
-  {1057, 0, 8}, //   SCC12,  Bus 0
-  // {1290, 0, 8}, //   SCC13,  Bus 0
-  // {905, 0, 8},  //   SCC14,  Bus 0
+  {1157, 0, 4}, // LFAHDA_MFC Bus 0, 1
+  {1056, 0, 8}, //   SCC11,  Bus 0, 1
+  {1057, 0, 8}, //   SCC12,  Bus 0, 1
+  {1290, 0, 8}, //   SCC13,  Bus 0
+  {905, 0, 8},  //   SCC14,  Bus 0
   // {1186, 0, 8}  //   4a2SCC, Bus 0
  };
 
@@ -82,7 +89,7 @@ static uint8_t hyundai_community_compute_checksum(CAN_FIFOMailBox_TypeDef *to_pu
 static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   bool valid;
-  if (hyundai_community_non_scc_car) {
+  if (hyundai_community_non_scc_car || hyundai_community_radar_harness_present) {
     valid = addr_safety_check(to_push, hyundai_community_nonscc_rx_checks, HYUNDAI_COMMUNITY_NONSCC_RX_CHECK_LEN,
                             hyundai_community_get_checksum, hyundai_community_compute_checksum,
                             hyundai_community_get_counter);
@@ -113,7 +120,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if ((addr == 1057) && (!hyundai_community_non_scc_car)){
+    if ((addr == 1057) && (!hyundai_community_non_scc_car) && (!hyundai_community_radar_harness_present)){
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -126,7 +133,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // engage for non ACC car
-    if ((addr == 1265) && (hyundai_community_non_scc_car)) {
+    if ((addr == 1265) && (hyundai_community_non_scc_car || hyundai_community_radar_harness_present)) {
       // first byte
       int cruise_engaged = (GET_BYTES_04(to_push) & 0x7);
       // enable on res+ or set- buttons rising edge
@@ -170,6 +177,23 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   if (relay_malfunction) {
     tx = 0;
+  }
+
+  // ACCEL: safety check
+  if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car){
+    int desired_accel = ((GET_BYTES_04(to_send) >> 24) & 0x7ff) - 1024;
+    if (!controls_allowed) {
+      if ((-10 > desired_accel) && (desired_accel > 10)) {
+        tx = 0;
+      }
+    }
+    bool violation = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
+      max_limit_check(desired_accel, HYUNDAI_COMMUNITY_ISO_MAX_ACCEL, HYUNDAI_COMMUNITY_ISO_MIN_ACCEL) :
+      max_limit_check(desired_accel, HYUNDAI_COMMUNITY_MAX_ACCEL, HYUNDAI_COMMUNITY_MIN_ACCEL);
+
+    if (violation) {
+      tx = 0;
+    }
   }
 
   // LKA STEER: safety check
