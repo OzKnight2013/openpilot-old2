@@ -199,7 +199,11 @@ FW_VERSIONS = {
     ],
   },
   CAR.KONA_EV: {
-    (Ecu.eps, 0x7D4, None): [b'\xf1\x00OS  MDPS C 1.00 1.04 56310K4000\x00 4OEDC104'],
+    (Ecu.eps, 0x7D4, None): [
+      b'\xf1\x00OS  MDPS C 1.00 1.04 56310K4000\x00 4OEDC104',
+      b'\xf1\x00OS  MDPS C 1.00 1.04 56310K4050\x00 4OEDC104',
+    ],
+
   },
   CAR.IONIQ_HEV: {
     (Ecu.eps, 0x7D4, None): [

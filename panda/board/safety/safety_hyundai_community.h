@@ -101,6 +101,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
                             hyundai_community_get_checksum, hyundai_community_compute_checksum,
                             hyundai_community_get_counter);
   }
+
   int addr = GET_ADDR(to_push);
   int bus = GET_BUS(to_push);
 
