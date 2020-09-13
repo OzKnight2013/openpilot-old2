@@ -284,7 +284,8 @@ static int hyundai_community_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_f
     if (bus_num == 1 && hyundai_community_mdps_harness_present) {
         bus_fwd = 20;
     }
-    if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
+    if ((bus_num == 2) && (addr != 832) && (addr != 1157) &&
+        (((addr != 1056) && (addr != 1057)) || hyundai_community_mdps_harness_present)) {
       if ((hyundai_community_mdps_harness_present)) {
           if ((addr != 1056) && (addr != 1057)) {
             bus_fwd = 10;

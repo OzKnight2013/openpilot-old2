@@ -174,7 +174,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.mdpsHarness = True if 593 in fingerprint[1] and len(fingerprint[1]) <= 3 else False
     ret.sasBus = 1 if 688 in fingerprint[1] and len(fingerprint[1]) <= 3 else 0
-    ret.fcaAvailable = True if 909 in fingerprint[0] or 909 in fingerprint[2] else False
+    ret.fcaBus = 0 if 909 in fingerprint[0] else 2 if 909 in fingerprint[2] else -1
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
     ret.lfaAvailable = True if 1157 in fingerprint[0] else False
   

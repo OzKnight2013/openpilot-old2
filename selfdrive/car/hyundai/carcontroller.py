@@ -102,13 +102,13 @@ class CarController():
     lkas_active = enabled and ((abs(CS.out.steeringAngle) < 90.) or self.high_steer_allowed)
 
     # fix for Genesis hard fault at low speed
-    if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.mdpsHarness:
+    if CS.out.vEgo < 55 * CV.KPH_TO_MS and self.car_fingerprint == CAR.HYUNDAI_GENESIS and not CS.CP.mdpsHarness:
       lkas_active = False
 
     if not lkas_active:
       apply_steer = 0
 
-    if CS.nosccradar:
+    if CS.CP.radarOffCan:
       self.usestockscc = not self.cp_oplongcontrol
     elif (CS.cancel_button_count == 3) and self.cp_oplongcontrol:
       self.usestockscc = not self.usestockscc
@@ -154,7 +154,7 @@ class CarController():
                                    left_lane, right_lane,
                                    left_lane_warning, right_lane_warning, self.lfa_available, 0))
 
-    if CS.mdpsHarness:  # send lkas11 bus 1 if mdps
+    if CS.CP.mdpsHarness:  # send lkas11 bus 1 if mdps
       can_sends.append(create_lkas11(self.packer, frame, self.car_fingerprint, apply_steer, lkas_active,
                                    CS.lkas11, sys_warning, sys_state, enabled,
                                    left_lane, right_lane,
@@ -162,14 +162,14 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
-    if pcm_cancel_cmd and not CS.nosccradar and self.usestockscc and CS.scc12["ACCMode"] and not CS.out.standstill:
+    if pcm_cancel_cmd and not CS.CP.radarOffCan and self.usestockscc and CS.scc12["ACCMode"] and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
-      can_sends.append(create_clu11(self.packer, CS.scc_bus, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
-    elif CS.out.cruiseState.standstill and not CS.nosccradar and self.usestockscc and CS.vrelative > 0:
+      can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
+    elif CS.out.cruiseState.standstill and not CS.CP.radarOffCan and self.usestockscc and CS.vrelative > 0:
       self.vdiff += (CS.vrelative - self.vdiff)
       if (frame - self.lastresumeframe > 10) and (self.vdiff > .5 or CS.lead_distance > 6.):
-        can_sends.append(create_clu11(self.packer, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed, self.resumebuttoncnt))
+        can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.RES_ACCEL, self.current_veh_speed, self.resumebuttoncnt))
         self.resumebuttoncnt += 1
         if self.resumebuttoncnt > 5:
           self.lastresumeframe = frame
@@ -183,18 +183,18 @@ class CarController():
     set_speed *= speed_conv
 
     # send scc to car if longcontrol enabled and SCC not on bus 0 or ont live
-    if (CS.scc_bus == 2 or not self.usestockscc) and frame % 2 == 0:
+    if (CS.CP.sccBus == 2 or not self.usestockscc) and frame % 2 == 0:
       self.scc12cnt += 1
       self.scc12cnt %= 0xF
       can_sends.append(create_scc11(self.packer, enabled,
                                     set_speed, self.lead_visible,
                                     self.gapsettingdance,
-                                    CS.out.standstill, CS.scc11, self.usestockscc, CS.nosccradar, frame))
+                                    CS.out.standstill, CS.scc11, self.usestockscc, CS.CP.radarOffCan, frame))
 
       can_sends.append(create_scc12(self.packer, apply_accel, enabled,
                                     self.acc_standstill, CS.out.gasPressed, CS.out.brakePressed,
                                     CS.scc11["MainMode_ACC"], CS.out.stockAeb,
-                                    CS.scc12, self.usestockscc, CS.nosccradar, self.scc12cnt))
+                                    CS.scc12, self.usestockscc, CS.CP.radarOffCan, self.scc12cnt))
 
       can_sends.append(create_scc13(self.packer, CS.scc13))
       can_sends.append(create_scc14(self.packer, enabled, self.usestockscc, CS.out.stockAeb, CS.scc14))

@@ -408,7 +408,7 @@ struct CarParams {
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
   mdpsHarness @51: Bool;
   sasBus @52: Int8;
-  fcaAvailable @53: Bool;
+  fcaBus @53: Int8;
   bsmAvailable @54: Bool;
   lfaAvailable @55: Bool;
   sccBus @56: Int8;
