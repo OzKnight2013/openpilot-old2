@@ -122,7 +122,7 @@ class CarState(CarStateBase):
       self.vrelative = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
       self.radar_obj_valid = cp_scc.vl["SCC11"]['ObjValid']
 
-    self.is_set_speed_in_mph = int(cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"])
+    self.is_set_speed_in_mph = cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"]
     if ret.cruiseState.enabled:
       speed_conv = CV.MPH_TO_MS if self.is_set_speed_in_mph else CV.KPH_TO_MS
       if self.CP.radarOffCan:
@@ -487,10 +487,10 @@ class CarState(CarStateBase):
         ("ACCMode", "SCC12", 0),
         ("StopReq", "SCC12", 0),
         ("CR_VSM_DecCmd", "SCC12", 0),
-        ("aReqRaw", "SCC12", 0), #aReqMax
+        ("aReqRaw", "SCC12", 0),
         ("TakeOverReq", "SCC12", 0),
         ("PreFill", "SCC12", 0),
-        ("aReqValue", "SCC12", 0), #aReqMin
+        ("aReqValue", "SCC12", 0),
         ("CF_VSM_ConfMode", "SCC12", 1),
         ("AEB_Failinfo", "SCC12", 0),
         ("AEB_Status", "SCC12", 2),
