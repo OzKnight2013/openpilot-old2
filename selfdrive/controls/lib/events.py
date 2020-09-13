@@ -297,7 +297,7 @@ EVENTS = {
   EventName.carUnrecognized: {
     ET.PERMANENT: Alert(
       "Dashcam Mode",
-      "Car Unrecognized",
+      "Car Unrecognized- Please verify fingerprint with the fork owner",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
   },
