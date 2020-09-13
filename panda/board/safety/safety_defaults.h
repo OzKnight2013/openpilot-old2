@@ -16,9 +16,7 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   if (addr == 1057) {
     hyundai_community_non_scc_car = false;
-    if (bus == 2) {
-    }
-    else {
+    if (bus == 0) {
       hyundai_community_radar_harness_present = false;
     }
   }
