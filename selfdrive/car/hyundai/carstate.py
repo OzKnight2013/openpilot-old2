@@ -32,6 +32,7 @@ class CarState(CarStateBase):
     cp_mdps = cp2 if self.CP.mdpsHarness else cp
     cp_sas = cp2 if self.CP.sasBus else cp
     cp_scc = cp_cam if ((self.CP.sccBus == 2) or self.CP.radarOffCan) else cp
+    cp_fca = cp_cam if (self.CP.fcaBus == 2) else cp
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.prev_cruise_main_button = self.cruise_main_button
@@ -206,8 +207,8 @@ class CarState(CarStateBase):
         ret.gearShifter = GearShifter.unknown
 
     if self.CP.fcaBus != -1:
-      ret.stockAeb = cp_scc.vl["FCA11"]['FCA_CmdAct'] != 0
-      ret.stockFcw = cp_scc.vl["FCA11"]['CF_VSM_Warn'] == 2
+      ret.stockAeb = cp_fca.vl["FCA11"]['FCA_CmdAct'] != 0
+      ret.stockFcw = cp_fca.vl["FCA11"]['CF_VSM_Warn'] == 2
     elif not self.CP.radarOffCan:
       ret.stockAeb = cp_scc.vl["SCC12"]['AEB_CmdAct'] != 0
       ret.stockFcw = cp_scc.vl["SCC12"]['CF_VSM_Warn'] == 2
