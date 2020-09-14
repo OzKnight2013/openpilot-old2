@@ -199,14 +199,14 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // ACCEL: safety check
   if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act) && vehicle_moving) {
     int desired_accel = (GET_BYTE(to_send, 3) | ((GET_BYTE(to_send, 4) & 0x7) << 8)) - 1024;
-    if ((desired_accel != 0) && (!controls_allowed)) {
+    if (((desired_accel > 10) || (desired_accel < -10)) && (!controls_allowed)) {
         tx = 0;
     }
     if (controls_allowed) {
-      bool violation = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
+      bool vio = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
           max_limit_check(desired_accel, HYUNDAI_COMMUNITY_ISO_MAX_ACCEL, HYUNDAI_COMMUNITY_ISO_MIN_ACCEL) :
           max_limit_check(desired_accel, HYUNDAI_COMMUNITY_MAX_ACCEL, HYUNDAI_COMMUNITY_MIN_ACCEL);
-      if (violation) {
+      if (vio) {
         tx = 0;
       }
     }

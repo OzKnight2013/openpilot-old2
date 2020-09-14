@@ -130,7 +130,7 @@ struct sample_t angle_meas;         // last 3 steer angles
 // If using this flag, be aware that harder braking is more likely to lead to rear endings,
 //   and that alone this flag doesn't make braking compliant because there's also a time element.
 // See ISO 15622:2018 for more information.
-#define UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX 8
+#define UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX 7
 
 int unsafe_mode = 1;
 

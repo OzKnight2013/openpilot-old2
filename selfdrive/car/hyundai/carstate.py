@@ -76,9 +76,9 @@ class CarState(CarStateBase):
     ret.steeringTorque = cp_mdps.vl["MDPS12"]['CR_Mdps_StrColTq']
     ret.steeringTorqueEps = cp_mdps.vl["MDPS12"]['CR_Mdps_OutTq']
 
-    if abs(ret.steeringTorque) > STEER_THRESHOLD:
+    if abs(ret.steeringTorque) > 20:
       self.steeringPressedTimer +=1
-      if abs(ret.steeringTorque) > 3 * STEER_THRESHOLD:
+      if abs(ret.steeringTorque) > STEER_THRESHOLD:
         self.steeringPressedTimer = 50
     else:
       self.steeringPressedTimer = 0
