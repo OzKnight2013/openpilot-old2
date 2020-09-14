@@ -91,7 +91,19 @@ bool aeb_cmd_act = false;
 static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   bool valid;
-  if (hyundai_community_non_scc_car || hyundai_community_radar_harness_present) {
+
+  int bus = GET_BUS(to_push);
+  int addr = GET_ADDR(to_push);
+
+  if ((bus == 0) && (addr == 593 || addr == 897)) {
+    hyundai_community_mdps_harness_present = false;
+  }
+
+  if ((bus == 0) && ((addr == 1056) || (addr == 1057) || (addr == 1290) || (addr == 905))) {
+    hyundai_community_non_scc_car = false;
+  }
+
+  if (hyundai_community_non_scc_car) {
     valid = addr_safety_check(to_push, hyundai_community_nonscc_rx_checks, HYUNDAI_COMMUNITY_NONSCC_RX_CHECK_LEN,
                             hyundai_community_get_checksum, hyundai_community_compute_checksum,
                             hyundai_community_get_counter);
@@ -101,9 +113,6 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
                             hyundai_community_get_checksum, hyundai_community_compute_checksum,
                             hyundai_community_get_counter);
   }
-
-  int addr = GET_ADDR(to_push);
-  int bus = GET_BUS(to_push);
 
   if ((bus == 1) && hyundai_community_mdps_harness_present) {
 
@@ -123,7 +132,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
-    if ((addr == 1057) && (!hyundai_community_non_scc_car) && (!hyundai_community_radar_harness_present)){
+    if ((addr == 1057) && (!hyundai_community_non_scc_car)){
       // 2 bits: 13-14
       int cruise_engaged = (GET_BYTES_04(to_push) >> 13) & 0x3;
       if (cruise_engaged && !cruise_engaged_prev) {
@@ -136,7 +145,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     }
 
     // engage for non ACC car
-    if ((addr == 1265) && (hyundai_community_non_scc_car || hyundai_community_radar_harness_present)) {
+    if ((addr == 1265) && hyundai_community_non_scc_car) {
       // first byte
       int cruise_engaged = (GET_BYTES_04(to_push) & 0x7);
       // enable on res+ or set- buttons rising edge
@@ -166,7 +175,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     generic_rx_checks((addr == 832));
   }
     // monitor AEB active command to bypass panda accel safety, don't block AEB
-  if ((addr == 1057) && (bus == 2) && (hyundai_community_radar_harness_present)){
+  if ((addr == 1057) && (bus == 2) && (hyundai_community_non_scc_car)){
     aeb_cmd_act = (GET_BYTE(to_push, 6) >> 6) != 0;
   }
 
@@ -189,18 +198,15 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
 
   // ACCEL: safety check
   if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act)) {
-    int desired_accel = ((GET_BYTES_04(to_send) >> 24) & 0x7ff) - 1024;
-    if (!controls_allowed) {
-      if ((-10 > desired_accel) && (desired_accel > 10)) {
-        tx = 0;
+    int desired_accel = ((GET_BYTES_48(to_send) >> 5) & 0x7ff) - 1023;
+    desired_accel = to_signed(desired_accel, 11);
+    if (controls_allowed) {
+      bool violation = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
+          max_limit_check(desired_accel, HYUNDAI_COMMUNITY_ISO_MAX_ACCEL, HYUNDAI_COMMUNITY_ISO_MIN_ACCEL) :
+          max_limit_check(desired_accel, HYUNDAI_COMMUNITY_MAX_ACCEL, HYUNDAI_COMMUNITY_MIN_ACCEL);
+      if (violation) {
+        tx = 1;
       }
-    }
-    bool violation = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
-      max_limit_check(desired_accel, HYUNDAI_COMMUNITY_ISO_MAX_ACCEL, HYUNDAI_COMMUNITY_ISO_MIN_ACCEL) :
-      max_limit_check(desired_accel, HYUNDAI_COMMUNITY_MAX_ACCEL, HYUNDAI_COMMUNITY_MIN_ACCEL);
-
-    if (violation) {
-      tx = 0;
     }
   }
 
@@ -297,12 +303,16 @@ static int hyundai_community_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_f
 static void hyundai_community_init(int16_t param) {
   UNUSED(param);
   controls_allowed = false;
+  hyundai_community_mdps_harness_present = true;
+  hyundai_community_non_scc_car = true;
   relay_malfunction_reset();
 }
 
 static void hyundai_community_nonscc_init(int16_t param) {
   UNUSED(param);
   controls_allowed = false;
+  hyundai_community_mdps_harness_present = true;
+  hyundai_community_non_scc_car = true;
   relay_malfunction_reset();
 }
 

@@ -174,14 +174,12 @@ class CarInterface(CarInterfaceBase):
 
     ret.mdpsHarness = True if 593 in fingerprint[1] and len(fingerprint[1]) <= 3 else False
     ret.sasBus = 1 if 688 in fingerprint[1] and len(fingerprint[1]) <= 3 else 0
-    ret.fcaBus = 0 if 909 in fingerprint[0] else -1
+    ret.fcaBus = 0 if 909 in fingerprint[0] else 2 if 909 in fingerprint[2] else -1
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
     ret.lfaAvailable = True if 1157 in fingerprint[0] else False
   
     ret.sccBus = 0 if 1057 in fingerprint[0] else 2 if 1057 in fingerprint[2] else -1
     ret.radarOffCan = (ret.sccBus == -1)
-    if ret.radarOffCan:
-      ret.fcaBus = 2 if 909 in fingerprint[2] else -1
     ret.radarTimeStep = 0.02
     ret.openpilotLongitudinalControl = not (ret.sccBus == 0)
 
@@ -191,10 +189,11 @@ class CarInterface(CarInterfaceBase):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
 
     if ret.mdpsHarness or \
-            candidate in [CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_HEV,
-                          CAR.KIA_CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]:
+            (candidate in [CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_HEV,
+                          CAR.KIA_CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunity
-    if ret.radarOffCan or ret.sccBus == 2:
+
+    if ret.radarOffCan or (ret.sccBus == 2):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc
 
     if ret.mdpsHarness:
