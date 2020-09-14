@@ -176,7 +176,7 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   }
     // monitor AEB active command to bypass panda accel safety, don't block AEB
   if ((addr == 1057) && (bus == 2) && (hyundai_community_non_scc_car)){
-    aeb_cmd_act = (GET_BYTE(to_push, 6) >> 6) != 0;
+    aeb_cmd_act = (GET_BYTE(to_push, 6) & 0x40) != 0;
   }
 
   return valid;
@@ -197,15 +197,17 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   }
 
   // ACCEL: safety check
-  if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act)) {
-    int desired_accel = ((GET_BYTES_48(to_send) >> 5) & 0x7ff) - 1023;
-    desired_accel = to_signed(desired_accel, 11);
+  if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act) && vehicle_moving) {
+    int desired_accel = (GET_BYTE(to_send, 3) | ((GET_BYTE(to_send, 4) & 0x7) << 8)) - 1024;
+    if ((desired_accel != 0) && (!controls_allowed)) {
+        tx = 0;
+    }
     if (controls_allowed) {
       bool violation = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?
           max_limit_check(desired_accel, HYUNDAI_COMMUNITY_ISO_MAX_ACCEL, HYUNDAI_COMMUNITY_ISO_MIN_ACCEL) :
           max_limit_check(desired_accel, HYUNDAI_COMMUNITY_MAX_ACCEL, HYUNDAI_COMMUNITY_MIN_ACCEL);
       if (violation) {
-        tx = 1;
+        tx = 0;
       }
     }
   }
