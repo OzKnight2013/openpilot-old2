@@ -100,7 +100,7 @@ void black_set_gps_mode(uint8_t mode) {
 }
 
 void black_set_can_mode(uint8_t mode){
-
+  mode = CAN_MODE_OBD_CAN2;
   switch (mode) {
     case CAN_MODE_NORMAL:
     case CAN_MODE_OBD_CAN2:
@@ -208,7 +208,7 @@ void black_init(void) {
   black_set_led(LED_BLUE, false);
 
   // Set normal CAN mode
-  black_set_can_mode(CAN_MODE_OBD_CAN2);
+  black_set_can_mode(CAN_MODE_NORMAL);
 
   // flip CAN0 and CAN2 if we are flipped
   if (car_harness_status == HARNESS_STATUS_FLIPPED) {
