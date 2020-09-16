@@ -125,23 +125,21 @@ void set_safety_mode(uint16_t mode, int16_t param) {
     case SAFETY_SILENT:
       set_intercept_relay(false);
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_SILENT;
       break;
     case SAFETY_NOOUTPUT:
       set_intercept_relay(false);
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_LIVE;
       break;
     case SAFETY_ELM327:
-  // make this true if can mode is set to CAN_MODE_NORMAL or leave it at false
       set_intercept_relay(false);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-  // make this NORMAL if MDPS harness is directly connected to CAN1 or leave it at OBD_CAN2
         current_board->set_can_mode(CAN_MODE_OBD_CAN2);
       }
       can_silent = ALL_CAN_LIVE;
@@ -150,8 +148,7 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       set_intercept_relay(true);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-  // make this OBD_CAN2 if MDPS harness is directly connected to OBD or leave it at NORMAL
-        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_LIVE;
       break;
@@ -430,7 +427,7 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, bool hardwired) 
           current_board->set_can_mode(CAN_MODE_OBD_CAN2);
         } else {
           // Disable OBD CAN
-          current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+          current_board->set_can_mode(CAN_MODE_NORMAL);
         }
       } else {
         if (setup->b.wValue.w == 1U) {
