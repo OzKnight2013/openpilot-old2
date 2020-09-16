@@ -8,16 +8,16 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   if (bus == 1) {
      if ((addr == 593) && (mdps_msg_count == 0)){
-       mdps_msg_count += 1
+       mdps_msg_count += 1;
      }
      if ((addr == 897) && (mdps_msg_count == 1)){
-       mdps_msg_count += 1
+       mdps_msg_count += 1;
      }
      if ((addr == 688) && (mdps_msg_count == 2)){
-       mdps_msg_count += 1
+       mdps_msg_count += 1;
      }
      if ((addr == 1296) || (addr == 524) || (addr == 1554) && (mdps_msg_count > 0)){
-       mdps_msg_count -= 3
+       mdps_msg_count -= 3;
      }
      if (mdps_msg_count > 0) {
        hyundai_community_mdps_harness_present = true;
