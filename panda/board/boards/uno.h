@@ -240,7 +240,7 @@ void uno_init(void) {
   uno_set_led(LED_BLUE, false);
 
   // Set normal CAN mode
-  uno_set_can_mode(CAN_MODE_NORMAL);
+  uno_set_can_mode(CAN_MODE_OBD_CAN2);
 
   // flip CAN0 and CAN2 if we are flipped
   if (car_harness_status == HARNESS_STATUS_FLIPPED) {

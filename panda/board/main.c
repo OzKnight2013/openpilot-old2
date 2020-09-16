@@ -430,7 +430,7 @@ int usb_cb_control_msg(USB_Setup_TypeDef *setup, uint8_t *resp, bool hardwired) 
           current_board->set_can_mode(CAN_MODE_OBD_CAN2);
         } else {
           // Disable OBD CAN
-          current_board->set_can_mode(CAN_MODE_NORMAL);
+          current_board->set_can_mode(CAN_MODE_OBD_CAN2);
         }
       } else {
         if (setup->b.wValue.w == 1U) {
