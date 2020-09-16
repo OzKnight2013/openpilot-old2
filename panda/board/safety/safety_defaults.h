@@ -1,30 +1,9 @@
-int mdps_msg_count = 0;
-bool hyundai_community_non_scc_car = true;
-bool hyundai_community_mdps_harness_present = false;
-
 int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
-  if (bus == 1) {
-     if ((addr == 593) && (mdps_msg_count == 0)){
-       mdps_msg_count += 1;
-     }
-     if ((addr == 897) && (mdps_msg_count == 1)){
-       mdps_msg_count += 1;
-     }
-     if ((addr == 688) && (mdps_msg_count == 2)){
-       mdps_msg_count += 1;
-     }
-     if (((addr == 1296) || (addr == 524) || (addr == 1554)) && (mdps_msg_count > 0)){
-       mdps_msg_count -= 3;
-     }
-     if (mdps_msg_count > 0) {
-       hyundai_community_mdps_harness_present = true;
-     }
-     else {
-       hyundai_community_mdps_harness_present = false;
-     }
+ if ((bus == 0) && (addr == 593 || addr == 897)) {
+    hyundai_community_mdps_harness_present = false;
   }
 
   if ((bus == 0) && ((addr == 1056) || (addr == 1057) || (addr == 1290) || (addr == 905))) {
@@ -57,15 +36,27 @@ static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   UNUSED(to_fwd);
 
   int bus_fwd = -1;
-  if (hyundai_community_mdps_harness_present) {
-     if (bus_num == 0) {
-       bus_fwd = 1;
+  if (bus_num == 0) {
+     if (hyundai_community_mdps_harness_present) {
+       bus_fwd = 12;
      }
-     if (bus_num == 1) {
+     else
+     {
+       bus_fwd = 2;
+     }
+  }
+  if (bus_num == 1) {
+     if (hyundai_community_mdps_harness_present) {
        bus_fwd = 20;
      }
-     if (bus_num == 2) {
-       bus_fwd = 1;
+  }
+  if (bus_num == 2) {
+     if (hyundai_community_mdps_harness_present) {
+       bus_fwd = 10;
+     }
+     else
+     {
+       bus_fwd = 0;
      }
   }
   return bus_fwd;

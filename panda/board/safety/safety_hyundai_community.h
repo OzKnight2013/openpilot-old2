@@ -320,16 +320,12 @@ static int hyundai_community_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_f
 static void hyundai_community_init(int16_t param) {
   UNUSED(param);
   controls_allowed = false;
-  hyundai_community_mdps_harness_present = true;
-  hyundai_community_non_scc_car = true;
   relay_malfunction_reset();
 }
 
 static void hyundai_community_nonscc_init(int16_t param) {
   UNUSED(param);
   controls_allowed = false;
-  hyundai_community_mdps_harness_present = true;
-  hyundai_community_non_scc_car = true;
   relay_malfunction_reset();
 }
 
