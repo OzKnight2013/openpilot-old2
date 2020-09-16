@@ -148,8 +148,11 @@ void update_sockets(UIState *s) {
       s->status = STATUS_WARNING;
     } else if (alertStatus == cereal::ControlsState::AlertStatus::CRITICAL) {
       s->status = STATUS_ALERT;
-    } else{
-      s->status = scene.controls_state.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
+    } else if (scene.controls_state.getEnabled()){
+      s->status = (s->longitudinal_control)? STATUS_ENGAGED_OPLONG:STATUS_ENGAGED;
+    }
+    else {
+      s->status = STATUS_DISENGAGED;
     }
 
     float alert_blinkingrate = scene.controls_state.getAlertBlinkingRate();
@@ -236,7 +239,7 @@ void update_sockets(UIState *s) {
   if (sm.updated("carState")) {
     auto data = sm["carState"].getCarState();
     if(scene.leftBlinker!=data.getLeftBlinker() || scene.rightBlinker!=data.getRightBlinker()){
-      scene.blinker_blinkingrate = 100;
+      scene.blinker_blinkingrate = 50;
     }
     scene.brakeLights = data.getBrakeLights();
     scene.leftBlinker = data.getLeftBlinker();

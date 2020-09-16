@@ -21,7 +21,7 @@ const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
   {1057, 0, 8}, //   SCC12,  Bus 0, 1
   {1290, 0, 8}, //   SCC13,  Bus 0
   {905, 0, 8},  //   SCC14,  Bus 0
-  // {1186, 0, 8}  //   4a2SCC, Bus 0
+  {1186, 0, 8}  //   4a2SCC, Bus 0
  };
 
 // TODO: missing checksum for wheel speeds message,worst failure case is
@@ -87,6 +87,8 @@ static uint8_t hyundai_community_compute_checksum(CAN_FIFOMailBox_TypeDef *to_pu
 }
 
 bool aeb_cmd_act = false;
+int prev_desired_accel = 0;
+int decel_not_ramping =0;
 
 static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
@@ -197,10 +199,23 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   }
 
   // ACCEL: safety check
+
   if ((addr == 1057) && (bus == 0) && hyundai_community_non_scc_car && (!aeb_cmd_act) && vehicle_moving) {
     int desired_accel = (GET_BYTE(to_send, 3) | ((GET_BYTE(to_send, 4) & 0x7) << 8)) - 1024;
-    if (((desired_accel > 10) || (desired_accel < -10)) && (!controls_allowed)) {
-        tx = 0;
+    prev_desired_accel = desired_accel;
+    if (!controls_allowed) {
+        if (((desired_accel < -10) && (prev_desired_accel >= desired_accel))||  //staying in braking or braking more
+            ((desired_accel > 10) && (prev_desired_accel <= desired_accel)))     //staying in gas or accelerating more
+        {
+           decel_not_ramping +=1;
+        }
+        else
+        {
+           decel_not_ramping =0;
+        }
+        if (decel_not_ramping > 5) {  // allow 5 loops
+            tx = 0;
+        }
     }
     if (controls_allowed) {
       bool vio = (unsafe_mode & UNSAFE_RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX)?

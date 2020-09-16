@@ -130,17 +130,17 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       can_silent = ALL_CAN_SILENT;
       break;
     case SAFETY_NOOUTPUT:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       if (board_has_obd()) {
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_LIVE;
       break;
     case SAFETY_ELM327:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_NORMAL);
+        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
       }
       can_silent = ALL_CAN_LIVE;
       break;
@@ -836,7 +836,7 @@ int main(void) {
   // use TIM2->CNT to read
 
   // init to SILENT and can silent
-  set_safety_mode(SAFETY_ALLOUTPUT, 0);
+  set_safety_mode(SAFETY_SILENT, 0);
 
   // enable CAN TXs
   current_board->enable_can_transcievers(true);

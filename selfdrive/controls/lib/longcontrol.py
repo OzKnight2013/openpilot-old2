@@ -8,10 +8,10 @@ STOPPING_EGO_SPEED = 0.2
 MIN_CAN_SPEED = 0.3  # TODO: parametrize this in car interface
 STOPPING_TARGET_SPEED = MIN_CAN_SPEED + 0.01
 STARTING_TARGET_SPEED = 0.01
-BRAKE_THRESHOLD_TO_PID = 0.0
+BRAKE_THRESHOLD_TO_PID = 1.0
 
 STOPPING_BRAKE_RATE = 0.2  # brake_travel/s while trying to stop
-STARTING_BRAKE_RATE = 1.5  # brake_travel/s while releasing on restart
+STARTING_BRAKE_RATE = 5.  # brake_travel/s while releasing on restart
 BRAKE_STOPPING_TARGET = 1.2 # apply at least this amount of brake to maintain the vehicle stationary
 
 _MAX_SPEED_ERROR_BP = [0., 30.]  # speed breakpoints
@@ -24,7 +24,7 @@ def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
                              output_gb, brake_pressed, standstill, stop):
   """Update longitudinal control state machine"""
 
-  starting_condition = v_target > STARTING_TARGET_SPEED
+  starting_condition = v_target > STARTING_TARGET_SPEED and not stop
   stopping_condition = stop or (v_ego < 2.0 and standstill and not starting_condition)
 
   if not active:
@@ -71,6 +71,8 @@ class LongControl():
     """Reset PID controller and change setpoint"""
     self.pid.reset()
     self.v_pid = v_pid
+    self.stop = False
+    self.stop_timer = 0
 
   def update(self, active, CS, v_target, v_target_future, a_target, CP, hasLead, radarState):
     """Update longitudinal control. This updates the state machine and runs a PID loop"""
@@ -85,12 +87,16 @@ class LongControl():
     else:
       dRel = radarState.leadOne.dRel
     if hasLead:
-      stop = True if (dRel < 5.0 and radarState.leadOne.status) else False
+      self.stop = True if (dRel < 5.0 and radarState.leadOne.status) else False
+      if self.stop:
+        self.stop_timer = 100
+    elif self.stop_timer > 0:
+      self.stop_timer -= 1
     else:
-      stop = False
+      self.stop = False
     self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
                                                        v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.standstill, stop)
+                                                       CS.brakePressed, CS.standstill, self.stop)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
