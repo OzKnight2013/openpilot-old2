@@ -5,10 +5,6 @@ int default_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
  if ((bus == 0) && (addr == 593 || addr == 897)) {
     hyundai_community_mdps_harness_present = false;
   }
-
-  if ((bus == 0) && ((addr == 1056) || (addr == 1057) || (addr == 1290) || (addr == 905))) {
-    hyundai_community_non_scc_car = false;
-  }
   return true;
 }
 
@@ -40,10 +36,6 @@ static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
      if (hyundai_community_mdps_harness_present) {
        bus_fwd = 12;
      }
-     else
-     {
-       bus_fwd = 2;
-     }
   }
   if (bus_num == 1) {
      if (hyundai_community_mdps_harness_present) {
@@ -53,10 +45,6 @@ static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   if (bus_num == 2) {
      if (hyundai_community_mdps_harness_present) {
        bus_fwd = 10;
-     }
-     else
-     {
-       bus_fwd = 0;
      }
   }
   return bus_fwd;

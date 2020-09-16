@@ -103,7 +103,6 @@ bool brake_pressed_prev = false;
 bool cruise_engaged_prev = false;
 float vehicle_speed = 0;
 bool vehicle_moving = false;
-bool hyundai_community_non_scc_car = true;
 bool hyundai_community_mdps_harness_present = true;
 
 
