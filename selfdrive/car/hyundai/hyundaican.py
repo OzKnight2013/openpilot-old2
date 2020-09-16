@@ -76,6 +76,7 @@ def create_clu11(packer, bus, clu11, button, speed, cnt):
 def create_lfa_mfa(packer, frame, enabled):
   values = {
     "ACTIVE": enabled,
+    "HDA_USM": 2,
   }
 
   # ACTIVE 1 = Green steering wheel icon
@@ -159,4 +160,10 @@ def create_scc14(packer, enabled, usestockscc, aebcmdact, scc14):
       values["ComfortBandLower"] = 0.24
 
   return packer.make_can_msg("SCC14", 0, values)
+
+def create_scc42a(packer):
+  values = {
+    "CF_FCA_Equip_Front_Radar": 1
+  }
+  return packer.make_can_msg("FRT_RADAR11", 0, values)
 
