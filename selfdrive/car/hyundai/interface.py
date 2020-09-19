@@ -176,7 +176,7 @@ class CarInterface(CarInterfaceBase):
     ret.sasBus = 0 if 688 in fingerprint[0] else 1
     ret.fcaBus = 0 if 909 in fingerprint[0] else 2 if 909 in fingerprint[2] else -1
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
-    ret.lfaAvailable = True if 1157 in fingerprint[0] else False
+    ret.lfaAvailable = True if 1157 in fingerprint[2] else False
   
     ret.sccBus = 0 if 1057 in fingerprint[0] else 2 if 1057 in fingerprint[2] else -1
     ret.radarOffCan = (ret.sccBus == -1)

@@ -225,14 +225,6 @@ FW_VERSIONS = {
     (Ecu.engine, 0x7e0, None): [b'\x01TJFAJNU06F201H03'],
   },  
   CAR.KIA_NIRO_EV: {
-    (Ecu.fwdRadar, 0x7D0, None): [
-      b'\xf1\x00DEev SCC F-CUP      1.00 1.03 96400-Q4100         \xf1\xa01.03',
-      b'\xf1\x00DEev SCC F-CUP      1.00 1.00 99110-Q4000         \xf1\xa01.00',      
-    ],
-    (Ecu.esp, 0x7D1, None): [
-      b'\xf1\xa01.06',
-      b'\xf1\xa01.07',      
-    ],
     (Ecu.eps, 0x7D4, None): [
       b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4000\x00 4DEEC105',
       b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4100\x00 4DEEC105',
@@ -253,7 +245,7 @@ FEATURES = {
   # which message has the gear
   "use_cluster_gears": set([CAR.ELANTRA, CAR.KONA, CAR.ELANTRA_GT_I30, CAR.KIA_CADENZA, CAR.KIA_NIRO_HEV, CAR.GRANDEUR]),
   "use_tcu_gears": set([CAR.KIA_OPTIMA, CAR.SONATA_2019, CAR.VELOSTER]),
-  "use_elect_gears": set([CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_NIRO_EV, CAR.KIA_CADENZA_HEV,
+    "use_elect_gears": set([CAR.KIA_OPTIMA_HEV, CAR.SONATA_HEV, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_NIRO_EV, CAR.KIA_CADENZA_HEV,
                       CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]),
 
   # send LFA MFA message for new HKG models
