@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <signal.h>
 
 #include <QVBoxLayout>
@@ -13,11 +14,16 @@
 #include "settings.hpp"
 
 #include "paint.hpp"
+#include "common/util.h"
 
 volatile sig_atomic_t do_exit = 0;
 
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   main_layout = new QStackedLayout;
+
+#ifdef QCOM2
+  set_core_affinity(7);
+#endif
 
   GLWindow * glWindow = new GLWindow(this);
   main_layout->addWidget(glWindow);
@@ -77,6 +83,21 @@ void GLWindow::initializeGL() {
 
 void GLWindow::timerUpdate(){
   ui_update(ui_state);
+
+#ifdef QCOM2
+  if (ui_state->started != onroad){
+    onroad = ui_state->started;
+    timer->setInterval(onroad ? 50 : 1000);
+
+    int brightness = onroad ? 1023 : 0;
+    std::ofstream brightness_control("/sys/class/backlight/panel0-backlight/brightness");
+    if (brightness_control.is_open()){
+      brightness_control << int(brightness) << "\n";
+      brightness_control.close();
+    }
+  }
+#endif
+
   update();
 }
 

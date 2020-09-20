@@ -93,7 +93,8 @@ def create_lfa_mfa(packer, frame, enabled):
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
-def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstill, scc11, usestockscc, nosccradar, frame):
+def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstill, scc11, usestockscc, nosccradar,
+                 scc11cnt, sendaccmode):
   values = scc11
 
   if not usestockscc:
@@ -107,19 +108,19 @@ def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstil
     values["ACC_ObjStatus"] = lead_visible
 
     if nosccradar:
-      values["MainMode_ACC"] = 1
-      values["AliveCounterACC"] = frame // 2 % 0x10
+      values["MainMode_ACC"] = sendaccmode
+      values["AliveCounterACC"] = scc11cnt
   elif nosccradar:
-    values["AliveCounterACC"] = frame // 2 % 0x10
+    values["AliveCounterACC"] = scc11cnt
 
   return packer.make_can_msg("SCC11", 0, values)
 
-def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepressed, cruise_on, aebcmdact, scc12,
+def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepressed, aebcmdact, scc12,
                  usestockscc, nosccradar, cnt):
   values = scc12
 
   if not usestockscc and not aebcmdact:
-    if enabled and cruise_on and not brakepressed:
+    if enabled and not brakepressed:
       values["ACCMode"] = 2 if gaspressed else 1
       if apply_accel < -0.5:
         values["StopReq"] = standstill
@@ -132,7 +133,6 @@ def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepres
 
     if nosccradar:
       values["CR_VSM_Alive"] = cnt
-      values["ACCMode"] = 1 if enabled else 0
 
     values["CR_VSM_ChkSum"] = 0
     dat = packer.make_can_msg("SCC12", 0, values)[2]
@@ -149,15 +149,27 @@ def create_scc13(packer, scc13):
   values = scc13
   return packer.make_can_msg("SCC13", 0, values)
 
-def create_scc14(packer, enabled, usestockscc, aebcmdact, scc14):
+def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed):
   values = scc14
   if not usestockscc and not aebcmdact:
     if enabled:
-      values["JerkUpperLimit"] = 3.2
-      values["JerkLowerLimit"] = 0.1
-      values["SCCMode"] = 1
-      values["ComfortBandUpper"] = 0.24
-      values["ComfortBandLower"] = 0.24
+      values["ACCMode"] = 2 if gaspressed else 1
+      values["ObjGap"] = objgap
+      if accel > 0.1:
+        values["JerkUpperLimit"] = 1.2
+        values["JerkLowerLimit"] = 10.
+        values["ComfortBandUpper"] = 4.
+        values["ComfortBandLower"] = 0.
+      elif accel < -0.1:
+        values["JerkUpperLimit"] = 4.
+        values["JerkLowerLimit"] = 30.
+        values["ComfortBandUpper"] = 0.
+        values["ComfortBandLower"] = 5.
+      else:
+        values["JerkUpperLimit"] = .5
+        values["JerkLowerLimit"] = 1.
+        values["ComfortBandUpper"] = 5.
+        values["ComfortBandLower"] = 1.
 
   return packer.make_can_msg("SCC14", 0, values)
 
@@ -166,4 +178,23 @@ def create_scc42a(packer):
     "CF_FCA_Equip_Front_Radar": 1
   }
   return packer.make_can_msg("FRT_RADAR11", 0, values)
+
+def create_fca11(packer, fca11, fca11cnt, fca11supcnt):
+  values = fca11
+  values["CR_FCA_Alive"] = fca11cnt
+  values["Supplemental_Counter"] = fca11supcnt
+  values["CR_FCA_ChkSum"] = 0
+  dat = packer.make_can_msg("FCA11", 0, values)[2]
+  values["CR_FCA_ChkSum"] = 16 - sum([sum(divmod(i, 16)) for i in dat]) % 16
+  return packer.make_can_msg("FCA11", 0, values)
+
+def create_fca12(packer):
+  values = {
+    "FCA_USM": 3,
+    "FCA_DrvSetState": 2,
+  }
+  return packer.make_can_msg("FCA12", 0, values)
+
+def create_scc7d0(cmd):
+  return[2000, 0, cmd, 0]
 

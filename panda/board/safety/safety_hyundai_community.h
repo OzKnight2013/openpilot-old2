@@ -19,6 +19,12 @@ int prev_desired_accel = 0;
 int decel_not_ramping =0;
 
 const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
+  {832, 0, 8}, {832, 1, 8},    // LKAS11 Bus 0, 1
+  {1265, 0, 4}, {1265, 1, 4},  // CLU11 Bus 0, 1
+  {1157, 0, 4}                 // LFAHDA_MFC Bus 0
+ };
+
+const CanMsg HYUNDAI_COMMUNITY_NONSCC_TX_MSGS[] = {
   {832, 0, 8}, {832, 1, 8}, // LKAS11 Bus 0, 1
   {1265, 0, 4}, {1265, 1, 4}, {1265, 2, 4},// CLU11 Bus 0, 1, 2
   {1157, 0, 4}, // LFAHDA_MFC Bus 0
@@ -26,7 +32,10 @@ const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
   {1057, 0, 8}, //   SCC12,  Bus 0
   {1290, 0, 8}, //   SCC13,  Bus 0
   {905, 0, 8},  //   SCC14,  Bus 0
-  {1186, 0, 8}  //   4a2SCC, Bus 0
+  {1186, 0, 8}, //  4a2SCC, Bus 0
+  {1155, 0, 8}, //   FCA12, Bus 0
+  {909, 0, 8},  //   FCA11, Bus 0
+  {2000, 0, 8}  //   SCC_DIAG, Bus 0
  };
 
 // TODO: missing checksum for wheel speeds message,worst failure case is
@@ -100,10 +109,6 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   if ((bus == 0) && (addr == 593 || addr == 897)) {
     hyundai_community_mdps_harness_present = false;
-  }
-
-  if ((bus == 0) && ((addr == 1056) || (addr == 1057) || (addr == 1290) || (addr == 905))) {
-    hyundai_community_non_scc_car = false;
   }
 
   if (hyundai_community_non_scc_car) {
@@ -191,9 +196,17 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  if (!msg_allowed(to_send, HYUNDAI_COMMUNITY_TX_MSGS, sizeof(HYUNDAI_COMMUNITY_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY_TX_MSGS[0]))) {
-    tx = 0;
+  if(hyundai_community_non_scc_car){
+    if (!msg_allowed(to_send, HYUNDAI_COMMUNITY_NONSCC_TX_MSGS, sizeof(HYUNDAI_COMMUNITY_NONSCC_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY_NONSCC_TX_MSGS[0]))) {
+        tx = 0;
+    }
   }
+  else {
+    if (!msg_allowed(to_send, HYUNDAI_COMMUNITY_TX_MSGS, sizeof(HYUNDAI_COMMUNITY_TX_MSGS)/sizeof(HYUNDAI_COMMUNITY_TX_MSGS[0]))) {
+        tx = 0;
+    }
+  }
+
 
   if (relay_malfunction) {
     tx = 0;

@@ -224,6 +224,7 @@ class CarState(CarStateBase):
     self.scc12 = copy.copy(cp_scc.vl["SCC12"])
     self.scc13 = copy.copy(cp_scc.vl["SCC13"])
     self.scc14 = copy.copy(cp_scc.vl["SCC14"])
+    self.fca11 = copy.copy(cp_fca.vl["FCA11"])
 
     return ret
 
@@ -300,9 +301,11 @@ class CarState(CarStateBase):
         ("ACC_ObjDist", "SCC11", 0),
         ("ObjValid", "SCC11", 0),
         ("ACC_ObjRelSpd", "SCC11", 0),
+        ("AliveCounterACC", "SCC11", 0),
         ("ACCMode", "SCC12", 1),
         ("AEB_CmdAct", "SCC12", 0),
         ("CF_VSM_Warn", "SCC12", 0),
+        ("CR_VSM_Alive", "SCC12", 0),
       ]
       checks += [
         ("SCC11", 50),
@@ -312,6 +315,8 @@ class CarState(CarStateBase):
       signals += [
         ("FCA_CmdAct", "FCA11", 0),
         ("CF_VSM_Warn", "FCA11", 0),
+        ("CR_FCA_Alive", "FCA11", 0),
+        ("Supplemental_Counter", "FCA11", 0),
       ]
       checks += [("FCA11", 50)]
 
@@ -500,15 +505,35 @@ class CarState(CarStateBase):
         ("CR_VSM_Alive", "SCC12", 0),
         ("CR_VSM_ChkSum", "SCC12", 0),
 
-        ("SCCDrvModeRValue", "SCC13", 2),
+        ("SCCDrvModeRValue", "SCC13", 1),
         ("SCC_Equip", "SCC13", 1),
         ("AebDrvSetStatus", "SCC13", 0),
+        ("Lead_Veh_Dep_Alert_USM", "SCC13", 0),
 
         ("JerkUpperLimit", "SCC14", 0),
         ("JerkLowerLimit", "SCC14", 0),
-        ("SCCMode2", "SCC14", 0),
         ("ComfortBandUpper", "SCC14", 0),
         ("ComfortBandLower", "SCC14", 0),
+        ("ACCMode", "SCC14", 0),
+        ("ObjGap", "SCC14", 0),
+
+        ("CF_VSM_Prefill", "FCA11", 0),
+        ("CF_VSM_HBACmd", "FCA11", 0),
+        ("CF_VSM_Warn", "FCA11", 0),
+        ("CF_VSM_BeltCmd", "FCA11", 0),
+        ("CR_VSM_DecCmd", "FCA11", 0),
+        ("FCA_Status", "FCA11", 2),
+        ("FCA_CmdAct", "FCA11", 0),
+        ("FCA_StopReq", "FCA11", 0),
+        ("FCA_DrvSetStatus", "FCA11", 1),
+        ("CF_VSM_DecCmdAct", "FCA11", 0),
+        ("FCA_Failinfo", "FCA11", 0),
+        ("FCA_RelativeVelocity", "FCA11", 0),
+        ("FCA_TimetoCollision", "FCA11", 2540.),
+        ("CR_FCA_Alive", "FCA11", 0),
+        ("CR_FCA_ChkSum", "FCA11", 0),
+        ("Supplemental_Counter", "FCA11", 0),
+        ("PAINT1_Status", "FCA11", 1),
       ]
       if CP.sccBus == 2:
         checks += [

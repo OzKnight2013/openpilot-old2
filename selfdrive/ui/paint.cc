@@ -129,10 +129,10 @@ static void draw_lead(UIState *s, const cereal::RadarState::LeadData::Reader &le
     fillAlpha = (int)(fmin(fillAlpha, 255));
   }
   if (s->longitudinal_control) {
-    draw_chevron(s, d_rel, lead.getYRel(), 25, nvgRGBA(201, 34, 49, fillAlpha), COLOR_YELLOW);
+    draw_chevron(s, d_rel, lead.getYRel() + 3, 25, nvgRGBA(201, 34, 49, fillAlpha), COLOR_YELLOW);
   }
   else {
-    draw_chevron(s, d_rel, lead.getYRel(), 25, nvgRGBA(165, 255, 135, fillAlpha), COLOR_GREEN);
+    draw_chevron(s, d_rel, lead.getYRel() + 3, 25, nvgRGBA(165, 255, 135, fillAlpha), COLOR_GREEN);
   }
 }
 
@@ -364,13 +364,11 @@ static void ui_draw_world(UIState *s) {
   ui_draw_vision_lanes(s);
 
   // Draw lead indicators if openpilot is handling longitudinal
-  //if (s->longitudinal_control) {
     if (scene->lead_data[0].getStatus()) {
       draw_lead(s, scene->lead_data[0]);
     }
     if (scene->lead_data[1].getStatus() && (std::abs(scene->lead_data[0].getDRel() - scene->lead_data[1].getDRel()) > 1.0)) {
       draw_lead(s, scene->lead_data[1]);
-  //}
   }
   nvgRestore(s->vg);
 }

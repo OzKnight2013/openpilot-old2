@@ -1,3 +1,38 @@
+
+XPS-FORK
+===========================================
+* This fork is maintained to support HKG community. The default branch tracks 
+the latest Master-ci updates.
+
+* This fork has support for MDPS Harness, Radar Harness(OP LONG), Non-SCC cars
+
+* Please feel free to add PR for support for non existing FP.
+
+* If you encounter "Car Unrecognized- Please verify fingerprint with the fork owner" 
+  message on the screen, please contact me directly on discord for help.
+
+* Even though the configuration is auto detected, there may be CAN ERROR in some cases, 
+please contact me directly on discord for help.
+
+* This branch uses a different tuning of PI controller for lat(steering). There is a
+non liner term added with respect to steering request which results in a smoother
+behavior.
+
+* This branch is also fine tuned to have smoother OP long(gas/brake) control.<sup>**</sup>
+
+* !DANGER! OP long with radar disable method will disable AEB/FCA completely.
+___________________________________________________________
+
+<sup>**</sup> OP long requires one of the below modifications- 
+-Radar harness to move radar to CAN bus 2 (tested)
+-Non-SCC vehicle variant coded to accpet accel request ( non proven/ non tested)
+-Radar_disable UDS command (tested but not recommended), the feature is hardcoded to False for safety
+
+
+
+If you like my work don't hesitate to donate- [Paypal-Me](paypal.me/ARUNVARADARAJAN)
+
+
 [![](https://i.imgur.com/UelUjKAh.png)](#)
 
 Table of Contents
@@ -82,6 +117,7 @@ Supported Cars
 | Honda     | Pilot 2016-18                 | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | Pilot 2019                    | All               | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | Ridgeline 2017-20             | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
+| Hyundai   | Palisade 2020                 | All               | Stock            | 0mph               | 0mph         |
 | Hyundai   | Sonata 2020                   | All               | Stock            | 0mph               | 0mph              |
 | Lexus     | CT Hybrid 2017-18             | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Lexus     | ES 2019                       | All               | openpilot        | 0mph               | 0mph              |
@@ -89,7 +125,7 @@ Supported Cars
 | Lexus     | IS 2017-2019                  | All               | Stock            | 22mph              | 0mph              |
 | Lexus     | IS Hybrid 2017                | All               | Stock            | 0mph               | 0mph              |
 | Lexus     | NX Hybrid 2018                | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
-| Lexus     | RX 2016-17                    | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
+| Lexus     | RX 2016-18                    | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Lexus     | RX 2020                       | All               | openpilot        | 0mph               | 0mph              |
 | Lexus     | RX Hybrid 2016-19             | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Lexus     | RX Hybrid 2020                | All               | openpilot        | 0mph               | 0mph              |
@@ -147,7 +183,6 @@ Community Maintained Cars and Features
 | Hyundai   | Ioniq Electric Limited 2019   | SCC + LKAS        | Stock            | 0mph               | 32mph        |
 | Hyundai   | Kona 2020                     | SCC + LKAS        | Stock            | 0mph               | 0mph         |
 | Hyundai   | Kona EV 2019                  | SCC + LKAS        | Stock            | 0mph               | 0mph         |
-| Hyundai   | Palisade 2020                 | All               | Stock            | 0mph               | 0mph         |
 | Hyundai   | Santa Fe 2019                 | All               | Stock            | 0mph               | 0mph         |
 | Hyundai   | Sonata 2019                   | All               | Stock            | 0mph               | 0mph         |
 | Hyundai   | Veloster 2019                 | SCC + LKAS        | Stock            | 5mph               | 0mph         |

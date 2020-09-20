@@ -309,6 +309,7 @@ struct CarControl {
     leftLaneVisible @7: Bool;
     rightLaneDepart @8: Bool;
     leftLaneDepart @9: Bool;
+    leadDistance @10:Float32;
 
     enum VisualAlert {
       # these are the choices from the Honda
@@ -412,6 +413,7 @@ struct CarParams {
   bsmAvailable @54: Bool;
   lfaAvailable @55: Bool;
   sccBus @56: Int8;
+  radarDisablePossible @57: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);

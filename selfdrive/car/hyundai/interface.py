@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from cereal import car
+from common.params import Params
 from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons, HYBRID_VEH
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
@@ -26,7 +27,7 @@ class CarInterface(CarInterfaceBase):
     ret.safetyModel = car.CarParams.SafetyModel.hyundai
 
     # Most Hyundai car ports are community features for now
-    ret.communityFeature = candidate not in [CAR.SONATA]
+    ret.communityFeature = candidate not in [CAR.SONATA, CAR.PALISADE]
 
     ret.steerActuatorDelay = 0.3  # Default delay
     ret.steerRateCost = 0.45
@@ -181,6 +182,7 @@ class CarInterface(CarInterfaceBase):
     ret.sccBus = 0 if 1057 in fingerprint[0] else 2 if 1057 in fingerprint[2] else -1
     ret.radarOffCan = (ret.sccBus == -1)
     ret.radarTimeStep = 0.02
+
     ret.openpilotLongitudinalControl = not (ret.sccBus == 0)
 
     if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_SORENTO, CAR.SONATA_2019,
@@ -211,6 +213,16 @@ class CarInterface(CarInterfaceBase):
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
+
+    params = Params()
+    #ret.radarDisablePossible = params.get("IsLdwEnabled", encoding='utf8') == "0"
+
+    if ret.radarDisablePossible:
+      ret.openpilotLongitudinalControl = True
+      ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc # todo based on toggle
+      ret.sccBus = -1
+      ret.radarOffCan = True
+      ret.fcaBus = -1
 
     return ret
 
@@ -272,8 +284,11 @@ class CarInterface(CarInterfaceBase):
 
     # handle button press
     for b in self.buttonEvents:
-      if b.type in [ButtonType.accelCruise, ButtonType.decelCruise] and b.pressed \
+      if b.type == ButtonType.decelCruise and b.pressed \
               and (not ret.brakePressed or ret.standstill) and (self.CP.radarOffCan or not self.CP.enableCruise):
+        events.add(EventName.buttonEnable)
+      if b.type == ButtonType.accelCruise and b.pressed \
+              and (ret.gasPressed or ret.standstill) and (self.CP.radarOffCan or not self.CP.enableCruise):
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.cancel and b.pressed:
         events.add(EventName.buttonCancel)
@@ -291,6 +306,6 @@ class CarInterface(CarInterfaceBase):
     can_sends = self.CC.update(c.enabled, self.CS, self.frame, c.actuators,
                                c.cruiseControl.cancel, c.hudControl.visualAlert, c.hudControl.leftLaneVisible,
                                c.hudControl.rightLaneVisible, c.hudControl.leftLaneDepart, c.hudControl.rightLaneDepart,
-                               c.hudControl.setSpeed, c.hudControl.leadVisible)
+                               c.hudControl.setSpeed, c.hudControl.leadVisible, c.hudControl.leadDistance)
     self.frame += 1
     return can_sends

@@ -693,7 +693,7 @@ void* processing_thread(void *arg) {
       // truly stuck, needs help
       s->cameras.rear.self_recover -= 1;
       if (s->cameras.rear.self_recover < -FOCUS_RECOVER_PATIENCE) {
-        LOGW("rear camera bad state detected. attempting recovery from %.1f, recover state is %d",
+        LOGD("rear camera bad state detected. attempting recovery from %.1f, recover state is %d",
                                       lens_true_pos, s->cameras.rear.self_recover.load());
         s->cameras.rear.self_recover = FOCUS_RECOVER_STEPS + ((lens_true_pos < (s->cameras.device == DEVICE_LP3? LP3_AF_DAC_M:OP3T_AF_DAC_M))?1:0); // parity determined by which end is stuck at
       }
@@ -703,7 +703,7 @@ void* processing_thread(void *arg) {
       // in suboptimal position with high prob, but may still recover by itself
       s->cameras.rear.self_recover -= 1;
       if (s->cameras.rear.self_recover < -(FOCUS_RECOVER_PATIENCE*3)) {
-        LOGW("rear camera bad state detected. attempting recovery from %.1f, recover state is %d", lens_true_pos, s->cameras.rear.self_recover.load());
+        LOGD("rear camera bad state detected. attempting recovery from %.1f, recover state is %d", lens_true_pos, s->cameras.rear.self_recover.load());
         s->cameras.rear.self_recover = FOCUS_RECOVER_STEPS/2 + ((lens_true_pos < (s->cameras.device == DEVICE_LP3? LP3_AF_DAC_M:OP3T_AF_DAC_M))?1:0);
       }
     } else if (s->cameras.rear.self_recover < 0) {
@@ -1589,6 +1589,9 @@ void party(VisionState *s) {
 
 int main(int argc, char *argv[]) {
   set_realtime_priority(51);
+#ifdef QCOM
+  set_core_affinity(2);
+#endif
 
   zsys_handler_set(NULL);
   signal(SIGINT, (sighandler_t)set_do_exit);
