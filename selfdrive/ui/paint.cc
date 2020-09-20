@@ -129,10 +129,10 @@ static void draw_lead(UIState *s, const cereal::RadarState::LeadData::Reader &le
     fillAlpha = (int)(fmin(fillAlpha, 255));
   }
   if (s->longitudinal_control) {
-    draw_chevron(s, d_rel, lead.getYRel() + 3, 25, nvgRGBA(201, 34, 49, fillAlpha), COLOR_YELLOW);
+    draw_chevron(s, d_rel + 3, lead.getYRel(), 25, nvgRGBA(201, 34, 49, fillAlpha), COLOR_YELLOW);
   }
   else {
-    draw_chevron(s, d_rel, lead.getYRel() + 3, 25, nvgRGBA(165, 255, 135, fillAlpha), COLOR_GREEN);
+    draw_chevron(s, d_rel + 3, lead.getYRel(), 25, nvgRGBA(165, 255, 135, fillAlpha), COLOR_GREEN);
   }
 }
 

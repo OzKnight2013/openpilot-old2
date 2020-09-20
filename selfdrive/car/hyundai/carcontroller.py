@@ -153,12 +153,12 @@ class CarController():
 
     speed_conv = CV.MS_TO_MPH if CS.is_set_speed_in_mph else CV.MS_TO_KPH
 
-    clu11_speed = CS.clu11["CF_Clu_Vanz"]
+    self.clu11_speed = CS.clu11["CF_Clu_Vanz"]
 
     enabled_speed = 38 if CS.is_set_speed_in_mph else 60
 
-    if clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
-      enabled_speed = clu11_speed
+    if self.clu11_speed > enabled_speed or not lkas_active or CS.out.gearShifter != GearShifter.drive:
+      enabled_speed = self.clu11_speed
 
     self.current_veh_speed = int(CS.out.vEgo * speed_conv)
 
@@ -207,7 +207,7 @@ class CarController():
     else:
       self.lead_visible = lead_visible
 
-    set_speed *= speed_conv
+    self.setspeed = set_speed * speed_conv
 
     if enabled:
       self.sendaccmode = enabled
@@ -276,7 +276,7 @@ class CarController():
         self.fca11alivecnt = self.fca11maxcnt - self.fca11inc
 
         can_sends.append(create_scc11(self.packer, enabled,
-                                      set_speed, self.lead_visible,
+                                      self.setspeed, self.lead_visible,
                                       self.gapsettingdance,
                                       CS.out.standstill, CS.scc11,
                                       self.usestockscc, CS.CP.radarOffCan, self.scc11cnt, self.sendaccmode))
