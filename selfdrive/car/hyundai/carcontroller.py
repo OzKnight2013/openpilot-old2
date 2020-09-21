@@ -237,7 +237,6 @@ class CarController():
           self.radarDisableActivated = False
           self.counter_init = True
     else:
-      self.counter_init = False
       self.radarDisableOverlapTimer = 0
       self.radarDisableResetTimer = 0
 
