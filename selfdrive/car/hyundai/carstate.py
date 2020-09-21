@@ -281,17 +281,17 @@ class CarState(CarStateBase):
       ("CF_Lvr_CruiseSet", "LVR12", 0),
     ]
 
-    if CP.mainsignalAvailable:
-      checks = [
-        # address, frequency
-        ("TCS13", 50),
-        ("TCS15", 10),
-        ("CLU11", 50),
-        ("ESP12", 100),
-        ("CGW1", 10),
-        ("CGW4", 5),
-        ("WHL_SPD11", 50),
-      ]
+    checks = [
+      # address, frequency
+      ("TCS13", 50),
+      ("TCS15", 10),
+      ("CLU11", 50),
+      ("ESP12", 100),
+      ("CGW1", 10),
+      ("CGW4", 5),
+      ("WHL_SPD11", 50),
+    ]
+
     if CP.sccBus == 0:
       signals += [
         ("MainMode_ACC", "SCC11", 0),

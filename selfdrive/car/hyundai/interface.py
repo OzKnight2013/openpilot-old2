@@ -180,9 +180,6 @@ class CarInterface(CarInterfaceBase):
     ret.lfaAvailable = True if 1157 in fingerprint[2] else False
     ret.lvrAvailable = True if 871 in fingerprint[0] else False
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
-    ret.mainsignalAvailable = True if 544 in fingerprint[0] and 902 in fingerprint[0] and 916 in fingerprint[0] \
-                                      and 1265 in fingerprint[0] and 1287 in fingerprint[0] and 1345 in fingerprint[0] \
-                                      and 1369 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
     ret.clustergearAvailable = True if 1322 in fingerprint[0] else False
     ret.tcugearAvailable = True if 274 in fingerprint[0] else False
@@ -262,8 +259,6 @@ class CarInterface(CarInterfaceBase):
       self.low_speed_alert = False
     if self.low_speed_alert:
       events.add(car.CarEvent.EventName.belowSteerSpeed)
-    if not self.CP.mainsignalAvailable:
-      events.add(car.CarEvent.EventName.maincansingalsMissing)
 
     buttonEvents = []
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
