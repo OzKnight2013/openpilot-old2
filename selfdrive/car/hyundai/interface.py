@@ -227,7 +227,8 @@ class CarInterface(CarInterfaceBase):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc # todo based on toggle
       ret.sccBus = -1
       ret.radarOffCan = True
-      ret.fcaBus = -1
+      if ret.fcaBus == 0:
+        ret.fcaBus = -1
 
     return ret
 

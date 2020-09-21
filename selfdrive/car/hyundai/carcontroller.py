@@ -287,12 +287,13 @@ class CarController():
 
         can_sends.append(create_scc14(self.packer, enabled, self.usestockscc, CS.out.stockAeb, apply_accel,
                                       CS.scc14, self.objdiststat, CS.out.gasPressed))
-
-        can_sends.append(create_fca11(self.packer, CS.fca11, self.fca11alivecnt, self.fca11supcnt))
+        if CS.CP.fcaBus == -1:
+          can_sends.append(create_fca11(self.packer, CS.fca11, self.fca11alivecnt, self.fca11supcnt))
 
       if frame % 20 == 0:
         can_sends.append(create_scc13(self.packer, CS.scc13))
-        can_sends.append(create_fca12(self.packer))
+        if CS.CP.fcaBus == -1:
+          can_sends.append(create_fca12(self.packer))
       if frame % 50 == 0:
         can_sends.append(create_scc42a(self.packer))
     else:

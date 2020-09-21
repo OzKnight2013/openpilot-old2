@@ -145,10 +145,12 @@ class CarState(CarStateBase):
       ret.gas = cp.vl["E_EMS11"]['Accel_Pedal_Pos'] / 256.
     elif self.CP.carFingerprint in HYBRID_VEH:
       ret.gas = cp.vl["EV_PC4"]['CR_Vcu_AccPedDep_Pc']
-    else:
+    elif self.CP.emsAvailable:
       ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100
 
-    ret.gasPressed = (cp.vl["TCS13"]["DriverOverride"] == 1) or bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
+    ret.gasPressed = (cp.vl["TCS13"]["DriverOverride"] == 1)
+    if self.CP.emsAvailable:
+      ret.gasPressed = ret.gasPressed or bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
 
     ret.espDisabled = (cp.vl["TCS15"]['ESC_Off_Step'] != 0)
 
@@ -193,7 +195,7 @@ class CarState(CarStateBase):
       else:
         ret.gearShifter = GearShifter.unknown
     # Gear Selecton - This is not compatible with all Kia/Hyundai's, But is the best way for those it is compatible with
-    else:
+    elif self.CP.lvrAvailable:
       gear = cp.vl["LVR12"]["CF_Lvr_Gear"]
       if gear in (5, 8):  # 5: D, 8: sport mode
         ret.gearShifter = GearShifter.drive
@@ -277,7 +279,6 @@ class CarState(CarStateBase):
 
       ("ESC_Off_Step", "TCS15", 0),
 
-      ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
       ("CF_Lvr_CruiseSet", "LVR12", 0),
     ]
 
