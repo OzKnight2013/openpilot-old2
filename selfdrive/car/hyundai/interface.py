@@ -293,7 +293,7 @@ class CarInterface(CarInterfaceBase):
               and (not ret.brakePressed or ret.standstill) and (self.CP.radarOffCan or not self.CP.enableCruise):
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.accelCruise and b.pressed \
-              and (ret.gasPressed or (self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill) \
+              and ((self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill) \
               and (self.CP.radarOffCan or not self.CP.enableCruise):
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.cancel and b.pressed:

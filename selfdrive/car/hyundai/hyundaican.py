@@ -121,7 +121,7 @@ def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepres
 
   if not usestockscc and not aebcmdact:
     if enabled and not brakepressed:
-      values["ACCMode"] = 2 if gaspressed else 1
+      values["ACCMode"] = 2 if gaspressed and (apply_accel > -0.2) else 1
       if apply_accel < -0.5:
         values["StopReq"] = standstill
       values["aReqRaw"] = apply_accel
@@ -153,7 +153,7 @@ def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, 
   values = scc14
   if not usestockscc and not aebcmdact:
     if enabled:
-      values["ACCMode"] = 2 if gaspressed else 1
+      values["ACCMode"] = 2 if gaspressed and (accel > -0.2) else 1
       values["ObjGap"] = objgap
       if accel > 0.1:
         values["JerkUpperLimit"] = 1.2
