@@ -335,6 +335,7 @@ static void hyundai_community_init(int16_t param) {
   UNUSED(param);
   controls_allowed = false;
   relay_malfunction_reset();
+  hyundai_community_non_scc_car = false;
 }
 
 static void hyundai_community_nonscc_init(int16_t param) {
