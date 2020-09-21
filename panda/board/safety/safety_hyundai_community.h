@@ -13,7 +13,7 @@ const int HYUNDAI_COMMUNITY_MIN_ACCEL = -300;       // -3.0 m/s2
 const int HYUNDAI_COMMUNITY_ISO_MAX_ACCEL = 200;        // 2.0 m/s2
 const int HYUNDAI_COMMUNITY_ISO_MIN_ACCEL = -350;       // -3.5 m/s2
 
-bool hyundai_community_non_scc_car = true;
+bool hyundai_community_non_scc_car = false;
 bool aeb_cmd_act = false;
 int prev_desired_accel = 0;
 int decel_not_ramping =0;
