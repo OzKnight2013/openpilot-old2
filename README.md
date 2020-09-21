@@ -30,7 +30,7 @@ ___________________________________________________________
 
 
 
-If you like my work don't hesitate to donate- [Paypal-Me](paypal.me/ARUNVARADARAJAN)
+If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)
 
 
 [![](https://i.imgur.com/UelUjKAh.png)](#)
