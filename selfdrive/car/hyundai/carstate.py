@@ -230,6 +230,7 @@ class CarState(CarStateBase):
 
   @staticmethod
   def get_can_parser(CP):
+    checks = []
     signals = [
       # sig_name, sig_address, default
       ("WHL_SPD_FL", "WHL_SPD11", 0),
@@ -256,8 +257,6 @@ class CarState(CarStateBase):
 
       ("AVH_STAT", "ESP11", 0),
 
-      ("CF_Ems_AclAct", "EMS16", 0),
-
       ("CF_Clu_CruiseSwState", "CLU11", 0),
       ("CF_Clu_CruiseSwMain", "CLU11", 0),
       ("CF_Clu_SldMainSW", "CLU11", 0),
@@ -282,16 +281,17 @@ class CarState(CarStateBase):
       ("CF_Lvr_CruiseSet", "LVR12", 0),
     ]
 
-    checks = [
-      # address, frequency
-      ("TCS13", 50),
-      ("TCS15", 10),
-      ("CLU11", 50),
-      ("ESP12", 100),
-      ("CGW1", 10),
-      ("CGW4", 5),
-      ("WHL_SPD11", 50),
-    ]
+    if CP.mainsignalAvailable:
+      checks = [
+        # address, frequency
+        ("TCS13", 50),
+        ("TCS15", 10),
+        ("CLU11", 50),
+        ("ESP12", 100),
+        ("CGW1", 10),
+        ("CGW4", 5),
+        ("WHL_SPD11", 50),
+      ]
     if CP.sccBus == 0:
       signals += [
         ("MainMode_ACC", "SCC11", 0),
@@ -367,42 +367,35 @@ class CarState(CarStateBase):
       checks += [
         ("EV_PC4", 50),
       ]
-    else:
+    elif CP.emsAvailable:
       signals += [
         ("PV_AV_CAN", "EMS12", 0),
+        ("CF_Ems_AclAct", "EMS16", 0),
       ]
       checks += [
         ("EMS12", 100),
         ("EMS16", 100),
       ]
 
-    if CP.carFingerprint in FEATURES["use_cluster_gears"]:
+    if CP.clustergearAvailable and CP.carFingerprint in FEATURES["use_cluster_gears"]:
       signals += [
         ("CF_Clu_InhibitD", "CLU15", 0),
         ("CF_Clu_InhibitP", "CLU15", 0),
         ("CF_Clu_InhibitN", "CLU15", 0),
         ("CF_Clu_InhibitR", "CLU15", 0),
       ]
-      checks += [
-        ("CLU15", 5)
-      ]
-    elif CP.carFingerprint in FEATURES["use_tcu_gears"]:
+      checks += [("CLU15", 5)]
+    elif CP.tcugearAvailable and CP.carFingerprint in FEATURES["use_tcu_gears"]:
       signals += [
         ("CUR_GR", "TCU12", 0)
       ]
-      checks += [
-        ("TCU12", 100)
-      ]
-    elif CP.carFingerprint in FEATURES["use_elect_gears"]:
+      checks += [("TCU12", 100)]
+    elif CP.evgearAvailable:
       signals += [("Elect_Gear_Shifter", "ELECT_GEAR", 0)]
       checks += [("ELECT_GEAR", 20)]
-    else:
-      signals += [
-        ("CF_Lvr_Gear", "LVR12", 0)
-      ]
-      checks += [
-        ("LVR12", 100)
-      ]
+    elif CP.lvrAvailable:
+      signals += [("CF_Lvr_Gear", "LVR12", 0)]
+      checks += [("LVR12", 100)]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 

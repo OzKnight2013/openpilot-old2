@@ -113,6 +113,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     neosUpdateRequired @88;
     modeldLagging @89;
     deviceFalling @90;
+    maincansingalsMissing @91;
   }
 }
 
@@ -414,6 +415,12 @@ struct CarParams {
   lfaAvailable @55: Bool;
   sccBus @56: Int8;
   radarDisablePossible @57: Bool;
+  lvrAvailable @58: Bool;
+  evgearAvailable @59: Bool;
+  mainsignalAvailable @60: Bool;
+  emsAvailable @61: Bool;
+  clustergearAvailable @62: Bool;
+  tcugearAvailable @63: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);

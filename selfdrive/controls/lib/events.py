@@ -437,6 +437,16 @@ EVENTS = {
     ET.WARNING: below_steer_speed_alert,
   },
 
+  EventName.maincansingalsMissing: {
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("CAN Signal missing in FP"),
+    ET.PERMANENT: Alert(
+      "Main Can signals Are Missing In Fingerprint",
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2, creation_delay=1.),
+    ET.NO_ENTRY: NoEntryAlert("CAN Signal missing in FP"),
+  },
+
   EventName.preLaneChangeLeft: {
     ET.WARNING: Alert(
       "Steer Left to Start Lane Change",
