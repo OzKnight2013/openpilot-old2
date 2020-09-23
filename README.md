@@ -4,7 +4,7 @@ XPS-FORK
 * This fork is maintained to support HKG community. The default branch tracks 
 the latest Master-ci updates.
 
-* This fork has support for MDPS Harness, Radar Harness(OP LONG), Non-SCC cars
+* This fork has support for MDPS Harness<sup>^^</sup> , Radar Harness(OP LONG), Non-SCC cars
 
 * Please feel free to add PR for support for non existing FP.
 
@@ -21,6 +21,26 @@ behavior.
 * This branch is also fine tuned to have smoother OP long(gas/brake) control.<sup>**</sup>
 
 * !DANGER! OP long with radar disable method will disable AEB/FCA completely.
+
+___________________________________________________________
+<sup>^^</sup> There are 2 types of MDPS Harnesses that work with this fork- 
+* MDPS Harness connected to CAN1 at the comma harness replacing LCAN (type1)
+* MDPS Harness connected to OBD/Comma power(type2)
+
+Important step to enable MDPS Harness functionality if you have steering dash light
+[![](https://imgur.com/gVwuVJQ.png)](#)
+
+* Run the following commands-
+  - `cd /data/openpilot && git pull`
+  - `cd /data/openpilot && git clean -xdf && git reset --hard`
+  - if the MDPS harness is type1 then run the below command or skip this step
+ `cd /data/openpilot/panda/board/mdpscan1 cp safety_declarations.h /data/openpilot/panda/board`
+  - if the MDPS harness is type2 then run the below command or skip this step
+ `cd /data/openpilot/panda/board/mdpsobd cp safety_declarations.h /data/openpilot/panda/board`
+  - `cd /data/openpilot/panda/board git update-index -- skip- worktree data/openpilot/panda/board/safety_declarations.h`
+  - `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
+  - `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
+  - `reboot`
 ___________________________________________________________
 
 <sup>**</sup> OP long requires one of the below modifications- 
