@@ -180,7 +180,7 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
-    if pcm_cancel_cmd and not CS.CP.radarOffCan and self.usestockscc and CS.scc12["ACCMode"] and not CS.out.standstill:
+    if pcm_cancel_cmd and CS.CP.enableCruise and self.usestockscc and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
       can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))

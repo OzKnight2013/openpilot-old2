@@ -16,7 +16,6 @@ class CarState(CarStateBase):
     self.cruise_main_button = 0
     self.cruise_buttons = 0
     self.allow_nonscc_available = False
-    self.allow_enable = False
   
     self.lead_distance = 150.
     self.radar_obj_valid = 0.
@@ -106,18 +105,15 @@ class CarState(CarStateBase):
       self.cancel_button_count = 0
 
     # cruise state
-    if self.CP.radarOffCan:
+    if not self.CP.enableCruise:
       if self.cruise_buttons == 1 or self.cruise_buttons == 2:
         self.allow_nonscc_available = True
-      ret.cruiseState.available = (self.allow_nonscc_available != False)
-      ret.cruiseState.enabled = (ret.cruiseState.available != False)
-    else:
+      ret.cruiseState.available = (((cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) or (cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0))
+                                   and self.allow_nonscc_available)
+      ret.cruiseState.enabled = ret.cruiseState.available
+    elif not self.CP.radarOffCan:
       ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
-      if ret.cruiseState.available and not self.CP.enableCruise and (self.cruise_buttons == 1 or self.cruise_buttons == 2):
-        self.allow_enable = True
-      elif self.CP.enableCruise:
-        self.allow_enable = False
-      ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.allow_enable != 0)
+      ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
       ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4.
       self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
       self.vrelative = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
@@ -280,6 +276,7 @@ class CarState(CarStateBase):
       ("ESC_Off_Step", "TCS15", 0),
 
       ("CF_Lvr_CruiseSet", "LVR12", 0),
+      ("CRUISE_LAMP_M", "EMS16", 0),
     ]
 
     checks = [
@@ -378,7 +375,7 @@ class CarState(CarStateBase):
         ("EMS16", 100),
       ]
 
-    if CP.clustergearAvailable and CP.carFingerprint in FEATURES["use_cluster_gears"]:
+    if CP.carFingerprint in FEATURES["use_cluster_gears"]:
       signals += [
         ("CF_Clu_InhibitD", "CLU15", 0),
         ("CF_Clu_InhibitP", "CLU15", 0),
@@ -386,7 +383,7 @@ class CarState(CarStateBase):
         ("CF_Clu_InhibitR", "CLU15", 0),
       ]
       checks += [("CLU15", 5)]
-    elif CP.tcugearAvailable and CP.carFingerprint in FEATURES["use_tcu_gears"]:
+    elif CP.carFingerprint in FEATURES["use_tcu_gears"]:
       signals += [
         ("CUR_GR", "TCU12", 0)
       ]

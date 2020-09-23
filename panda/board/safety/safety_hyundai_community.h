@@ -156,15 +156,14 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     if ((addr == 1265) && hyundai_community_non_scc_car) {
       // first byte
       int cruise_engaged = (GET_BYTES_04(to_push) & 0x7);
-      // enable on res+ or set- buttons rising edge
-      if (!cruise_engaged_prev && (cruise_engaged == 1 || cruise_engaged == 2)) {
+      // enable on res+ or set- buttons press
+      if (!controls_allowed && (cruise_engaged == 1 || cruise_engaged == 2)) {
         controls_allowed = 1;
       }
-      // disable on cancel rising edge
+      // disable on cancel press
       if (cruise_engaged == 4) {
         controls_allowed = 0;
       }
-      cruise_engaged_prev = cruise_engaged;
     }
 
     // sample wheel speed, averaging opposite corners
