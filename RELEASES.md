@@ -2,8 +2,10 @@ Version 0.7.9 (2020-XX-XX)
 ========================
  * Improved car battery power management 
  * Improved realtime performance
- * XPS community updates, fix panda safety, added support for oplong
- * XPS - notes - if the update fails use SSH, `cd /data/openpilot && git clean -xdf && git reset --hard origin/Xps_Community_Release
+ * XPS community updates, 
+   - fix panda safety, 
+   - added support for oplong
+   - added support for 2 mdps harness types see readme for instructions
 
 Version 0.7.8 (2020-08-19)
 ========================
