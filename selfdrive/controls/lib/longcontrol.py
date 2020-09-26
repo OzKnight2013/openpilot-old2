@@ -84,8 +84,10 @@ class LongControl():
     output_gb = self.last_output_gb
     if radarState is None:
       dRel = 200
+      vLead = 0
     else:
       dRel = radarState.leadOne.dRel
+      vLead = radarState.leadOne.vLead
     if hasLead:
       self.stop = True if (dRel < 5.0 and radarState.leadOne.status) else False
       if self.stop:
@@ -117,7 +119,7 @@ class LongControl():
       deadzone = interp(v_ego_pid, CP.longitudinalTuning.deadzoneBP, CP.longitudinalTuning.deadzoneV)
 
       output_gb = self.pid.update(self.v_pid, v_ego_pid, speed=v_ego_pid, deadzone=deadzone, feedforward=a_target,
-                                  freeze_integrator=prevent_overshoot, leadvisible=hasLead, leaddistance=dRel)
+                                  freeze_integrator=prevent_overshoot, leadvisible=hasLead, leaddistance=dRel, leadvel=vLead)
       if prevent_overshoot:
         output_gb = min(output_gb, 0.0)
 
@@ -137,7 +139,7 @@ class LongControl():
     elif self.long_control_state == LongCtrlState.starting:
       factor = 1.
       if hasLead:
-        factor = interp(dRel, [0., 2., 4., 6.], [5., 5., 5., 5.])
+        factor = interp(dRel, [0., 2., 4., 6.], [2., 2., 2., 3.])
       if output_gb < 2.:
         output_gb += (STARTING_BRAKE_RATE * factor) / RATE
       self.v_pid = CS.vEgo

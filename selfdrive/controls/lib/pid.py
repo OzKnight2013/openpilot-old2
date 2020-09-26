@@ -123,6 +123,7 @@ class PIDController:
     self.last_kf = 0.
     self.last_error = 0.
     self.last_setpoint = 0.
+    self.last_vlead = 0.
 
     self.reset()
 
@@ -167,16 +168,17 @@ class PIDController:
     self.hasreset = True
     self.atargetfuture = 0
     self.locktarget = False
+    self.last_vlead = 0.
 
   def update(self, setpoint, measurement, speed=0.0, check_saturation=True, override=False, feedforward=0., deadzone=0.,
-             freeze_integrator=False, leadvisible=False, leaddistance=0):
+             freeze_integrator=False, leadvisible=False, leaddistance=0 , leadvel=0):
     self.speed = speed
-    #if 2.2 > setpoint - measurement > 0 and self.last_setpoint > 5.:
-    # setpoint = min(self.last_setpoint + 0.0055, setpoint)
+    self.f = feedforward * self.k_f
+
+    setpoint = 0.989 * setpoint # for cluster display difference
 
     error = float(apply_deadzone(setpoint - measurement, deadzone))
     self.p = error * self.k_p
-    self.f = feedforward * self.k_f
 
     if override:
       self.id -= self.i_unwind_rate * float(np.sign(self.id))

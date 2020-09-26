@@ -183,9 +183,9 @@ def below_steer_speed_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: 
     "TAKE CONTROL",
     "Steer Unavailable Below %d %s" % (speed, unit),
     AlertStatus.userPrompt, AlertSize.mid,
-    Priority.MID, VisualAlert.none, AudibleAlert.none, 0., 0.4, .3)
+    Priority.MID, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
 
-def calibration_incomplete_alert(CP, sm, metric):
+def calibration_incomplete_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool) -> Alert:
   speed = int(MIN_SPEED_FILTER * (CV.MS_TO_KPH if metric else CV.MS_TO_MPH))
   unit = "km/h" if metric else "mph"
   return Alert(
@@ -194,7 +194,7 @@ def calibration_incomplete_alert(CP, sm, metric):
     AlertStatus.normal, AlertSize.mid,
     Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2)
 
-def no_gps_alert(CP, sm, metric):
+def no_gps_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool) -> Alert:
   gps_integrated = sm['health'].hwType in [log.HealthData.HwType.uno, log.HealthData.HwType.dos]
   return Alert(
     "Poor GPS reception",
@@ -202,13 +202,13 @@ def no_gps_alert(CP, sm, metric):
     AlertStatus.normal, AlertSize.mid,
     Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2, creation_delay=300.)
 
-def wrong_car_mode_alert(CP, sm, metric):
+def wrong_car_mode_alert(CP: car.CarParams, sm: messaging.SubMaster, metric: bool) -> Alert:
   text = "Cruise Mode Disabled"
   if CP.carName == "honda":
     text = "Main Switch Off"
   return NoEntryAlert(text, duration_hud_alert=0.)
 
-EVENTS = {
+EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, bool], Alert]]]] = {
   # ********** events with no alerts **********
 
   # ********** events only containing alerts displayed in all states **********
@@ -226,15 +226,7 @@ EVENTS = {
       "Be ready to take over at any time",
       "Always keep hands on wheel and eyes on road",
       AlertStatus.normal, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 2.),
-  },
-
-  EventName.startupWhitePanda: {
-    ET.PERMANENT: Alert(
-      "WARNING: White panda is deprecated",
-      "Upgrade to comma two or black panda",
-      AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 1.),
   },
 
   EventName.startupMaster: {
@@ -242,7 +234,7 @@ EVENTS = {
       "WARNING: This branch is not tested",
       "Always keep hands on wheel and eyes on road",
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 1.),
   },
 
   EventName.startupNoControl: {
@@ -333,6 +325,14 @@ EVENTS = {
       "Lane Departure Detected",
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+  },
+
+  EventName.visiononlyWarning: {
+    ET.PERMANENT: Alert(
+      "Vision Only, Stock AEB/SCC Disabled",
+      "Be Cautious",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.chimeDingRepeat, 1., 2., 15.),
   },
 
   # ********** events only containing alerts that display while engaged **********
@@ -435,6 +435,10 @@ EVENTS = {
 
   EventName.belowSteerSpeed: {
     ET.WARNING: below_steer_speed_alert,
+  },
+
+  EventName.belowSteerSpeedDing: {
+    ET.WARNING: EngagementAlert(AudibleAlert.chimeDing),
   },
 
   EventName.preLaneChangeLeft: {

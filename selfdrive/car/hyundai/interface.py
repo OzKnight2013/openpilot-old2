@@ -14,6 +14,8 @@ class CarInterface(CarInterfaceBase):
     super().__init__(CP, CarController, CarState)
     self.buttonEvents = []
     self.cp2 = self.CS.get_can2_parser(CP)
+    self.visiononlyWarning = False
+    self.belowspeeddingtimer = 0.
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -243,6 +245,20 @@ class CarInterface(CarInterfaceBase):
 
     events = self.create_common_events(ret)
 
+    # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
+    if ret.vEgo < (self.CP.minSteerSpeed + .56) and self.CP.minSteerSpeed > 10. and self.CC.enabled:
+      if not self.low_speed_alert and self.belowspeeddingtimer < 100:
+        events.add(car.CarEvent.EventName.belowSteerSpeedDing)
+        self.belowspeeddingtimer +=1
+      else:
+        self.belowspeeddingtimer = 0.
+        self.low_speed_alert = True
+    if ret.vEgo > (self.CP.minSteerSpeed + .84) or not self.CC.enabled:
+      self.low_speed_alert = False
+      self.belowspeeddingtimer = 0.
+    if self.low_speed_alert:
+      events.add(car.CarEvent.EventName.belowSteerSpeed)
+
     self.CP.enableCruise = (not self.CP.openpilotLongitudinalControl) or self.CC.usestockscc
     if self.CS.brakeHold and not self.CC.usestockscc:
       events.add(EventName.brakeHold)
@@ -250,14 +266,9 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.parkBrake)
     if self.CS.brakeUnavailable and not self.CC.usestockscc:
       events.add(EventName.brakeUnavailable)
-
-    # low speed steer alert hysteresis logic (only for cars with steer cut off above 10 m/s)
-    if ret.vEgo < (self.CP.minSteerSpeed + 2.) and self.CP.minSteerSpeed > 10.:
-      self.low_speed_alert = True
-    if ret.vEgo > (self.CP.minSteerSpeed + 4.):
-      self.low_speed_alert = False
-    if self.low_speed_alert:
-      events.add(car.CarEvent.EventName.belowSteerSpeed)
+    if not self.visiononlyWarning and self.CP.radarDisablePossible and self.CC.enabled and not self.low_speed_alert:
+      events.add(EventName.visiononlyWarning)
+      self.visiononlyWarning = True
 
     buttonEvents = []
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
@@ -311,6 +322,7 @@ class CarInterface(CarInterfaceBase):
     can_sends = self.CC.update(c.enabled, self.CS, self.frame, c.actuators,
                                c.cruiseControl.cancel, c.hudControl.visualAlert, c.hudControl.leftLaneVisible,
                                c.hudControl.rightLaneVisible, c.hudControl.leftLaneDepart, c.hudControl.rightLaneDepart,
-                               c.hudControl.setSpeed, c.hudControl.leadVisible, c.hudControl.leadDistance)
+                               c.hudControl.setSpeed, c.hudControl.leadVisible, c.hudControl.leadDistance,
+                               c.hudControl.leadvRel, c.hudControl.leadyRel)
     self.frame += 1
     return can_sends

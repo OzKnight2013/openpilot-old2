@@ -96,8 +96,8 @@ def create_lfa_mfa(packer, frame, enabled):
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
-def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstill, scc11, usestockscc, nosccradar,
-                 scc11cnt, sendaccmode):
+def create_scc11(packer, enabled, set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, gapsetting, standstill,
+                 scc11, usestockscc, nosccradar, scc11cnt, sendaccmode):
   values = scc11
 
   if not usestockscc:
@@ -109,6 +109,9 @@ def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstil
     values["TauGapSet"] = gapsetting
     values["ObjValid"] = lead_visible
     values["ACC_ObjStatus"] = lead_visible
+    values["ACC_ObjRelSpd"] = lead_vrel
+    values["ACC_ObjDist"] = lead_dist
+    values["ACC_ObjLatPos"] = -lead_yrel
 
     if nosccradar:
       values["MainMode_ACC"] = sendaccmode
