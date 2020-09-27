@@ -7,7 +7,7 @@ XPS-FORK
 * This fork is maintained to support HKG community. The default branch tracks 
 the latest Master-ci updates.
 
-* This fork has support for MDPS Harness<sup>^^</sup> , OP Long, Non-SCC cars
+* This fork has support for MDPS Harness<sup>^^</sup> , OP Long<sup>**</sup>, Non-SCC cars
 
 Notes -
 * Please feel free to add PR for support for non existing FP.
@@ -42,8 +42,7 @@ Important step to enable MDPS Harness functionality if you have steering fault l
 * Make the following changes with `nano` to enable MDPS Harness-
   - Go to the file location and open in nano - <br> `cd /data/openpilot/panda/board && nano safety_declarations.h`
   - Go to line 106 and make `hyundai_community_mdps_harness_present` to `true`
-  - Go to line 111 and change the type from `0` to `1` or `2` as per your type.
-  <br>
+  - Go to line 111 and change the type from `0` to `1` or `2` as per the mdps type.
 [![](https://imgur.com/Ml7TnHm.png)](#)
   - Make panda - <br> `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
   - Flash panda - <br> `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
