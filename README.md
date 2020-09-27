@@ -1,7 +1,7 @@
 
 XPS-FORK
 ===========================================
-<br>**If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)** <br>
+<br>**If you like my work, don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)** <br>
 
 
 * This fork is maintained to support HKG community. The default branch tracks 
@@ -67,7 +67,7 @@ Important step to enable MDPS Harness functionality if you have steering fault l
   - Retry git pull - `cd /data/openpilot && git pull`
 ___________________________________________________________
 
-**If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)**
+**If you like my work, don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)**
 
 ______________________________________________
 [![](https://i.imgur.com/UelUjKAh.png)](#)
