@@ -1,11 +1,15 @@
 
 XPS-FORK
 ===========================================
+<br>**If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)** <br>
+
+
 * This fork is maintained to support HKG community. The default branch tracks 
 the latest Master-ci updates.
 
-* This fork has support for MDPS Harness<sup>^^</sup> , Radar Harness(OP LONG), Non-SCC cars
+* This fork has support for MDPS Harness<sup>^^</sup> , OP Long, Non-SCC cars
 
+Notes -
 * Please feel free to add PR for support for non existing FP.
 
 * If you encounter "Car Unrecognized- Please verify fingerprint with the fork owner" 
@@ -15,50 +19,57 @@ the latest Master-ci updates.
 please contact me directly on discord for help.
 
 * This branch uses a different tuning of PI controller for lat(steering). There is a
-non liner term added with respect to steering request which results in a smoother
+non linear term added with respect to steering request which results in a smoother
 behavior.
 
 * This branch is also fine tuned to have smoother OP long(gas/brake) control.<sup>**</sup>
 
-* !DANGER! OP long with radar disable method will disable AEB/FCA completely.
-
+* **!DANGER!** OP long with radar disable method will disable stock AEB/FCA completely.
+-----------------------------------------------------------
+<sup>**</sup> OP long requires one of the below modifications- 
+* Radar harness to move radar to CAN bus 2 (tested)
+* Non-SCC vehicle variant coded to accept accel request (non proven/ non tested)
+* Radar_disable UDS command (tested but not recommended), the feature is hardcoded to False for safety
 ___________________________________________________________
 <sup>^^</sup> There are 2 types of MDPS Harnesses that work with this fork- 
-* MDPS Harness connected to CAN1 at the comma harness replacing LCAN (type1)
-* MDPS Harness connected to OBD/Comma power(type2)
+* MDPS Harness connected to CAN1 at the comma harness replacing LCAN (**type1**)
+* MDPS Harness connected to OBD/Comma power(**type2**) - **most popular**
 
-Important step to enable MDPS Harness functionality if you have steering dash light
+Important step to enable MDPS Harness functionality if you have steering fault light
+<br>
 [![](https://imgur.com/gVwuVJQ.png)](#)
 
 * Make the following changes with `nano` to enable MDPS Harness-
-  - `cd /data/openpilot/panda/board && nano safety_declarations.h`
-  - go to line 106 and make `bool hyundai_community_mdps_harness_present = false;` to true
-  - go to line 111 and change the type to `1` or `2` as per yout setup.
+  - Go to the file location and open in nano - <br> `cd /data/openpilot/panda/board && nano safety_declarations.h`
+  - Go to line 106 and make `hyundai_community_mdps_harness_present` to `true`
+  - Go to line 111 and change the type from `0` to `1` or `2` as per your type.
+  <br>
 [![](https://imgur.com/Ml7TnHm.png)](#)
-  
-* Run the following commands if not familiar with `nano`-
-  - `cd /data/openpilot && git pull`
-  - `cd /data/openpilot && git clean -xdf && git reset --hard`
-  - if the MDPS harness is type1 then run the below command or skip this step
- `cd /data/openpilot/panda/board/mdpscan1 cp safety_declarations.h /data/openpilot/panda/board`
-  - if the MDPS harness is type2 then run the below command or skip this step
- `cd /data/openpilot/panda/board/mdpsobd cp safety_declarations.h /data/openpilot/panda/board`
-  - `cd /data/openpilot/panda/board git update-index -- skip- worktree data/openpilot/panda/board/safety_declarations.h`
-  - `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
-  - `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
+  - Make panda - <br> `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
+  - Flash panda - <br> `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
   - `reboot`
+  
+*BELOW STEP IS REQUIRED ONLY IF YOU CANNOT `NANO` LIKE MENTIONED ABOVE* <br> <br>
+* If you are not familiar with `nano` you can run the following commands in the SSH terminal-
+  - if the MDPS harness is **type1** then run the below command or skip this step <br> 
+ `cd /data/openpilot/panda/board/mdpscan1 cp safety_declarations.h /data/openpilot/panda/board`
+  - if the MDPS harness is **type2** then run the below command or skip this step <br> 
+ `cd /data/openpilot/panda/board/mdpsobd cp safety_declarations.h /data/openpilot/panda/board`
+  - Make panda - <br> `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
+  - Flash panda - <br> `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
+  - `reboot`
+
+* Add the file to git non tracking index so it doesn't get overwritten during the next update <br>
+`cd /data/openpilot/panda/board git update-index -- skip- worktree data/openpilot/panda/board/safety_declarations.h`
+----------------------------------------------------------  
+* If you have git pull or update issues -
+  - Run a clean and reset command - `cd /data/openpilot && git clean -xdf && git reset --hard`
+  - Retry git pull - `cd /data/openpilot && git pull`
 ___________________________________________________________
 
-<sup>**</sup> OP long requires one of the below modifications- 
-* -Radar harness to move radar to CAN bus 2 (tested)
-* -Non-SCC vehicle variant coded to accpet accel request ( non proven/ non tested)
-* -Radar_disable UDS command (tested but not recommended), the feature is hardcoded to False for safety
+**If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)**
 
-
-
-If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)
-
-
+______________________________________________
 [![](https://i.imgur.com/UelUjKAh.png)](#)
 
 Table of Contents

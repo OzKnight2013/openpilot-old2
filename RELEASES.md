@@ -1,11 +1,11 @@
 Version 0.7.9 (2020-XX-XX)
 ========================
+ * XPS community updates, 
+   - fix panda safety 
+   - added support for vision based op long
+   - added support for mdps harness types, see readme for instructions
  * Improved car battery power management 
  * Improved realtime performance
- * XPS community updates, 
-   - fix panda safety, 
-   - added support for oplong
-   - added support for 2 mdps harness types see readme for instructions
 
 Version 0.7.8 (2020-08-19)
 ========================
