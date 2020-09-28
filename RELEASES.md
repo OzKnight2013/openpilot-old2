@@ -4,6 +4,7 @@ Version 0.7.9 (2020-XX-XX)
    - fix panda safety 
    - added support for vision based op long
    - added support for mdps harness types, see readme for instructions
+   - anti-nag for panda only setup
  * Improved car battery power management 
  * Improved realtime performance
 

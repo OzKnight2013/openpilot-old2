@@ -131,18 +131,16 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       can_silent = ALL_CAN_SILENT;
       break;
     case SAFETY_NOOUTPUT:
-      set_intercept_relay(false);
+      set_intercept_relay(true);
       if (board_has_obd()) {
-        set_intercept_relay(true);
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_LIVE;
       break;
     case SAFETY_ELM327:
-      set_intercept_relay(false);
+      set_intercept_relay(true);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-        set_intercept_relay(true);
         if ((hyundai_community_mdps_harness_present) && (hyundai_community_mdps_harness_type == 1)) {
           current_board->set_can_mode(CAN_MODE_NORMAL);
         } else {

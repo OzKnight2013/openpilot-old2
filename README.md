@@ -7,7 +7,7 @@ XPS-FORK
 * This fork is maintained to support HKG community. The default branch tracks 
 the latest Master-ci updates.
 
-* This fork has support for MDPS Harness<sup>^^</sup> , OP Long<sup>**</sup>, Non-SCC cars
+* This fork has support for MDPS Harness<sup>^^</sup> , OP Long<sup>**</sup>, Non-SCC cars, anti-nag for panda only setup
 
 Notes -
 * Please feel free to add PR for support for non existing FP.
