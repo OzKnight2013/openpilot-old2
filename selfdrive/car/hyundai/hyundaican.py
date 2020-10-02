@@ -128,8 +128,8 @@ def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepres
   if not usestockscc and not aebcmdact:
     if enabled and not brakepressed:
       values["ACCMode"] = 2 if gaspressed and (apply_accel > -0.2) else 1
-      if apply_accel < -0.5:
-        values["StopReq"] = standstill
+      if apply_accel < 0.0 and standstill:
+        values["StopReq"] = 1
       values["aReqRaw"] = apply_accel
       values["aReqValue"] = apply_accel
     else:
@@ -155,27 +155,25 @@ def create_scc13(packer, scc13):
   values = scc13
   return packer.make_can_msg("SCC13", 0, values)
 
-def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed):
+def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed, standstill, e_vgo):
   values = scc14
   if not usestockscc and not aebcmdact:
     if enabled:
       values["ACCMode"] = 2 if gaspressed and (accel > -0.2) else 1
       values["ObjGap"] = objgap
-      if accel > 0.1:
-        values["JerkUpperLimit"] = 1.2
+      if standstill:
+        values["JerkUpperLimit"] = 0.5
         values["JerkLowerLimit"] = 10.
-        values["ComfortBandUpper"] = 4.
-        values["ComfortBandLower"] = 0.
-      elif accel < -0.1:
-        values["JerkUpperLimit"] = 4.
-        values["JerkLowerLimit"] = 30.
         values["ComfortBandUpper"] = 0.
-        values["ComfortBandLower"] = 5.
+        values["ComfortBandLower"] = 0.
+        if e_vgo > 0.27:
+          values["ComfortBandUpper"] = 2.
+          values["ComfortBandLower"] = 0.
       else:
-        values["JerkUpperLimit"] = .5
-        values["JerkLowerLimit"] = 1.
-        values["ComfortBandUpper"] = 5.
-        values["ComfortBandLower"] = 1.
+        values["JerkUpperLimit"] = 50.
+        values["JerkLowerLimit"] = 50.
+        values["ComfortBandUpper"] = 50.
+        values["ComfortBandLower"] = 50.
 
   return packer.make_can_msg("SCC14", 0, values)
 

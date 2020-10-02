@@ -12,11 +12,11 @@ from selfdrive.controls.lib.drive_helpers import MPC_COST_LONG
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
 
-BpTr = [0.,  .5,  5, 15., 21., 30., 36.]    # V_ego
-TrY = [1., 1.2, 1.4, 1.3, 1.2,  1., .85]    # time gap from lead, default
+BpTr = [0.,  .5,  5, 15., 21., 30., 36.]
+TrY = [1., 1.2, 1.8, 1.3, 1.2,  1., .85]
 
-BpvlTr = [-20. , -10., -5., -2, -1., 2.5]   # relative velocity
-TrvlY = [  1.8,  2.8, 2.5, 2.2,  1.6, 0.8]  # time gap from lead, used while braking
+BpvlTr = [-20. , -10., -3., -1.5, -.8, 2.5]
+TrvlY = [  1.8,  2.8, 2.5, 2.2,  1.6, 0.8]
 
 class LongitudinalMpc():
   def __init__(self, mpc_id):
@@ -116,14 +116,16 @@ class LongitudinalMpc():
       else:
         TR = self.last_TR + .005
     else:
-      if self.x_lead > 65. or self.v_lead > v_ego + 1.1:
+      if self.x_lead > 65.:
         maxTR *= 0.85
         TR = self.last_TR - .025
       else:
         TR = self.last_TR - .0025
 
     TR = clip(TR, 0.7, maxTR)
-
+    if v_ego < 5. and self.v_lead > v_ego + .5:
+      TR = 0.25
+      TR = clip(TR, 0.25, maxTR)
     self.last_TR = TR
 
     n_its = self.libmpc.run_mpc(self.cur_state, self.mpc_solution, self.a_lead_tau, a_lead, TR)

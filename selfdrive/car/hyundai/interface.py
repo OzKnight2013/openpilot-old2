@@ -68,7 +68,7 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.84
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
       tire_stiffness_factor = 0.65
-    elif candidate == CAR.SONATA_2019:
+    elif candidate in [CAR.SONATA_2019, CAR.SONATA_HEV_2019]:
       ret.mass = 4497. * CV.LB_TO_KG
       ret.wheelbase = 2.804
       ret.steerRatio = 13.27 * 1.15   # 15% higher at the center seems reasonable
@@ -309,9 +309,7 @@ class CarInterface(CarInterfaceBase):
       if b.type == ButtonType.cancel and b.pressed:
         events.add(EventName.buttonCancel)
       if b.type == ButtonType.altButton3 and b.pressed:
-        events.add(EventName.pcmDisable)
-    if EventName.pcmDisable in events.events:
-      events.events.remove(EventName.pcmDisable)
+        events.add(EventName.buttonCancel)
 
     ret.events = events.to_msg()
 

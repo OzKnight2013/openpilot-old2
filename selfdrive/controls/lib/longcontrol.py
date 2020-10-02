@@ -20,11 +20,10 @@ _MAX_SPEED_ERROR_V = [1.5, .8]  # max positive v_pid error VS actual speed; this
 RATE = 100.0
 
 
-def long_control_state_trans(active, long_control_state, v_ego, v_target, v_pid,
-                             output_gb, brake_pressed, standstill, stop):
+def long_control_state_trans(active, long_control_state, v_ego, v_target, output_gb, standstill, stop, vlead):
   """Update longitudinal control state machine"""
 
-  starting_condition = v_target > STARTING_TARGET_SPEED and not stop
+  starting_condition = (vlead > STARTING_TARGET_SPEED or v_target > STARTING_TARGET_SPEED) and not stop
   stopping_condition = stop or (v_ego < 2.0 and standstill and not starting_condition)
 
   if not active:
@@ -88,17 +87,16 @@ class LongControl():
     else:
       dRel = radarState.leadOne.dRel
       vLead = radarState.leadOne.vLead
-    if hasLead:
-      self.stop = True if (dRel < 5.0 and radarState.leadOne.status) else False
+    if hasLead and dRel < 5. and radarState.leadOne.status:
+      self.stop = True
       if self.stop:
         self.stop_timer = 100
     elif self.stop_timer > 0:
       self.stop_timer -= 1
     else:
       self.stop = False
-    self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo,
-                                                       v_target_future, self.v_pid, output_gb,
-                                                       CS.brakePressed, CS.standstill, self.stop)
+    self.long_control_state = long_control_state_trans(active, self.long_control_state, CS.vEgo, v_target,
+                                                       output_gb, CS.standstill, self.stop, vLead)
 
     v_ego_pid = max(CS.vEgo, MIN_CAN_SPEED)  # Without this we get jumps, CAN bus reports 0 when speed < 0.3
 
@@ -131,6 +129,8 @@ class LongControl():
         factor = interp(dRel, [2., 3., 4., 5., 6., 7., 8.], [5., 2.5, 1., .5, .25, .05, .005])
       if output_gb > -BRAKE_STOPPING_TARGET:
         output_gb -= (STOPPING_BRAKE_RATE * factor) / RATE
+      if output_gb < -.5 and CS.standstill:
+        output_gb += .033
       output_gb = clip(output_gb, -brake_max, gas_max)
       self.v_pid = CS.vEgo
       self.pid.reset()
