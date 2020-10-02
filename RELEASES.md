@@ -1,12 +1,15 @@
-Version 0.7.9 (2020-XX-XX)
+Version 0.7.9 (2020-10-09)
 ========================
  * XPS community updates, 
    - fix panda safety 
    - added support for vision based op long
    - added support for mdps harness types, see readme for instructions
    - anti-nag for panda only setup
- * Improved car battery power management 
+ * Improved car battery power management
+ * Improved updater robustness
  * Improved realtime performance
+ * Reduced UI and modeld lags
+ * Increased torque on 2020 Hyundai Sonata and Palisade
 
 Version 0.7.8 (2020-08-19)
 ========================

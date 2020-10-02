@@ -848,7 +848,7 @@ int main(void) {
   set_safety_mode(SAFETY_ALLOUTPUT, 0);
 
   // enable CAN TXs
-  current_board->enable_can_transcievers(true);
+  current_board->enable_can_transceivers(true);
 
 #ifndef EON
   spi_init();
