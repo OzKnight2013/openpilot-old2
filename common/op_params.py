@@ -61,10 +61,10 @@ class opParams:
     """
 
     VT = ValueTypes()
-    self.fork_params = {'Camera_Offset': Param(0.06, VT.number, 'This will reposition your vehicle if there has a lane hugging issue'
+    self.fork_params = {'Camera_Offset': Param(0.06, VT.number, 'This will reposition your vehicle if there is a lane hugging issue'
                                                                 'increase the offset(max 0.12) if the vehicle is hugging right lane'
                                                                 'decrease the offset(min 0.0) if the vehicle is hugging left lane'),
-                        'ALC_Min_Speed': Param(25.0, VT.number, 'The minimum speed for an automatic lane change MPH/KPH'),}
+                        'LCA_Min_Speed': Param(25.0, VT.number, 'The minimum speed for Lane Change Assist MPH/KPH'),}
 
 
     self._params_file = '/data/op_params.json'
