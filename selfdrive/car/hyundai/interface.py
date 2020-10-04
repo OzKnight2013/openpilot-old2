@@ -57,7 +57,7 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.pid.kfBP = [0., 10., 30.]
     ret.lateralTuning.pid.kfV = [0.00002, 0.00002, 0.00002]
 
-    if candidate == CAR.SANTA_FE:
+    if candidate in [CAR.SANTA_FE, CAR.SANTA_FE_2017]:
       ret.mass = 3982. * CV.LB_TO_KG + STD_CARGO_KG
       ret.wheelbase = 2.766
       # Values from optimizer
