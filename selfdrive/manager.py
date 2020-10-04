@@ -578,6 +578,11 @@ def main():
     ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
     ("OpenpilotEnabledToggle", "1"),
     ("LaneChangeEnabled", "1"),
+    ("LongControlEnabled", "0"),
+    ("RadarDisableEnabled", "0"),
+    ("MdpsHarnessEnabled", "0"),
+    ("SccEnabled", "1"),
+    ("EnableOPwithCC", "1"),
     ("IsDriverViewEnabled", "0"),
   ]
 

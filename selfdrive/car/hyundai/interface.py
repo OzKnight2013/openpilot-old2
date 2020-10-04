@@ -51,11 +51,11 @@ class CarInterface(CarInterfaceBase):
     ret.longitudinalTuning.kfV = [1., 1., 1., 1., 1.]
 
     ret.lateralTuning.pid.kiBP = [0., 1., 5.]
-    ret.lateralTuning.pid.kpV = [0.01, 0.03, 0.05]
+    ret.lateralTuning.pid.kpV = [0.01, 0.02, 0.03]
     ret.lateralTuning.pid.kpBP = [0., 10., 30.]
-    ret.lateralTuning.pid.kiV = [0.001, 0.003, 0.003]
+    ret.lateralTuning.pid.kiV = [0.001, 0.002, 0.003]
     ret.lateralTuning.pid.kfBP = [0., 10., 30.]
-    ret.lateralTuning.pid.kfV = [0.00002, 0.00003, 0.00003]
+    ret.lateralTuning.pid.kfV = [0.00002, 0.00002, 0.00002]
 
     if candidate == CAR.SANTA_FE:
       ret.mass = 3982. * CV.LB_TO_KG + STD_CARGO_KG
@@ -175,20 +175,24 @@ class CarInterface(CarInterfaceBase):
 
     # these cars require a special panda safety mode due to missing counters and checksums in the messages
 
-    ret.mdpsHarness = False if 593 in fingerprint[0] else True
-    ret.sasBus = 0 if 688 in fingerprint[0] else 1
+    ret.mdpsHarness = Params().get('MdpsHarnessEnabled') == b'1'
+    ret.sasBus = 0 if (688 in fingerprint[0] or not ret.mdpsHarness) else 1
     ret.fcaBus = 0 if 909 in fingerprint[0] else 2 if 909 in fingerprint[2] else -1
     ret.bsmAvailable = True if 1419 in fingerprint[0] else False
     ret.lfaAvailable = True if 1157 in fingerprint[2] else False
     ret.lvrAvailable = True if 871 in fingerprint[0] else False
     ret.evgearAvailable = True if 882 in fingerprint[0] else False
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
-  
-    ret.sccBus = 0 if 1057 in fingerprint[0] else 2 if 1057 in fingerprint[2] else -1
+
+    if Params().get('SccEnabled') == b'1':
+      ret.sccBus = 2 if 1057 in fingerprint[2] else 0
+    else:
+      ret.sccBus = -1
+
     ret.radarOffCan = (ret.sccBus == -1)
     ret.radarTimeStep = 0.02
 
-    ret.openpilotLongitudinalControl = not (ret.sccBus == 0)
+    ret.openpilotLongitudinalControl = Params().get('LongControlEnabled') == b'1' and not (ret.sccBus == 0)
 
     if candidate in [ CAR.HYUNDAI_GENESIS, CAR.IONIQ_EV_LTD, CAR.IONIQ_HEV, CAR.KONA_EV, CAR.KIA_NIRO_EV, CAR.KIA_SORENTO, CAR.SONATA_2019,
                       CAR.KIA_OPTIMA, CAR.VELOSTER, CAR.KIA_STINGER, CAR.GENESIS_G70, CAR.SONATA_HEV, CAR.SANTA_FE, CAR.GENESIS_G80,
@@ -200,7 +204,7 @@ class CarInterface(CarInterfaceBase):
                           CAR.KIA_CADENZA_HEV, CAR.GRANDEUR_HEV, CAR.KIA_NIRO_HEV, CAR.KONA_HEV]):
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunity
 
-    if ret.radarOffCan or (ret.sccBus == 2):
+    if ret.radarOffCan or (ret.sccBus == 2) or Params().get('EnableOPwithCC') == b'0':
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc
 
     if ret.mdpsHarness:
@@ -219,8 +223,7 @@ class CarInterface(CarInterfaceBase):
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
 
-    params = Params()
-    #ret.radarDisablePossible = params.get("IsLdwEnabled", encoding='utf8') == "0"
+    ret.radarDisablePossible = Params().get('RadarDisableEnabled') == b'1'
 
     if ret.radarDisablePossible:
       ret.openpilotLongitudinalControl = True
@@ -259,7 +262,7 @@ class CarInterface(CarInterfaceBase):
     if self.low_speed_alert:
       events.add(car.CarEvent.EventName.belowSteerSpeed)
 
-    self.CP.enableCruise = (not self.CP.openpilotLongitudinalControl) or self.CC.usestockscc
+    self.CP.enableCruise = Params().get('EnableOPwithCC') == b'1' and ((not self.CP.openpilotLongitudinalControl) or self.CC.usestockscc)
     if self.CS.brakeHold and not self.CC.usestockscc:
       events.add(EventName.brakeHold)
     if self.CS.parkBrake and not self.CC.usestockscc:

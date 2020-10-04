@@ -39,32 +39,21 @@ Important step to enable MDPS Harness functionality if you have steering fault l
 <br>
 [![](https://imgur.com/gVwuVJQ.png)](#)
 
-* Make the following changes with `nano` to enable MDPS Harness-
-  - Go to the file location and open in nano - <br> `cd /data/openpilot/panda/board && nano safety_declarations.h`
-  - Go to line 106 and make `hyundai_community_mdps_harness_present` to `true`
-  - Go to line 111 and change the type from `0` to `1` or `2` as per the mdps type.
-[![](https://imgur.com/Ml7TnHm.png)](#)
-  - Make panda - <br> `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
-  - Flash panda - <br> `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
-  - `reboot`
-  
-*BELOW STEP IS REQUIRED ONLY IF YOU CANNOT `NANO` LIKE MENTIONED ABOVE* <br> <br>
-* If you are not familiar with `nano` you can run the following commands in the SSH terminal-
-  - if the MDPS harness is **type1** then run the below command or skip this step <br> 
- `cd /data/openpilot/panda/board/mdpscan1 cp safety_declarations.h /data/openpilot/panda/board`
-  - if the MDPS harness is **type2** then run the below command or skip this step <br> 
- `cd /data/openpilot/panda/board/mdpsobd cp safety_declarations.h /data/openpilot/panda/board`
-  - Make panda - <br> `cd /data/openpilot/panda/python/../board && : && make -f Makefile obj/panda.bin`
-  - Flash panda - <br> `cd /data/openpilot/panda ; pkill -f boardd ; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"`
-  - `reboot`
+* Go to developer settings and toggle the MDPS Harness on
+* Make sure device is connected to the car
+* Select the MDPS harness type, the MDPS Harness should automatically switch and flash Panda.
+* Wait for the reboot to complete.
 
-* Add the file to git non tracking index so it doesn't get overwritten during the next update <br>
-`cd /data/openpilot/panda/board git update-index -- skip- worktree data/openpilot/panda/board/safety_declarations.h`
+[![](https://imgur.com/K4QumwC.png)](#)
 ----------------------------------------------------------  
 * If you have git pull or update issues -
   - Run a clean and reset command - `cd /data/openpilot && git clean -xdf && git reset --hard`
   - Retry git pull - `cd /data/openpilot && git pull`
 ___________________________________________________________
+* Check out OP-EDIT to edit tuning set up -
+  - To open OP-EDIT - `cd /data/openpilot && python op_edit.py`
+  - Enter your user name to track your changes.
+  - Modify values as required.
 
 **If you like my work, don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)**
 
