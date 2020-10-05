@@ -1,4 +1,4 @@
-const int HYUNDAI_COMMUNITY_MAX_STEER = 255;             // like stock
+const int HYUNDAI_COMMUNITY_MAX_STEER = 384;             // like stock
 const int HYUNDAI_COMMUNITY_MAX_RT_DELTA = 112;          // max delta torque allowed for real time checks
 const uint32_t HYUNDAI_COMMUNITY_RT_INTERVAL = 250000;   // 250ms between real time checks
 const int HYUNDAI_COMMUNITY_MAX_RATE_UP = 3;
@@ -13,10 +13,10 @@ const int HYUNDAI_COMMUNITY_MIN_ACCEL = -300;       // -3.0 m/s2
 const int HYUNDAI_COMMUNITY_ISO_MAX_ACCEL = 200;        // 2.0 m/s2
 const int HYUNDAI_COMMUNITY_ISO_MIN_ACCEL = -350;       // -3.5 m/s2
 
-bool hyundai_community_non_scc_car = true;
+bool hyundai_community_non_scc_car = false;
 bool aeb_cmd_act = false;
 int prev_desired_accel = 0;
-int decel_not_ramping =0;
+int decel_not_ramping = 0;
 
 const CanMsg HYUNDAI_COMMUNITY_TX_MSGS[] = {
   {832, 0, 8}, {832, 1, 8},    // LKAS11 Bus 0, 1
@@ -103,7 +103,6 @@ static uint8_t hyundai_community_compute_checksum(CAN_FIFOMailBox_TypeDef *to_pu
 static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
   bool valid;
-
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
@@ -156,15 +155,14 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     if ((addr == 1265) && hyundai_community_non_scc_car) {
       // first byte
       int cruise_engaged = (GET_BYTES_04(to_push) & 0x7);
-      // enable on res+ or set- buttons rising edge
-      if (!cruise_engaged_prev && (cruise_engaged == 1 || cruise_engaged == 2)) {
+      // enable on res+ or set- buttons press
+      if (!controls_allowed && (cruise_engaged == 1 || cruise_engaged == 2)) {
         controls_allowed = 1;
       }
-      // disable on cancel rising edge
+      // disable on cancel press
       if (cruise_engaged == 4) {
         controls_allowed = 0;
       }
-      cruise_engaged_prev = cruise_engaged;
     }
 
     // sample wheel speed, averaging opposite corners

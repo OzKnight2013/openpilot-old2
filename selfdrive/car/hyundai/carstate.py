@@ -1,5 +1,6 @@
 import copy
 from cereal import car
+from common.params import Params
 from selfdrive.car.hyundai.values import DBC, STEER_THRESHOLD, FEATURES, ELEC_VEH, HYBRID_VEH
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
@@ -16,7 +17,6 @@ class CarState(CarStateBase):
     self.cruise_main_button = 0
     self.cruise_buttons = 0
     self.allow_nonscc_available = False
-    self.allow_enable = False
   
     self.lead_distance = 150.
     self.radar_obj_valid = 0.
@@ -106,18 +106,16 @@ class CarState(CarStateBase):
       self.cancel_button_count = 0
 
     # cruise state
-    if self.CP.radarOffCan:
+    if not self.CP.enableCruise:
       if self.cruise_buttons == 1 or self.cruise_buttons == 2:
         self.allow_nonscc_available = True
-      ret.cruiseState.available = (self.allow_nonscc_available != False)
-      ret.cruiseState.enabled = (ret.cruiseState.available != False)
-    else:
+      ret.cruiseState.available = (((cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) or (cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0)
+                                    or self.CP.radarDisablePossible or Params().get('EnableOPwithCC') == b'0')
+                                   and self.allow_nonscc_available)
+      ret.cruiseState.enabled = ret.cruiseState.available
+    elif not self.CP.radarOffCan:
       ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
-      if ret.cruiseState.available and not self.CP.enableCruise and (self.cruise_buttons == 1 or self.cruise_buttons == 2):
-        self.allow_enable = True
-      elif self.CP.enableCruise:
-        self.allow_enable = False
-      ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0) or (self.allow_enable != 0)
+      ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
       ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4.
       self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
       self.vrelative = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
@@ -145,10 +143,12 @@ class CarState(CarStateBase):
       ret.gas = cp.vl["E_EMS11"]['Accel_Pedal_Pos'] / 256.
     elif self.CP.carFingerprint in HYBRID_VEH:
       ret.gas = cp.vl["EV_PC4"]['CR_Vcu_AccPedDep_Pc']
-    else:
+    elif self.CP.emsAvailable:
       ret.gas = cp.vl["EMS12"]['PV_AV_CAN'] / 100
 
-    ret.gasPressed = (cp.vl["TCS13"]["DriverOverride"] == 1) or bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
+    ret.gasPressed = (cp.vl["TCS13"]["DriverOverride"] == 1)
+    if self.CP.emsAvailable:
+      ret.gasPressed = ret.gasPressed or bool(cp.vl["EMS16"]["CF_Ems_AclAct"])
 
     ret.espDisabled = (cp.vl["TCS15"]['ESC_Off_Step'] != 0)
 
@@ -193,7 +193,7 @@ class CarState(CarStateBase):
       else:
         ret.gearShifter = GearShifter.unknown
     # Gear Selecton - This is not compatible with all Kia/Hyundai's, But is the best way for those it is compatible with
-    else:
+    elif self.CP.lvrAvailable:
       gear = cp.vl["LVR12"]["CF_Lvr_Gear"]
       if gear in (5, 8):  # 5: D, 8: sport mode
         ret.gearShifter = GearShifter.drive
@@ -277,8 +277,8 @@ class CarState(CarStateBase):
 
       ("ESC_Off_Step", "TCS15", 0),
 
-      ("CF_Lvr_GearInf", "LVR11", 0),        # Transmission Gear (0 = N or P, 1-8 = Fwd, 14 = Rev)
       ("CF_Lvr_CruiseSet", "LVR12", 0),
+      ("CRUISE_LAMP_M", "EMS16", 0),
     ]
 
     checks = [
@@ -377,7 +377,7 @@ class CarState(CarStateBase):
         ("EMS16", 100),
       ]
 
-    if CP.clustergearAvailable and CP.carFingerprint in FEATURES["use_cluster_gears"]:
+    if CP.carFingerprint in FEATURES["use_cluster_gears"]:
       signals += [
         ("CF_Clu_InhibitD", "CLU15", 0),
         ("CF_Clu_InhibitP", "CLU15", 0),
@@ -385,7 +385,7 @@ class CarState(CarStateBase):
         ("CF_Clu_InhibitR", "CLU15", 0),
       ]
       checks += [("CLU15", 5)]
-    elif CP.tcugearAvailable and CP.carFingerprint in FEATURES["use_tcu_gears"]:
+    elif CP.carFingerprint in FEATURES["use_tcu_gears"]:
       signals += [
         ("CUR_GR", "TCU12", 0)
       ]
@@ -533,11 +533,7 @@ class CarState(CarStateBase):
           ("SCC11", 50),
           ("SCC12", 50),
         ]
-    if CP.fcaBus == 2:
-      signals += [
-        ("FCA_CmdAct", "FCA11", 0),
-        ("CF_VSM_Warn", "FCA11", 0),
-      ]
-      checks += [("FCA11", 50)]
+        if CP.fcaBus == 2:
+          checks += [("FCA11", 50)]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 2)

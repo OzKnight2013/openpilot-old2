@@ -125,6 +125,7 @@ void set_safety_mode(uint16_t mode, int16_t param) {
     case SAFETY_SILENT:
       set_intercept_relay(false);
       if (board_has_obd()) {
+        set_intercept_relay(true);
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_SILENT;
@@ -140,7 +141,11 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       set_intercept_relay(true);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-        current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        if ((hyundai_community_mdps_harness_present) && (hyundai_community_mdps_harness_type == 1)) {
+          current_board->set_can_mode(CAN_MODE_NORMAL);
+        } else {
+          current_board->set_can_mode(CAN_MODE_OBD_CAN2);
+        }
       }
       can_silent = ALL_CAN_LIVE;
       break;
@@ -148,9 +153,7 @@ void set_safety_mode(uint16_t mode, int16_t param) {
       set_intercept_relay(true);
       heartbeat_counter = 0U;
       if (board_has_obd()) {
-  // make this OBD_CAN2 if MDPS harness is directly connected to OBD or leave it at NORMAL
-        if (mode_copy == SAFETY_HYUNDAI_LEGACY || mode_copy == SAFETY_HYUNDAI ||
-            mode_copy == SAFETY_HYUNDAI_COMMUNITY || mode_copy == SAFETY_HYUNDAI_COMMUNITY_NONSCC) {
+        if ((hyundai_community_mdps_harness_present) && (hyundai_community_mdps_harness_type == 2)) {
           current_board->set_can_mode(CAN_MODE_OBD_CAN2);
         } else {
           current_board->set_can_mode(CAN_MODE_NORMAL);
@@ -845,7 +848,7 @@ int main(void) {
   set_safety_mode(SAFETY_ALLOUTPUT, 0);
 
   // enable CAN TXs
-  current_board->enable_can_transcievers(true);
+  current_board->enable_can_transceivers(true);
 
 #ifndef EON
   spi_init();

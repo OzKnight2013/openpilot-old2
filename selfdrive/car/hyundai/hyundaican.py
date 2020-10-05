@@ -19,6 +19,9 @@ def create_lkas11(packer, frame, car_fingerprint, apply_steer, steer_req,
   values["CF_Lkas_MsgCount"] = frame % 0x10
   values["CF_Lkas_Chksum"] = 0
 
+  if values["CF_Lkas_LdwsOpt_USM"] == 4:
+    values["CF_Lkas_LdwsOpt_USM"] = 3
+
   if lfa_available:
     values["CF_Lkas_LdwsActivemode"] = int(left_lane) + (int(right_lane) << 1)
     values["CF_Lkas_LdwsOpt_USM"] = 2
@@ -93,8 +96,8 @@ def create_lfa_mfa(packer, frame, enabled):
 
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
 
-def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstill, scc11, usestockscc, nosccradar,
-                 scc11cnt, sendaccmode):
+def create_scc11(packer, enabled, set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel, gapsetting, standstill,
+                 scc11, usestockscc, nosccradar, scc11cnt, sendaccmode):
   values = scc11
 
   if not usestockscc:
@@ -106,6 +109,9 @@ def create_scc11(packer, enabled, set_speed, lead_visible, gapsetting, standstil
     values["TauGapSet"] = gapsetting
     values["ObjValid"] = lead_visible
     values["ACC_ObjStatus"] = lead_visible
+    values["ACC_ObjRelSpd"] = lead_vrel
+    values["ACC_ObjDist"] = lead_dist
+    values["ACC_ObjLatPos"] = -lead_yrel
 
     if nosccradar:
       values["MainMode_ACC"] = sendaccmode
@@ -122,8 +128,8 @@ def create_scc12(packer, apply_accel, enabled, standstill, gaspressed, brakepres
   if not usestockscc and not aebcmdact:
     if enabled and not brakepressed:
       values["ACCMode"] = 2 if gaspressed and (apply_accel > -0.2) else 1
-      if apply_accel < -0.5:
-        values["StopReq"] = standstill
+      if apply_accel < 0.0 and standstill:
+        values["StopReq"] = 1
       values["aReqRaw"] = apply_accel
       values["aReqValue"] = apply_accel
     else:
@@ -149,27 +155,25 @@ def create_scc13(packer, scc13):
   values = scc13
   return packer.make_can_msg("SCC13", 0, values)
 
-def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed):
+def create_scc14(packer, enabled, usestockscc, aebcmdact, accel, scc14, objgap, gaspressed, standstill, e_vgo):
   values = scc14
   if not usestockscc and not aebcmdact:
     if enabled:
       values["ACCMode"] = 2 if gaspressed and (accel > -0.2) else 1
       values["ObjGap"] = objgap
-      if accel > 0.1:
-        values["JerkUpperLimit"] = 1.2
+      if standstill:
+        values["JerkUpperLimit"] = 0.5
         values["JerkLowerLimit"] = 10.
-        values["ComfortBandUpper"] = 4.
-        values["ComfortBandLower"] = 0.
-      elif accel < -0.1:
-        values["JerkUpperLimit"] = 4.
-        values["JerkLowerLimit"] = 30.
         values["ComfortBandUpper"] = 0.
-        values["ComfortBandLower"] = 5.
+        values["ComfortBandLower"] = 0.
+        if e_vgo > 0.27:
+          values["ComfortBandUpper"] = 2.
+          values["ComfortBandLower"] = 0.
       else:
-        values["JerkUpperLimit"] = .5
-        values["JerkLowerLimit"] = 1.
-        values["ComfortBandUpper"] = 5.
-        values["ComfortBandLower"] = 1.
+        values["JerkUpperLimit"] = 50.
+        values["JerkLowerLimit"] = 50.
+        values["ComfortBandUpper"] = 50.
+        values["ComfortBandLower"] = 50.
 
   return packer.make_can_msg("SCC14", 0, values)
 

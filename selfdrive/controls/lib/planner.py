@@ -15,30 +15,24 @@ from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 
-MAX_SPEED = 255.0 #kpH
-
 LON_MPC_STEP = 0.2  # first step is 0.2s
-MAX_SPEED_ERROR = 2.0
 AWARENESS_DECEL = -0.2     # car smoothly decel at .2m/s^2 when user is distracted
 
 # lookup tables VS speed to determine min and max accels in cruise
 # make sure these accelerations are smaller than mpc limits
-_A_CRUISE_MIN_V = [-1.5, -1.5, -1.5, -1., -.5]
-_A_CRUISE_MIN_V_FOLLOWING = [-3.5, -3.5, -3., -1.5, -1.]
+_A_CRUISE_MIN_V = [-1.5, -1.2, -1., -.65, -.5]
+_A_CRUISE_MIN_V_FOLLOWING = [-3.5, -3.5, -3.5, -2.5, -1.5]
 _A_CRUISE_MIN_BP = [ 0., 5.,  10., 20.,  40.]
 
 # need fast accel at very low speed for stop and go
 # make sure these accelerations are smaller than mpc limits
-_A_CRUISE_MAX_V = [.5, 1.5, 0.65, .4]
-_A_CRUISE_MAX_V_FOLLOWING = [1., 2., 0.65, .4]
-_A_CRUISE_MAX_BP = [0., 3., 22.5, 40.]
+_A_CRUISE_MAX_V = [1.5, 2., 0.65, .4]
+_A_CRUISE_MAX_V_FOLLOWING = [2., 2., 0.65, .4]
+_A_CRUISE_MAX_BP = [0., 5., 32.5, 40.]
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
-
-# 75th percentile
-SPEED_PERCENTILE_IDX = 7
 
 
 def calc_cruise_accel_limits(v_ego, following):
@@ -127,7 +121,7 @@ class Planner():
     lead_2 = sm['radarState'].leadTwo
 
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
-    following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
+    following = lead_1.status and lead_1.dRel < 150.0
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop and not sm['carState'].gasPressed:
@@ -163,8 +157,8 @@ class Planner():
     self.mpc1.set_cur_state(self.v_acc_start, self.a_acc_start)
     self.mpc2.set_cur_state(self.v_acc_start, self.a_acc_start)
 
-    self.mpc1.update(pm, sm['carState'], lead_1, v_cruise_setpoint)
-    self.mpc2.update(pm, sm['carState'], lead_2, v_cruise_setpoint)
+    self.mpc1.update(pm, sm['carState'], lead_1)
+    self.mpc2.update(pm, sm['carState'], lead_2)
 
     self.choose_solution(v_cruise_setpoint, enabled)
 

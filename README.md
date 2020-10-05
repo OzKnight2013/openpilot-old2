@@ -1,11 +1,15 @@
 
 XPS-FORK
 ===========================================
+<br>**If you like my work, don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)** <br>
+
+
 * This fork is maintained to support HKG community. The default branch tracks 
 the latest Master-ci updates.
 
-* This fork has support for MDPS Harness, Radar Harness(OP LONG), Non-SCC cars
+* This fork has support for MDPS Harness<sup>^^</sup> , OP Long<sup>**</sup>, Non-SCC cars, anti-nag for panda only setup
 
+Notes -
 * Please feel free to add PR for support for non existing FP.
 
 * If you encounter "Car Unrecognized- Please verify fingerprint with the fork owner" 
@@ -15,24 +19,45 @@ the latest Master-ci updates.
 please contact me directly on discord for help.
 
 * This branch uses a different tuning of PI controller for lat(steering). There is a
-non liner term added with respect to steering request which results in a smoother
+non linear term added with respect to steering request which results in a smoother
 behavior.
 
 * This branch is also fine tuned to have smoother OP long(gas/brake) control.<sup>**</sup>
 
-* !DANGER! OP long with radar disable method will disable AEB/FCA completely.
-___________________________________________________________
-
+* **!DANGER!** OP long with radar disable method will disable stock AEB/FCA completely.
+-----------------------------------------------------------
 <sup>**</sup> OP long requires one of the below modifications- 
-* -Radar harness to move radar to CAN bus 2 (tested)
-* -Non-SCC vehicle variant coded to accpet accel request ( non proven/ non tested)
-* -Radar_disable UDS command (tested but not recommended), the feature is hardcoded to False for safety
+* Radar harness to move radar to CAN bus 2 (tested)
+* Non-SCC vehicle variant coded to accept accel request (non proven/ non tested)
+* Radar_disable UDS command (tested but not recommended), the feature is hardcoded to False for safety
+___________________________________________________________
+<sup>^^</sup> There are 2 types of MDPS Harnesses that work with this fork- 
+* MDPS Harness connected to CAN1 at the comma harness replacing LCAN (**type1**)
+* MDPS Harness connected to OBD/Comma power(**type2**) - **most popular**
 
+Important step to enable MDPS Harness functionality if you have steering fault light
+<br>
+[![](https://imgur.com/gVwuVJQ.png)](#)
 
+* Go to developer settings and toggle the MDPS Harness on
+* Make sure device is connected to the car
+* Select the MDPS harness type, the MDPS Harness should automatically switch and flash Panda.
+* Wait for the reboot to complete.
 
-If you like my work don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)
+[![](https://imgur.com/K4QumwC.png)](#)
+----------------------------------------------------------  
+* If you have git pull or update issues -
+  - Run a clean and reset command - `cd /data/openpilot && git clean -xdf && git reset --hard`
+  - Retry git pull - `cd /data/openpilot && git pull`
+___________________________________________________________
+* Check out OP-EDIT to edit tuning set up -
+  - To open OP-EDIT - `cd /data/openpilot && python op_edit.py`
+  - Enter your user name to track your changes.
+  - Modify values as required.
 
+**If you like my work, don't hesitate to donate- [Paypal-Me](https://paypal.me/ARUNVARADARAJAN)**
 
+______________________________________________
 [![](https://i.imgur.com/UelUjKAh.png)](#)
 
 Table of Contents
@@ -105,21 +130,20 @@ Supported Cars
 | Honda     | Accord Hybrid 2018-20         | All               | Stock            | 0mph               | 3mph              |
 | Honda     | Civic Hatchback 2017-19       | Honda Sensing     | Stock            | 0mph               | 12mph             |
 | Honda     | Civic Sedan/Coupe 2016-18     | Honda Sensing     | openpilot        | 0mph               | 12mph             |
-| Honda     | Civic Sedan/Coupe 2019-20     | Honda Sensing     | Stock            | 0mph               | 2mph<sup>2</sup>  |
+| Honda     | Civic Sedan/Coupe 2019-20     | All               | Stock            | 0mph               | 2mph<sup>2</sup>  |
 | Honda     | CR-V 2015-16                  | Touring           | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | CR-V 2017-20                  | Honda Sensing     | Stock            | 0mph               | 12mph             |
 | Honda     | CR-V Hybrid 2017-2019         | Honda Sensing     | Stock            | 0mph               | 12mph             |
 | Honda     | Fit 2018-19                   | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | HR-V 2019                     | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
-| Honda     | Insight 2019-20               | Honda Sensing     | Stock            | 0mph               | 3mph              |
+| Honda     | Insight 2019-20               | All               | Stock            | 0mph               | 3mph              |
 | Honda     | Odyssey 2018-20               | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 0mph              |
 | Honda     | Passport 2019                 | All               | openpilot        | 25mph<sup>1</sup>  | 12mph             |
-| Honda     | Pilot 2016-18                 | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
-| Honda     | Pilot 2019                    | All               | openpilot        | 25mph<sup>1</sup>  | 12mph             |
+| Honda     | Pilot 2016-19                 | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | Ridgeline 2017-20             | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Hyundai   | Palisade 2020                 | All               | Stock            | 0mph               | 0mph         |
 | Hyundai   | Sonata 2020                   | All               | Stock            | 0mph               | 0mph              |
-| Lexus     | CT Hybrid 2017-18             | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
+| Lexus     | CT Hybrid 2017-18             | LSS               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Lexus     | ES 2019                       | All               | openpilot        | 0mph               | 0mph              |
 | Lexus     | ES Hybrid 2019                | All               | openpilot        | 0mph               | 0mph              |
 | Lexus     | IS 2017-2019                  | All               | Stock            | 22mph              | 0mph              |
@@ -129,8 +153,7 @@ Supported Cars
 | Lexus     | RX 2020                       | All               | openpilot        | 0mph               | 0mph              |
 | Lexus     | RX Hybrid 2016-19             | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Lexus     | RX Hybrid 2020                | All               | openpilot        | 0mph               | 0mph              |
-| Toyota    | Avalon 2016                   | TSS-P             | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
-| Toyota    | Avalon 2017-18                | All               | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
+| Toyota    | Avalon 2016-18                | TSS-P             | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
 | Toyota    | Camry 2018-20                 | All               | Stock            | 0mph<sup>4</sup>   | 0mph              |
 | Toyota    | Camry Hybrid 2018-19          | All               | Stock            | 0mph<sup>4</sup>   | 0mph              |
 | Toyota    | C-HR 2017-19                  | All               | Stock            | 0mph               | 0mph              |
@@ -138,19 +161,16 @@ Supported Cars
 | Toyota    | Corolla 2017-19               | All               | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
 | Toyota    | Corolla 2020                  | All               | openpilot        | 0mph               | 0mph              |
 | Toyota    | Corolla Hatchback 2019-20     | All               | openpilot        | 0mph               | 0mph              |
-| Toyota    | Corolla Hybrid 2020           | All               | openpilot        | 0mph               | 0mph              |
+| Toyota    | Corolla Hybrid 2020-21        | All               | openpilot        | 0mph               | 0mph              |
 | Toyota    | Highlander 2017-19            | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
-| Toyota    | Highlander Hybrid 2017-19     | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Highlander 2020               | All               | openpilot        | 0mph               | 0mph              |
+| Toyota    | Highlander Hybrid 2017-19     | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Highlander Hybrid 2020        | All               | openpilot        | 0mph               | 0mph              |
-| Toyota    | Prius 2016                    | TSS-P             | Stock<sup>3</sup>| 0mph               | 0mph              |
-| Toyota    | Prius 2017-20                 | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
+| Toyota    | Prius 2016-20                 | TSS-P             | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Prius Prime 2017-20           | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
-| Toyota    | Rav4 2016                     | TSS-P             | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
-| Toyota    | Rav4 2017-18                  | All               | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
+| Toyota    | Rav4 2016-18                  | TSS-P             | Stock<sup>3</sup>| 20mph<sup>1</sup>  | 0mph              |
 | Toyota    | Rav4 2019-20                  | All               | openpilot        | 0mph               | 0mph              |
-| Toyota    | Rav4 Hybrid 2016              | TSS-P             | Stock<sup>3</sup>| 0mph               | 0mph              |
-| Toyota    | Rav4 Hybrid 2017-18           | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
+| Toyota    | Rav4 Hybrid 2016-18           | TSS-P             | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Rav4 Hybrid 2019-20           | All               | openpilot        | 0mph               | 0mph              |
 | Toyota    | Sienna 2018-20                | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 
@@ -179,8 +199,7 @@ Community Maintained Cars and Features
 | Holden    | Astra 2017<sup>1</sup>        | Adaptive Cruise   | openpilot        | 0mph               | 7mph         |
 | Hyundai   | Elantra 2017-19               | SCC + LKAS        | Stock            | 19mph              | 34mph        |
 | Hyundai   | Genesis 2015-16               | SCC + LKAS        | Stock            | 19mph              | 37mph        |
-| Hyundai   | Ioniq Electric Premium SE 2020| SCC + LKAS        | Stock            | 0mph               | 32mph        |
-| Hyundai   | Ioniq Electric Limited 2019   | SCC + LKAS        | Stock            | 0mph               | 32mph        |
+| Hyundai   | Ioniq Electric 2019-20        | SCC + LKAS        | Stock            | 0mph               | 32mph        |
 | Hyundai   | Kona 2020                     | SCC + LKAS        | Stock            | 0mph               | 0mph         |
 | Hyundai   | Kona EV 2019                  | SCC + LKAS        | Stock            | 0mph               | 0mph         |
 | Hyundai   | Santa Fe 2019                 | All               | Stock            | 0mph               | 0mph         |
@@ -189,13 +208,13 @@ Community Maintained Cars and Features
 | Jeep      | Grand Cherokee 2016-18        | Adaptive Cruise   | Stock            | 0mph               | 9mph         |
 | Jeep      | Grand Cherokee 2019-20        | Adaptive Cruise   | Stock            | 0mph               | 39mph        |
 | Kia       | Forte 2018-19                 | SCC + LKAS        | Stock            | 0mph               | 0mph         |
-| Kia       | Optima 2017                   | SCC + LKAS/LDWS   | Stock            | 0mph               | 32mph        |
+| Kia       | Optima 2017                   | SCC + LKAS        | Stock            | 0mph               | 32mph        |
 | Kia       | Optima 2019                   | SCC + LKAS        | Stock            | 0mph               | 0mph         |
 | Kia       | Sorento 2018                  | SCC + LKAS        | Stock            | 0mph               | 0mph         |
 | Kia       | Stinger 2018                  | SCC + LKAS        | Stock            | 0mph               | 0mph         |
-| Nissan    | Leaf 2018-19                  | Propilot          | Stock            | 0mph               | 0mph         |
-| Nissan    | Rogue 2019                    | Propilot          | Stock            | 0mph               | 0mph         |
-| Nissan    | X-Trail 2017                  | Propilot          | Stock            | 0mph               | 0mph         |
+| Nissan    | Leaf 2018-19                  | ProPILOT          | Stock            | 0mph               | 0mph         |
+| Nissan    | Rogue 2019                    | ProPILOT          | Stock            | 0mph               | 0mph         |
+| Nissan    | X-Trail 2017                  | ProPILOT          | Stock            | 0mph               | 0mph         |
 | Subaru    | Ascent 2019                   | EyeSight          | Stock            | 0mph               | 0mph         |
 | Subaru    | Crosstrek 2018-19             | EyeSight          | Stock            | 0mph               | 0mph         |
 | Subaru    | Forester 2019                 | EyeSight          | Stock            | 0mph               | 0mph         |

@@ -1,5 +1,7 @@
 import os
 import math
+
+from common.op_params import opParams
 from common.realtime import sec_since_boot, DT_MDL
 from selfdrive.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc import libmpc_py
@@ -7,7 +9,6 @@ from selfdrive.controls.lib.drive_helpers import MPC_COST_LAT
 from selfdrive.controls.lib.lane_planner import LanePlanner
 from selfdrive.config import Conversions as CV
 from common.params import Params
-from common.hardware import TICI
 import cereal.messaging as messaging
 from cereal import log
 
@@ -86,6 +87,13 @@ class PathPlanner():
     active = sm['controlsState'].active
 
     angle_offset = sm['liveParameters'].angleOffset
+
+    params = Params()
+    op_params = opParams()
+    if params.get("IsMetric", encoding='utf8') == "1":
+      LANE_CHANGE_SPEED_MIN = op_params.get('ALC_Min_Speed') * CV.KPH_TO_MS
+    else:
+      LANE_CHANGE_SPEED_MIN = op_params.get('ALC_Min_Speed') * CV.MPH_TO_MS
 
     # Run MPC
     self.angle_steers_des_prev = self.angle_steers_des_mpc
@@ -178,14 +186,8 @@ class PathPlanner():
 
     self.LP.update_d_poly(v_ego)
 
-    if TICI:
-      frame_delay = min((sm.logMonoTime['model'] - sm['model'].timestampEof) / 1e9, 0.250)
-      delay = frame_delay + CP.steerActuatorDelay
-    else:
-      delay = CP.steerActuatorDelay
-
-    # account for actuation + frame delay
-    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, VM.sR, delay)
+    # account for actuation delay
+    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, VM.sR, CP.steerActuatorDelay)
 
     v_ego_mpc = max(v_ego, 5.0)  # avoid mpc roughness due to low speed
     self.libmpc.run_mpc(self.cur_state, self.mpc_solution,

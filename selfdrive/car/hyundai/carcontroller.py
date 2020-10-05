@@ -1,6 +1,6 @@
 from numpy import clip
 
-from cereal import car
+from cereal import car, messaging
 from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.carstate import GearShifter
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
@@ -9,6 +9,7 @@ from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
+from selfdrive.controls.lib.longcontrol import LongCtrlState
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -77,6 +78,7 @@ class CarController():
     self.accel_lim_prev = 0.
     self.accel_lim = 0.
     self.steer_rate_limited = False
+    self.p = SteerLimitParams(CP)
     self.usestockscc = True
     self.lead_visible = False
     self.lead_debounce = 0
@@ -94,10 +96,14 @@ class CarController():
     self.radarDisableResetTimer = 0
     self.radarDisableOverlapTimer = 0
     self.sendaccmode = not CP.radarDisablePossible
+    self.enabled = False
+    self.sm = messaging.SubMaster(['controlsState'])
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
-             left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible, lead_dist):
+             left_lane, right_lane, left_lane_depart, right_lane_depart,
+             set_speed, lead_visible, lead_dist, lead_vrel, lead_yrel):
 
+    self.enabled = enabled
     # gas and brake
     self.accel_lim_prev = self.accel_lim
     apply_accel = actuators.gas - actuators.brake
@@ -109,8 +115,8 @@ class CarController():
     apply_accel = accel_rate_limit(self.accel_lim, self.accel_lim_prev)
 
     # Steering Torque
-    new_steer = actuators.steer * SteerLimitParams.STEER_MAX
-    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, SteerLimitParams)
+    new_steer = actuators.steer * self.p.STEER_MAX
+    apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, self.p)
     self.steer_rate_limited = new_steer != apply_steer
 
     # disable if steer angle reach 90 deg, otherwise mdps fault in some models
@@ -180,7 +186,7 @@ class CarController():
 
       can_sends.append(create_clu11(self.packer, 1, CS.clu11, Buttons.NONE, enabled_speed, self.clu11_cnt))
 
-    if pcm_cancel_cmd and not CS.CP.radarOffCan and self.usestockscc and CS.scc12["ACCMode"] and not CS.out.standstill:
+    if pcm_cancel_cmd and CS.CP.enableCruise and self.usestockscc and not CS.out.standstill:
       self.vdiff = 0.
       self.resumebuttoncnt = 0
       can_sends.append(create_clu11(self.packer, CS.CP.sccBus, CS.clu11, Buttons.CANCEL, self.current_veh_speed, self.clu11_cnt))
@@ -196,7 +202,12 @@ class CarController():
       self.vdiff = 0.
       self.resumebuttoncnt = 0
 
-    self.acc_standstill = False #True if (enabled and not self.acc_paused and CS.out.standstill) else False
+    if CS.out.vEgo < 5.:
+      self.sm.update(0)
+      long_control_state = self.sm['controlsState'].longControlState
+      self.acc_standstill = True if long_control_state == LongCtrlState.stopping else False
+    else:
+      self.acc_standstill = False
 
     if lead_visible:
       self.lead_visible = True
@@ -237,7 +248,6 @@ class CarController():
           self.radarDisableActivated = False
           self.counter_init = True
     else:
-      self.counter_init = False
       self.radarDisableOverlapTimer = 0
       self.radarDisableResetTimer = 0
 
@@ -275,7 +285,7 @@ class CarController():
         self.fca11alivecnt = self.fca11maxcnt - self.fca11inc
 
         can_sends.append(create_scc11(self.packer, enabled,
-                                      self.setspeed, self.lead_visible,
+                                      self.setspeed, self.lead_visible, lead_dist, lead_vrel, lead_yrel,
                                       self.gapsettingdance,
                                       CS.out.standstill, CS.scc11,
                                       self.usestockscc, CS.CP.radarOffCan, self.scc11cnt, self.sendaccmode))
@@ -286,13 +296,14 @@ class CarController():
                                       CS.scc12, self.usestockscc, CS.CP.radarOffCan, self.scc12cnt))
 
         can_sends.append(create_scc14(self.packer, enabled, self.usestockscc, CS.out.stockAeb, apply_accel,
-                                      CS.scc14, self.objdiststat, CS.out.gasPressed))
-
-        can_sends.append(create_fca11(self.packer, CS.fca11, self.fca11alivecnt, self.fca11supcnt))
+                                      CS.scc14, self.objdiststat, CS.out.gasPressed, self.acc_standstill, CS.out.vEgo))
+        if CS.CP.fcaBus == -1:
+          can_sends.append(create_fca11(self.packer, CS.fca11, self.fca11alivecnt, self.fca11supcnt))
 
       if frame % 20 == 0:
         can_sends.append(create_scc13(self.packer, CS.scc13))
-        can_sends.append(create_fca12(self.packer))
+        if CS.CP.fcaBus == -1:
+          can_sends.append(create_fca12(self.packer))
       if frame % 50 == 0:
         can_sends.append(create_scc42a(self.packer))
     else:

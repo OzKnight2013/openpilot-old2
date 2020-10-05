@@ -24,7 +24,7 @@ int write_param_float(float param, const char* param_name, bool persistent_param
 
 void ui_init(UIState *s) {
   s->sm = new SubMaster({"model", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "thermal",
-                         "health", "carParams", "ubloxGnss", "driverState", "dMonitoringState", "carState", "liveMpc", "liveParameters"});
+                         "health", "carParams", "ubloxGnss", "driverState", "dMonitoringState", "sensorEvents", "carState", "liveMpc", "liveParameters"});
 
   s->started = false;
   s->status = STATUS_OFFROAD;
@@ -117,7 +117,6 @@ void update_sockets(UIState *s) {
   UIScene &scene = s->scene;
   SubMaster &sm = *(s->sm);
 
-  // poll sockets
   if (sm.update(0) == 0){
     return;
   }
@@ -131,6 +130,7 @@ void update_sockets(UIState *s) {
     s->scene.output_scale = scene.controls_state.getLateralControlState().getPidState().getOutput();
     s->scene.angleSteersDes = scene.controls_state.getAngleSteersDes();
 
+    // TODO: the alert stuff shouldn't be handled here
     auto alert_sound = scene.controls_state.getAlertSound();
     if (scene.alert_type.compare(scene.controls_state.getAlertType()) != 0) {
       if (alert_sound == AudibleAlert::NONE) {
@@ -247,6 +247,16 @@ void update_sockets(UIState *s) {
     scene.leftblindspot = data.getLeftBlindspot();
     scene.rightblindspot = data.getRightBlindspot();
   } 
+
+#ifdef QCOM2 // TODO: use this for QCOM too
+  if (sm.updated("sensorEvents")) {
+    for (auto sensor : sm["sensorEvents"].getSensorEvents()) {
+      if (sensor.which() == cereal::SensorEventData::LIGHT) {
+        s->light_sensor = sensor.getLight();
+      }
+    }
+  }
+#endif
 
   s->started = scene.thermal.getStarted() || scene.frontview;
 }
