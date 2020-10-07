@@ -103,8 +103,9 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     neosUpdateRequired @88;
     modeldLagging @89;
     deviceFalling @90;
-    visiononlyWarning @ 91;
-    belowSteerSpeedDing @ 92;
+    fanMalfunction @91;
+    visiononlyWarning @ 92;
+    belowSteerSpeedDing @ 93;
 
     dataNeededDEPRECATED @16;
     modelCommIssueDEPRECATED @27;

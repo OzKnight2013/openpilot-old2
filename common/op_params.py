@@ -64,7 +64,9 @@ class opParams:
     self.fork_params = {'Camera_Offset': Param(0.06, VT.number, 'This will reposition your vehicle if there has a lane hugging issue'
                                                                 'increase the offset(max 0.12) if the vehicle is hugging right lane'
                                                                 'decrease the offset(min 0.0) if the vehicle is hugging left lane'),
-                        'ALC_Min_Speed': Param(25.0, VT.number, 'The minimum speed for an automatic lane change MPH/KPH'),}
+                        'ALC_Min_Speed': Param(35.0, VT.number, 'The minimum speed for an automatic lane change MPH/KPH'),
+                        'forceenablecamera': Param(False, bool, 'general toggle used by some users for force enable camera'),
+                        }
 
 
     self._params_file = '/data/op_params.json'
