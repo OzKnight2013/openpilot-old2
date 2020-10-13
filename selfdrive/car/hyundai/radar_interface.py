@@ -17,7 +17,7 @@ def get_radar_can_parser(CP):
     # address, frequency
     ("SCC11", 50),
   ]
-  return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, CP.sccBus)
+  return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 2)  #only needed when scc radar on bus 2
 
 
 class RadarInterface(RadarInterfaceBase):

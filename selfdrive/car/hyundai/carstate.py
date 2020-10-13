@@ -109,17 +109,16 @@ class CarState(CarStateBase):
     if not self.CP.enableCruise:
       if self.cruise_buttons == 1 or self.cruise_buttons == 2:
         self.allow_nonscc_available = True
-      ret.cruiseState.available = (((cp_scc.vl["SCC11"]["MainMode_ACC"] != 0) or (cp.vl["EMS16"]["CRUISE_LAMP_M"] != 0)
-                                    or self.CP.radarDisablePossible or Params().get('EnableOPwithCC') == b'0')
-                                   and self.allow_nonscc_available)
+      ret.cruiseState.available = self.allow_nonscc_available != 0
       ret.cruiseState.enabled = ret.cruiseState.available
     elif not self.CP.radarOffCan:
       ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
       ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
-      ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4.
-      self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
-      self.vrelative = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
-      self.radar_obj_valid = cp_scc.vl["SCC11"]['ObjValid']
+
+    self.lead_distance = cp_scc.vl["SCC11"]['ACC_ObjDist']
+    self.vrelative = cp_scc.vl["SCC11"]['ACC_ObjRelSpd']
+    self.radar_obj_valid = cp_scc.vl["SCC11"]['ObjValid']
+    ret.cruiseState.standstill = cp_scc.vl["SCC11"]['SCCInfoDisplay'] == 4.
 
     self.is_set_speed_in_mph = cp.vl["CLU11"]["CF_Clu_SPEED_UNIT"]
     if ret.cruiseState.enabled:

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from cereal import car
+from common.op_params import opParams
 from common.params import Params
 from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
+from selfdrive.controls.lib.lane_planner import op_params
 
 EventName = car.CarEvent.EventName
 ButtonType = car.CarState.ButtonEvent.Type
@@ -185,7 +187,7 @@ class CarInterface(CarInterfaceBase):
     ret.emsAvailable = True if 608 and 809 in fingerprint[0] else False
 
     if Params().get('SccEnabled') == b'1':
-      ret.sccBus = 2 if 1057 in fingerprint[2] else 0 if 1057 in fingerprint[0] else -1
+      ret.sccBus = 2 if 1057 in fingerprint[2] and Params().get('SccHarnessPresent') == b'1' else 0 if 1057 in fingerprint[0] else -1
     else:
       ret.sccBus = -1
 
@@ -221,14 +223,18 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
 
-    ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
+    ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) \
+                       or has_relay or opParams().get('forceenablecamera')
 
     ret.radarDisablePossible = Params().get('RadarDisableEnabled') == b'1'
+
+    ret.enableCruise = Params().get('EnableOPwithCC') == b'1' and ret.sccBus == 0
 
     if ret.radarDisablePossible:
       ret.openpilotLongitudinalControl = True
       ret.safetyModel = car.CarParams.SafetyModel.hyundaiCommunityNonscc # todo based on toggle
       ret.sccBus = -1
+      ret.enableCruise = False
       ret.radarOffCan = True
       if ret.fcaBus == 0:
         ret.fcaBus = -1
@@ -262,7 +268,9 @@ class CarInterface(CarInterfaceBase):
     if self.low_speed_alert:
       events.add(car.CarEvent.EventName.belowSteerSpeed)
 
-    self.CP.enableCruise = Params().get('EnableOPwithCC') == b'1' and ((not self.CP.openpilotLongitudinalControl) or self.CC.usestockscc)
+    if self.CP.sccBus == 2:
+      self.CP.enableCruise = self.CC.usestockscc
+
     if self.CS.brakeHold and not self.CC.usestockscc:
       events.add(EventName.brakeHold)
     if self.CS.parkBrake and not self.CC.usestockscc:
@@ -303,11 +311,11 @@ class CarInterface(CarInterfaceBase):
     # handle button press
     for b in self.buttonEvents:
       if b.type == ButtonType.decelCruise and b.pressed \
-              and (not ret.brakePressed or ret.standstill) and (self.CP.radarOffCan or not self.CP.enableCruise):
+              and (not ret.brakePressed or ret.standstill) and not self.CP.enableCruise:
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.accelCruise and b.pressed \
-              and ((self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill) \
-              and (self.CP.radarOffCan or not self.CP.enableCruise):
+              and ((self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill or self.CC.usestockscc) \
+              and not self.CP.enableCruise:
         events.add(EventName.buttonEnable)
       if b.type == ButtonType.cancel and b.pressed:
         events.add(EventName.buttonCancel)
