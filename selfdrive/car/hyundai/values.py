@@ -234,12 +234,6 @@ FW_VERSIONS = {
     (Ecu.eps, 0x7d4, None): [b'\xf1\x00TM  MDPS C 1.00 1.00 56340-S2000 8409'],
     (Ecu.engine, 0x7e0, None): [b'\x01TJFAJNU06F201H03'],
   },  
-  CAR.KIA_NIRO_EV: {
-    (Ecu.eps, 0x7D4, None): [
-      b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4000\x00 4DEEC105',
-      b'\xf1\x00DE  MDPS C 1.00 1.05 56310Q4100\x00 4DEEC105',
-    ],
-  },
 }
 
 CHECKSUM = {
