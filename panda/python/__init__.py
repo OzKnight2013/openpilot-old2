@@ -128,6 +128,8 @@ class Panda(object):
   SAFETY_VOLKSWAGEN_PQ = 21
   SAFETY_SUBARU_LEGACY = 22
   SAFETY_HYUNDAI_LEGACY = 23
+  SAFETY_HYUNDAI_COMMUNITY = 24
+  SAFETY_HYUNDAI_COMMUNITY_NONSCC = 25
 
   SERIAL_DEBUG = 0
   SERIAL_ESP = 1
@@ -461,7 +463,7 @@ class Panda(object):
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xe5, int(enable), 0, b'')
 
   def set_can_enable(self, bus_num, enable):
-    # sets the can transceiver enable pin
+    # sets the can transciever enable pin
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xf4, int(bus_num), int(enable), b'')
 
   def set_can_speed_kbps(self, bus, speed):

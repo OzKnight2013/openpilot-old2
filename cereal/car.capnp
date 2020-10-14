@@ -104,6 +104,8 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     modeldLagging @89;
     deviceFalling @90;
     fanMalfunction @91;
+    visiononlyWarning @ 92;
+    belowSteerSpeedDing @ 93;
 
     dataNeededDEPRECATED @16;
     modelCommIssueDEPRECATED @27;
@@ -311,6 +313,9 @@ struct CarControl {
     leftLaneVisible @7: Bool;
     rightLaneDepart @8: Bool;
     leftLaneDepart @9: Bool;
+    leadDistance @10:Float32;
+    leadvRel @11:Float32;
+    leadyRel @12:Float32;
 
     enum VisualAlert {
       # these are the choices from the Honda
@@ -337,6 +342,8 @@ struct CarControl {
       chimeWarningRepeat @6;
       chimePrompt @7;
       chimeWarning2Repeat @8;
+      chimeDing @9;
+      chimeDingRepeat @ 10;
     }
   }
 }
@@ -408,6 +415,16 @@ struct CarParams {
   communityFeature @46: Bool;  # true if a community maintained feature is detected
   fingerprintSource @49: FingerprintSource;
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
+  mdpsHarness @51: Bool;
+  sasBus @52: Int8;
+  fcaBus @53: Int8;
+  bsmAvailable @54: Bool;
+  lfaAvailable @55: Bool;
+  sccBus @56: Int8;
+  radarDisablePossible @57: Bool;
+  lvrAvailable @58: Bool;
+  evgearAvailable @59: Bool;
+  emsAvailable @60: Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
@@ -420,6 +437,8 @@ struct CarParams {
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
     kf @4 :Float32;
+    kfV @5 :List(Float32);
+    kfBP @6 :List(Float32);
   }
 
   struct LongitudinalPIDTuning {
@@ -429,6 +448,8 @@ struct CarParams {
     kiV @3 :List(Float32);
     deadzoneBP @4 :List(Float32);
     deadzoneV @5 :List(Float32);
+    kfBP @6 :List(Float32);
+    kfV @7 :List(Float32);
   }
 
   struct LateralINDITuning {
@@ -478,6 +499,7 @@ struct CarParams {
     subaruLegacy @22;  # pre-Global platform
     hyundaiLegacy @23;
     hyundaiCommunity @24;
+    hyundaiCommunityNonscc @25;
   }
 
   enum SteerControlType {
