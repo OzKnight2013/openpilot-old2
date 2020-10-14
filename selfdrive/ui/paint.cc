@@ -1018,6 +1018,8 @@ void ui_nvg_init(UIState *s) {
   assert(s->img_turn != 0);
   s->img_face = nvgCreateImage(s->vg, "../assets/img_driver_face.png", 1);
   assert(s->img_face != 0);
+  s->img_brake = nvgCreateImage(s->vg, "../assets/img_brake_disc.png", 1);
+  assert(s->img_brake >= 0);
   s->img_button_settings = nvgCreateImage(s->vg, "../assets/images/button_settings.png", 1);
   assert(s->img_button_settings != 0);
   s->img_button_home = nvgCreateImage(s->vg, "../assets/images/button_home.png", 1);
