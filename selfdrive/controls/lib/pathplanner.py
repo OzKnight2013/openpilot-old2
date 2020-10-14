@@ -1,5 +1,7 @@
 import os
 import math
+
+from common.op_params import opParams
 from common.realtime import sec_since_boot, DT_MDL
 from selfdrive.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc import libmpc_py
@@ -15,7 +17,7 @@ LaneChangeDirection = log.PathPlan.LaneChangeDirection
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
 
-LANE_CHANGE_SPEED_MIN = 45 * CV.MPH_TO_MS
+LANE_CHANGE_SPEED_MIN = 35 * CV.MPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
 
 DESIRES = {
@@ -61,6 +63,7 @@ class PathPlanner():
     self.lane_change_timer = 0.0
     self.lane_change_ll_prob = 1.0
     self.prev_one_blinker = False
+    self.pre_auto_LCA_timer = 0.0
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
@@ -85,6 +88,11 @@ class PathPlanner():
 
     angle_offset = sm['liveParameters'].angleOffset
 
+    if Params().get("IsMetric", encoding='utf8') == "1":
+      LANE_CHANGE_SPEED_MIN = opParams().get('LCA_Min_Speed') * CV.KPH_TO_MS
+    else:
+      LANE_CHANGE_SPEED_MIN = opParams().get('LCA_Min_Speed') * CV.MPH_TO_MS
+
     # Run MPC
     self.angle_steers_des_prev = self.angle_steers_des_mpc
 
@@ -106,16 +114,24 @@ class PathPlanner():
     elif sm['carState'].rightBlinker:
       self.lane_change_direction = LaneChangeDirection.right
 
-    if (not active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (not self.lane_change_enabled):
+    if (not active) or (self.lane_change_timer > LANE_CHANGE_TIME_MAX) or (not one_blinker) or (not self.lane_change_enabled):
       self.lane_change_state = LaneChangeState.off
       self.lane_change_direction = LaneChangeDirection.none
+      self.pre_auto_LCA_timer = 0.
     else:
-      torque_applied = sm['carState'].steeringPressed and \
-                       ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
-                        (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
 
       blindspot_detected = ((sm['carState'].leftBlindspot and self.lane_change_direction == LaneChangeDirection.left) or
                             (sm['carState'].rightBlindspot and self.lane_change_direction == LaneChangeDirection.right))
+
+      if not blindspot_detected:
+        self.pre_auto_LCA_timer += DT_MDL
+      else:
+        self.pre_auto_LCA_timer = 0.
+
+      torque_applied = (1.6 > self.pre_auto_LCA_timer > 1.1 and not blindspot_detected) or \
+                       (sm['carState'].steeringPressed and
+                        ((sm['carState'].steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
+                        (sm['carState'].steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right)))
 
       lane_change_prob = self.LP.l_lane_change_prob + self.LP.r_lane_change_prob
 
@@ -162,6 +178,10 @@ class PathPlanner():
     if desire == log.PathPlan.Desire.laneChangeRight or desire == log.PathPlan.Desire.laneChangeLeft:
       self.LP.l_prob *= self.lane_change_ll_prob
       self.LP.r_prob *= self.lane_change_ll_prob
+      self.libmpc.init_weights(MPC_COST_LAT.PATH / 3.0, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+    else:
+      self.libmpc.init_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+
     self.LP.update_d_poly(v_ego)
 
     # account for actuation delay
