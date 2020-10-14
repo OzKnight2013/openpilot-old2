@@ -6,7 +6,6 @@ from selfdrive.config import Conversions as CV
 from selfdrive.car.hyundai.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS, Buttons
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
-from selfdrive.controls.lib.lane_planner import op_params
 
 EventName = car.CarEvent.EventName
 ButtonType = car.CarState.ButtonEvent.Type
