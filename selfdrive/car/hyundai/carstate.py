@@ -282,6 +282,11 @@ class CarState(CarStateBase):
 
       ("CF_Lvr_CruiseSet", "LVR12", 0),
       ("CRUISE_LAMP_M", "EMS16", 0),
+
+      ("CR_VSM_Alive", "SCC12", 0),
+      ("AliveCounterACC", "SCC11", 0),
+      ("CR_FCA_Alive", "FCA11", 0),
+      ("Supplemental_Counter", "FCA11", 0),
     ]
 
     checks = [
