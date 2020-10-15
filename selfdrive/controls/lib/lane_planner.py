@@ -3,9 +3,8 @@ import numpy as np
 from cereal import log
 from common.op_params import opParams
 
-op_params = opParams()
 
-CAMERA_OFFSET = op_params.get('Camera_Offset')  # m from center car to camera
+CAMERA_OFFSET = opParams().get('Camera_Offset')  # m from center car to camera
 
 def compute_path_pinv(l=50):
   deg = 3

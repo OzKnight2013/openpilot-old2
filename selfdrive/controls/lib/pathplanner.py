@@ -88,12 +88,10 @@ class PathPlanner():
 
     angle_offset = sm['liveParameters'].angleOffset
 
-    params = Params()
-    op_params = opParams()
-    if params.get("IsMetric", encoding='utf8') == "1":
-      LANE_CHANGE_SPEED_MIN = op_params.get('LCA_Min_Speed') * CV.KPH_TO_MS
+    if Params().get("IsMetric", encoding='utf8') == "1":
+      LANE_CHANGE_SPEED_MIN = opParams().get('LCA_Min_Speed') * CV.KPH_TO_MS
     else:
-      LANE_CHANGE_SPEED_MIN = op_params.get('LCA_Min_Speed') * CV.MPH_TO_MS
+      LANE_CHANGE_SPEED_MIN = opParams().get('LCA_Min_Speed') * CV.MPH_TO_MS
 
     # Run MPC
     self.angle_steers_des_prev = self.angle_steers_des_mpc
