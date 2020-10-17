@@ -7,6 +7,7 @@ import sys
 import platform
 
 TICI = os.path.isfile('/TICI')
+Decider('MD5-timestamp')
 
 AddOption('--test',
           action='store_true',
@@ -27,7 +28,7 @@ if platform.system() == "Darwin":
 if arch == "aarch64" and TICI:
   arch = "larch64"
 
-webcam = bool(ARGUMENTS.get("use_webcam", 0))
+USE_WEBCAM = os.getenv("USE_WEBCAM") is not None
 QCOM_REPLAY = arch == "aarch64" and os.getenv("QCOM_REPLAY") is not None
 
 if arch == "aarch64" or arch == "larch64":
@@ -108,6 +109,7 @@ else:
     ]
 
   rpath = [
+    "phonelibs/snpe/x86_64-linux-clang",
     "external/tensorflow/lib",
     "cereal",
     "selfdrive/common"
@@ -259,7 +261,7 @@ def abspath(x):
 
 # still needed for apks
 zmq = 'zmq'
-Export('env', 'qt_env', 'arch', 'zmq', 'SHARED', 'webcam', 'QCOM_REPLAY')
+Export('env', 'qt_env', 'arch', 'zmq', 'SHARED', 'USE_WEBCAM', 'QCOM_REPLAY')
 
 # cereal and messaging are shared with the system
 SConscript(['cereal/SConscript'])

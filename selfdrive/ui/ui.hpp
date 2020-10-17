@@ -70,10 +70,6 @@ const int TRACK_POINTS_MAX_CNT = 50 * 2;
 
 const int SET_SPEED_NA = 255;
 
-typedef struct Color {
-  uint8_t r, g, b;
-} Color;
-
 typedef enum NetStatus {
   NET_CONNECTED,
   NET_DISCONNECTED,
@@ -89,13 +85,13 @@ typedef enum UIStatus {
   STATUS_ALERT,
 } UIStatus;
 
-static std::map<UIStatus, Color> bg_colors = {
-  {STATUS_OFFROAD, {0x07, 0x23, 0x39}},
-  {STATUS_DISENGAGED, {0x17, 0x33, 0x49}},
-  {STATUS_ENGAGED, {0x17, 0x86, 0x44}},
-  {STATUS_ENGAGED_OPLONG, {0x69, 0x69, 0x69}},
-  {STATUS_WARNING, {0xDA, 0x6F, 0x25}},
-  {STATUS_ALERT, {0xC9, 0x22, 0x31}},
+static std::map<UIStatus, NVGcolor> bg_colors = {
+  {STATUS_OFFROAD, nvgRGBA(0x07, 0x23, 0x39, 0xf1)},
+  {STATUS_DISENGAGED, nvgRGBA(0x17, 0x33, 0x49, 0xc8)},
+  {STATUS_ENGAGED, nvgRGBA(0x17, 0x86, 0x44, 0xf1)},
+  {STATUS_ENGAGED_OPLONG, nvgRGBA(0x45, 0x45, 0x45, 0x01)},
+  {STATUS_WARNING, nvgRGBA(0xDA, 0x6F, 0x25, 0xf1)},
+  {STATUS_ALERT, nvgRGBA(0xC9, 0x22, 0x31, 0xf1)},
 };
 
 typedef struct UIScene {
@@ -245,7 +241,7 @@ int read_param(T* param, const char *param_name, bool persistent_param = false){
   char *value;
   size_t sz;
 
-  int result = read_db_value(param_name, &value, &sz, persistent_param);
+  int result = Params(persistent_param).read_db_value(param_name, &value, &sz);
   if (result == 0){
     std::string s = std::string(value, sz); // value is not null terminated
     free(value);
