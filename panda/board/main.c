@@ -123,8 +123,9 @@ void set_safety_mode(uint16_t mode, int16_t param) {
   }
   switch (mode_copy) {
     case SAFETY_SILENT:
-      set_intercept_relay(true);
+      set_intercept_relay(false);
       if (board_has_obd()) {
+        set_intercept_relay(true);
         current_board->set_can_mode(CAN_MODE_NORMAL);
       }
       can_silent = ALL_CAN_SILENT;
@@ -728,8 +729,8 @@ void TIM1_BRK_TIM9_IRQ_Handler(void) {
         puth(heartbeat_counter);
         puts(" seconds. Safety is set to SAFETY_NOOUTPUT mode.\n");
 /* cancel power save mode to allow continuous port forwarding*/
-        if (current_safety_mode != SAFETY_NOOUTPUT) {
-          set_safety_mode(SAFETY_NOOUTPUT, 0U);
+        if (current_safety_mode != SAFETY_ALLOUTPUT) {
+          set_safety_mode(SAFETY_ALLOUTPUT, 0U);
         }
 /*
         if (power_save_status != POWER_SAVE_STATUS_ENABLED) {
@@ -844,7 +845,7 @@ int main(void) {
   // use TIM2->CNT to read
 
   // init to SILENT and can silent
-  set_safety_mode(SAFETY_NOOUTPUT, 0);
+  set_safety_mode(SAFETY_ALLOUTPUT, 0);
 
   // enable CAN TXs
   current_board->enable_can_transceivers(true);
