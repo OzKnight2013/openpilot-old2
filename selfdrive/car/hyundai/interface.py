@@ -85,7 +85,7 @@ class CarInterface(CarInterfaceBase):
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.lateralTuning.init('indi')
-      ret.lateralTuning.indi.innerLoopGain = 2.5
+      ret.lateralTuning.indi.innerLoopGain = 3.2
       ret.lateralTuning.indi.outerLoopGain = 1.5
       ret.lateralTuning.indi.timeConstant = 1.25
       ret.lateralTuning.indi.actuatorEffectiveness = 1.65
