@@ -32,7 +32,7 @@ class LatControlINDI():
     self.A_K = A - np.dot(K, C)
     self.x = np.matrix([[0.], [0.], [0.]])
 
-    self.enforce_rate_limit = CP.carName == "toyota"
+    self.enforce_rate_limit = CP.carName == "hyundai"
 
     self.RC = CP.lateralTuning.indi.timeConstant
     self.G = CP.lateralTuning.indi.actuatorEffectiveness
