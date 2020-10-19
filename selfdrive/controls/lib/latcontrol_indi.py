@@ -100,7 +100,7 @@ class LatControlINDI():
         steer_max = 409.
         new_output_steer_cmd = steer_max * (self.delayed_output + delta_u)
         prev_output_steer_cmd = steer_max * self.output_steer
-        new_output_steer_cmd = apply_std_steer_torque_limits(new_output_steer_cmd, prev_output_steer_cmd, prev_output_steer_cmd, SteerLimitParams)
+        new_output_steer_cmd = apply_std_steer_torque_limits(new_output_steer_cmd, prev_output_steer_cmd, prev_output_steer_cmd, SteerLimitParams(CP))
         self.output_steer = new_output_steer_cmd / steer_max
       else:
         self.output_steer = self.delayed_output + delta_u
