@@ -1,8 +1,8 @@
 import numpy as np
 from common.numpy_fast import clip, interp
 
-GainSaS_BP = [0., 2., 5., 10., 20., 40.]
-Gain_g = [0., .025, .085, .12, .14, .16]
+GainSaS_BP = [0., 1.9, 2., 5., 10., 20., 40.]
+Gain_g = [0.15, .024, .025, .085, .12, .14, .16]
 
 GainV_BP = [0., 20., 20.01, 30.]
 Gain_V = [0.3, .5, .65, 1.2]
