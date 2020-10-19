@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from numpy import interp
 
 from cereal import log
 from common.realtime import DT_CTRL
@@ -36,6 +37,7 @@ class LatControlINDI():
 
     self.RC = CP.lateralTuning.indi.timeConstant
     self.G = CP.lateralTuning.indi.actuatorEffectiveness
+
     self.outer_loop_gain = CP.lateralTuning.indi.outerLoopGain
     self.inner_loop_gain = CP.lateralTuning.indi.innerLoopGain
     self.alpha = 1. - DT_CTRL / (self.RC + DT_CTRL)
@@ -87,8 +89,12 @@ class LatControlINDI():
       self.delayed_output = self.delayed_output * self.alpha + self.output_steer * (1. - self.alpha)
 
       # Compute acceleration error
-      rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
-      accel_sp = self.inner_loop_gain * (rate_sp - self.x[1])
+
+      self.bpolg = interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kolgBP, CP.lateralTuning.indi.kolgBP)
+      self.bpilg = interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kilgBP, CP.lateralTuning.indi.kilgBP)
+
+      rate_sp = (self.outer_loop_gain + self.bpolg) * (steers_des - self.x[0]) + rate_des
+      accel_sp = (self.inner_loop_gain + self.bpilg) * (rate_sp - self.x[1])
       accel_error = accel_sp - self.x[2]
 
       # Compute change in actuator
