@@ -32,7 +32,7 @@ class CarInterface(CarInterfaceBase):
     # Most Hyundai car ports are community features for now
     ret.communityFeature = candidate not in [CAR.SONATA, CAR.PALISADE]
 
-    ret.steerActuatorDelay = 0.1  # Default delay
+    ret.steerActuatorDelay = 0.5  # Default delay
     ret.steerRateCost = 0.45
     ret.steerLimitTimer = 0.8
     tire_stiffness_factor = 1.
@@ -86,9 +86,9 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.lateralTuning.init('indi')
       ret.lateralTuning.indi.innerLoopGain = 3.
-      ret.lateralTuning.indi.outerLoopGain = 1.
-      ret.lateralTuning.indi.timeConstant = .5
-      ret.lateralTuning.indi.actuatorEffectiveness = .5
+      ret.lateralTuning.indi.outerLoopGain = 2.
+      ret.lateralTuning.indi.timeConstant = 1.25
+      ret.lateralTuning.indi.actuatorEffectiveness = 1.65
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
