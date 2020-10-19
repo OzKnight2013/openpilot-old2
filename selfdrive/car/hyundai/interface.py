@@ -86,9 +86,9 @@ class CarInterface(CarInterfaceBase):
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.lateralTuning.init('indi')
       ret.lateralTuning.indi.innerLoopGain = 3.
-      ret.lateralTuning.indi.outerLoopGain = 3.
+      ret.lateralTuning.indi.outerLoopGain = 1.
       ret.lateralTuning.indi.timeConstant = .5
-      ret.lateralTuning.indi.actuatorEffectiveness = 1.
+      ret.lateralTuning.indi.actuatorEffectiveness = .5
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
       ret.steerRatio = 16.5
