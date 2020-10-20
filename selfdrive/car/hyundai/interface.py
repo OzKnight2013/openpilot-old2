@@ -34,8 +34,8 @@ class CarInterface(CarInterfaceBase):
 
     ret.steerActuatorDelay = 0.4  # Default delay
     ret.steerRateCost = 0.5
-    ret.steerLimitTimer = 0.8
-    tire_stiffness_factor = .7
+    ret.steerLimitTimer = 0.1
+    tire_stiffness_factor = 0.7
 
     #Long tuning Params -  make individual params for cars, baseline Hyundai genesis
     ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
