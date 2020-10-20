@@ -3,6 +3,7 @@ import numpy as np
 from numpy import interp
 
 from cereal import log
+from common.op_params import opParams
 from common.realtime import DT_CTRL
 from common.numpy_fast import clip
 from selfdrive.car.hyundai.values import SteerLimitParams
@@ -65,6 +66,15 @@ class LatControlINDI():
     return self.sat_count > self.sat_limit
 
   def update(self, active, CS, CP, path_plan):
+
+    if opParams().get('Enable_INDI'):
+      self.RC = opParams().get('RCTimeConstant')
+      self.G = opParams().get('ActuatorEffectiveness')
+
+      self.outer_loop_gain = opParams().get('OuterLoopGain')
+      self.inner_loop_gain = opParams().get('InnerLoopGain')
+      self.alpha = 1. - DT_CTRL / (self.RC + DT_CTRL)
+
     # Update Kalman filter
     y = np.matrix([[math.radians(CS.steeringAngle)], [math.radians(CS.steeringRate)]])
     self.x = np.dot(self.A_K, self.x) + np.dot(self.K, y)
@@ -90,11 +100,8 @@ class LatControlINDI():
 
       # Compute acceleration error
 
-      self.bpolg = 0 # interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kolgBP, CP.lateralTuning.indi.kolgBP)
-      self.bpilg = 0 # interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kilgBP, CP.lateralTuning.indi.kilgBP)
-
-      rate_sp = (self.outer_loop_gain + self.bpolg) * (steers_des - self.x[0]) + rate_des
-      accel_sp = (self.inner_loop_gain + self.bpilg) * (rate_sp - self.x[1])
+      rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
+      accel_sp = self.inner_loop_gain * (rate_sp - self.x[1])
       accel_error = accel_sp - self.x[2]
 
       # Compute change in actuator

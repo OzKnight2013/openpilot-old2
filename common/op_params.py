@@ -66,6 +66,11 @@ class opParams:
                                                                 'decrease the offset(min 0.0) if the vehicle is hugging left lane'),
                         'LCA_Min_Speed': Param(25.0, VT.number, 'The minimum speed for Lane Change Assist MPH/KPH'),
                         'forceenablecamera': Param(False, bool, 'general toggle used by some users for force enable camera'),
+                        'Enable_INDI': Param(True, bool, 'Toggle to enable INDI tuning for lat control'),
+                        'OuterLoopGain': Param(3.1, VT.number, 'Turn Aggressiveness'),
+                        'InnerLoopGain': Param(2.1, VT.number, 'Over correction'),
+                        'RCTimeConstant': Param(1.4, VT.number, 'Time constant'),
+                        'ActuatorEffectiveness': Param(2.3, VT.number, 'Sensitivity of the actuator, increase for less pingpong, decrease if weak steering'),
                         }
 
 
