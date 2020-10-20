@@ -1,13 +1,12 @@
 import math
 import numpy as np
-from numpy import interp
 
 from cereal import log
 from common.op_params import opParams
 from common.realtime import DT_CTRL
 from common.numpy_fast import clip
-from selfdrive.car.hyundai.values import SteerLimitParams
-from selfdrive.car import apply_std_steer_torque_limits
+from selfdrive.car.toyota.values import SteerLimitParams
+from selfdrive.car import apply_toyota_steer_torque_limits
 from selfdrive.controls.lib.drive_helpers import get_steer_max
 
 
@@ -15,30 +14,29 @@ class LatControlINDI():
   def __init__(self, CP):
     self.angle_steers_des = 0.
 
-    A = np.matrix([[1.0, DT_CTRL, 0.0],
-                   [0.0, 1.0, DT_CTRL],
-                   [0.0, 0.0, 1.0]])
-    C = np.matrix([[1.0, 0.0, 0.0],
-                   [0.0, 1.0, 0.0]])
+    A = np.array([[1.0, DT_CTRL, 0.0],
+                  [0.0, 1.0, DT_CTRL],
+                  [0.0, 0.0, 1.0]])
+    C = np.array([[1.0, 0.0, 0.0],
+                  [0.0, 1.0, 0.0]])
 
     # Q = np.matrix([[1e-2, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 10.0]])
     # R = np.matrix([[1e-2, 0.0], [0.0, 1e3]])
 
     # (x, l, K) = control.dare(np.transpose(A), np.transpose(C), Q, R)
     # K = np.transpose(K)
-    K = np.matrix([[7.30262179e-01, 2.07003658e-04],
-                   [7.29394177e+00, 1.39159419e-02],
-                   [1.71022442e+01, 3.38495381e-02]])
+    K = np.array([[7.30262179e-01, 2.07003658e-04],
+                  [7.29394177e+00, 1.39159419e-02],
+                  [1.71022442e+01, 3.38495381e-02]])
 
     self.K = K
     self.A_K = A - np.dot(K, C)
-    self.x = np.matrix([[0.], [0.], [0.]])
+    self.x = np.array([[0.], [0.], [0.]])
 
-    self.enforce_rate_limit = CP.carName == "hyundai"
+    self.enforce_rate_limit = CP.carName == "toyota"
 
     self.RC = CP.lateralTuning.indi.timeConstant
     self.G = CP.lateralTuning.indi.actuatorEffectiveness
-
     self.outer_loop_gain = CP.lateralTuning.indi.outerLoopGain
     self.inner_loop_gain = CP.lateralTuning.indi.innerLoopGain
     self.alpha = 1. - DT_CTRL / (self.RC + DT_CTRL)
@@ -70,13 +68,12 @@ class LatControlINDI():
     if opParams().get('Enable_INDI'):
       self.RC = opParams().get('RCTimeConstant')
       self.G = opParams().get('ActuatorEffectiveness')
-
       self.outer_loop_gain = opParams().get('OuterLoopGain')
       self.inner_loop_gain = opParams().get('InnerLoopGain')
       self.alpha = 1. - DT_CTRL / (self.RC + DT_CTRL)
 
     # Update Kalman filter
-    y = np.matrix([[math.radians(CS.steeringAngle)], [math.radians(CS.steeringRate)]])
+    y = np.array([[math.radians(CS.steeringAngle)], [math.radians(CS.steeringRate)]])
     self.x = np.dot(self.A_K, self.x) + np.dot(self.K, y)
 
     indi_log = log.ControlsState.LateralINDIState.new_message()
@@ -99,7 +96,6 @@ class LatControlINDI():
       self.delayed_output = self.delayed_output * self.alpha + self.output_steer * (1. - self.alpha)
 
       # Compute acceleration error
-
       rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
       accel_sp = self.inner_loop_gain * (rate_sp - self.x[1])
       accel_error = accel_sp - self.x[2]
@@ -110,10 +106,10 @@ class LatControlINDI():
 
       # Enforce rate limit
       if self.enforce_rate_limit:
-        steer_max = 409.
+        steer_max = float(SteerLimitParams.STEER_MAX)
         new_output_steer_cmd = steer_max * (self.delayed_output + delta_u)
         prev_output_steer_cmd = steer_max * self.output_steer
-        new_output_steer_cmd = apply_std_steer_torque_limits(new_output_steer_cmd, prev_output_steer_cmd, prev_output_steer_cmd, SteerLimitParams(CP))
+        new_output_steer_cmd = apply_toyota_steer_torque_limits(new_output_steer_cmd, prev_output_steer_cmd, prev_output_steer_cmd, SteerLimitParams)
         self.output_steer = new_output_steer_cmd / steer_max
       else:
         self.output_steer = self.delayed_output + delta_u
