@@ -84,7 +84,6 @@ class CarInterface(CarInterfaceBase):
       ret.steerRatio = 15.4
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
     elif candidate == CAR.HYUNDAI_GENESIS:
-      ret.lateralTuning.init('indi')
       ret.lateralTuning.indi.innerLoopGain = 2.5
       ret.lateralTuning.indi.outerLoopGain = 1.
       ret.lateralTuning.indi.kolgBP = [0., 2., 25.]
