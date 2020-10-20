@@ -87,10 +87,10 @@ class CarInterface(CarInterfaceBase):
       ret.lateralTuning.init('indi')
       ret.lateralTuning.indi.innerLoopGain = 2.
       ret.lateralTuning.indi.outerLoopGain = 1.
-      ret.lateralTuning.indi.kolgBP = [0., 2., 5., 15.]
-      ret.lateralTuning.indi.kolgV =  [0., .5, 1., 2.]
-      ret.lateralTuning.indi.kilgBP = [0., 2., 5., 15.]
-      ret.lateralTuning.indi.kilgV =  [0., .5, 1., 2.]
+      ret.lateralTuning.indi.kolgBP = [0., 2., 25.]
+      ret.lateralTuning.indi.kolgV =  [0., .1, 1.]
+      ret.lateralTuning.indi.kilgBP = [0., 2., 25.]
+      ret.lateralTuning.indi.kilgV =  [0., .1, 1.]
       ret.lateralTuning.indi.timeConstant = 1.25
       ret.lateralTuning.indi.actuatorEffectiveness = 1.5
       ret.mass = 2060. + STD_CARGO_KG
