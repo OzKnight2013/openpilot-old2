@@ -32,10 +32,10 @@ class CarInterface(CarInterfaceBase):
     # Most Hyundai car ports are community features for now
     ret.communityFeature = candidate not in [CAR.SONATA, CAR.PALISADE]
 
-    ret.steerActuatorDelay = 0.3  # Default delay
-    ret.steerRateCost = 0.45
+    ret.steerActuatorDelay = 0.4  # Default delay
+    ret.steerRateCost = 0.5
     ret.steerLimitTimer = 0.8
-    tire_stiffness_factor = 1.
+    tire_stiffness_factor = .7
 
     #Long tuning Params -  make individual params for cars, baseline Hyundai genesis
     ret.longitudinalTuning.kpBP = [0., 1., 10., 35.]
