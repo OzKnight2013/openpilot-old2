@@ -90,8 +90,8 @@ class LatControlINDI():
 
       # Compute acceleration error
 
-      self.bpolg = interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kolgBP, CP.lateralTuning.indi.kolgBP)
-      self.bpilg = interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kilgBP, CP.lateralTuning.indi.kilgBP)
+      self.bpolg = 0 # interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kolgBP, CP.lateralTuning.indi.kolgBP)
+      self.bpilg = 0 # interp(abs(self.angle_steers_des), CP.lateralTuning.indi.kilgBP, CP.lateralTuning.indi.kilgBP)
 
       rate_sp = (self.outer_loop_gain + self.bpolg) * (steers_des - self.x[0]) + rate_des
       accel_sp = (self.inner_loop_gain + self.bpilg) * (rate_sp - self.x[1])
