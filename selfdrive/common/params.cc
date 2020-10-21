@@ -33,7 +33,7 @@ std::string getenv_default(const char* env_var, const char * suffix, const char*
 #if defined(QCOM) || defined(QCOM2)
 const std::string default_params_path = "/data/params";
 #else
-const std::string default_params_path = getenv_default("BASEDIR", "persists/params", "/data/params");
+const std::string default_params_path = getenv_default("HOME", "/.comma/params", "/data/params");
 #endif
 
 #if defined(QCOM) || defined(QCOM2)
@@ -45,7 +45,6 @@ const std::string persistent_params_path = default_params_path;
 
 volatile sig_atomic_t params_do_exit = 0;
 void params_sig_handler(int signal) {
-  std::cout << "got signal" << std::endl;
   params_do_exit = 1;
 }
 
@@ -92,6 +91,7 @@ static int mkdir_p(std::string path) {
   if (mkdir(_path, 0777) != 0) {
     if (errno != EEXIST) return -1;
   }
+  chmod(_path, 0777);
   umask(prev_mask);
   return 0;
 }
@@ -167,13 +167,19 @@ int Params::write_db_value(const char* key, const char* value, size_t value_size
     if (result < 0) {
       goto cleanup;
     }
+  } else {
+    // Ensure permissions are correct in case we didn't create the symlink
+    result = chmod(path.c_str(), 0777);
+    if (result < 0) {
+      goto cleanup;
+    }
   }
 
   // Write value to temp.
   tmp_path = params_path + "/.tmp_value_XXXXXX";
   tmp_fd = mkstemp((char*)tmp_path.c_str());
   bytes_written = write(tmp_fd, value, value_size);
-  if (bytes_written != value_size) {
+  if (bytes_written < 0 || (size_t)bytes_written != value_size) {
     result = -20;
     goto cleanup;
   }

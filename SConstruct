@@ -138,6 +138,7 @@ env = Environment(
     "-Werror",
     "-Wno-unknown-warning-option",
     "-Wno-deprecated-register",
+    "-Wno-register",
     "-Wno-inconsistent-missing-override",
     "-Wno-c99-designator",
     "-Wno-reorder-init-list",
@@ -177,7 +178,7 @@ env = Environment(
   RPATH=rpath,
 
   CFLAGS=["-std=gnu11"] + cflags,
-  CXXFLAGS=["-std=c++14"] + cxxflags,
+  CXXFLAGS=["-std=c++1z"] + cxxflags,
   LIBPATH=libpath + [
     "#cereal",
     "#selfdrive/common",
@@ -202,6 +203,7 @@ if arch in ["x86_64", "Darwin", "larch64"]:
     ]
     qt_env["LINKFLAGS"] += ["-F" + QT_BASE + "lib"]
   else:
+    qt_env['QTDIR'] = "/usr"
     qt_dirs = [
       f"/usr/include/{real_arch}-linux-gnu/qt5",
       f"/usr/include/{real_arch}-linux-gnu/qt5/QtWidgets",
