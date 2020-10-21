@@ -215,7 +215,7 @@ typedef struct UIState {
 
   // device state
   bool awake;
-  float light_sensor;
+  float light_sensor, accel_sensor, gyro_sensor;
 
   bool started;
   bool ignition;
@@ -229,6 +229,8 @@ typedef struct UIState {
 
   track_vertices_data track_vertices[2];
   model_path_vertices_data model_path_vertices[MODEL_LANE_PATH_CNT * 2];
+
+  Rect video_rect;
 } UIState;
 
 void ui_init(UIState *s);
