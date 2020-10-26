@@ -19,7 +19,7 @@ cd /data/openpilot/_backup/mdpsH && cp safety_declarations.h /data/openpilot/pan
 cd /data/openpilot/_backup/mdpsH && wget https://raw.githubusercontent.com/xps-genesis/unsafedog/main/common/safety_defaults.h;
 cd /data/openpilot/_backup/mdpsH && cp safety_defaults.h /data/openpilot/panda/board/safety;
 
-cd /data/openpilot/_backup/mdpsH && wget https://raw.githubusercontent.com/xps-genesis/openpilot/Xps_Community_Release/panda/board/safety/safety_hyundai_community.h;
+cd /data/openpilot/_backup/mdpsH && wget https://raw.githubusercontent.com/xps-genesis/unsafedog/main/common/safety_hyundai_community.h;
 cd /data/openpilot/_backup/mdpsH && cp safety_hyundai_community.h /data/openpilot/panda/board/safety;
 
 cd /data/openpilot/panda; pkill -f boardd; PYTHONPATH=..; python -c "from panda import Panda; Panda().flash()"; reboot
