@@ -31,7 +31,7 @@ def dmonitoringd_thread(sm=None, pm=None):
 
   v_cruise_last = 0
   driver_engaged = False
-
+  print(len(sm['carState'].buttonEvents), `len(sm['carState'].buttonEvents)`)
   # 10Hz <- dmonitoringmodeld
   while True:
     sm.update()
