@@ -42,8 +42,8 @@ def dmonitoringd_thread(sm=None, pm=None):
     # Get interaction
     if sm.updated['carState']:
       v_cruise = sm['carState'].cruiseState.speed
-      driver_engaged = #len(sm['carState'].buttonEvents) > 0 or \
-                        v_cruise != v_cruise_last or \
+      #driver_engaged = len(sm['carState'].buttonEvents) > 0 or \
+      driver_engaged = v_cruise != v_cruise_last or \
                         sm['carState'].steeringPressed or \
                         sm['carState'].gasPressed
       #driver_engaged = False
