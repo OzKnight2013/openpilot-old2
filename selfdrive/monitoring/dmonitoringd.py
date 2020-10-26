@@ -31,7 +31,7 @@ def dmonitoringd_thread(sm=None, pm=None):
 
   v_cruise_last = 0
   driver_engaged = False
-  print(len(sm['carState'].buttonEvents), `len(sm['carState'].buttonEvents)`)
+  
   # 10Hz <- dmonitoringmodeld
   while True:
     sm.update()
@@ -41,6 +41,7 @@ def dmonitoringd_thread(sm=None, pm=None):
 
     # Get interaction
     if sm.updated['carState']:
+      print(len(sm['carState'].buttonEvents)
       v_cruise = sm['carState'].cruiseState.speed
       driver_engaged = len(sm['carState'].buttonEvents) > 0 or \
                         v_cruise != v_cruise_last or \
