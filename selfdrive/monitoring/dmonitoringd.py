@@ -46,6 +46,7 @@ def dmonitoringd_thread(sm=None, pm=None):
                         v_cruise != v_cruise_last or \
                         sm['carState'].steeringPressed or \
                         sm['carState'].gasPressed
+      driver_engaged = False
       if driver_engaged:
         driver_status.update(Events(), True, sm['carState'].cruiseState.enabled, sm['carState'].standstill)
       v_cruise_last = v_cruise
@@ -62,7 +63,7 @@ def dmonitoringd_thread(sm=None, pm=None):
       events.add(car.CarEvent.EventName.tooDistracted)
 
     # Update events from driver state
-    driver_status.update(events, driver_engaged, sm['carState'].cruiseState.enabled, sm['carState'].standstill)
+    driver_status.update(events, driver_engaged, True, sm['carState'].standstill)
 
     # build dMonitoringState packet
     dat = messaging.new_message('dMonitoringState')
