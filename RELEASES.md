@@ -12,6 +12,13 @@ Version 0.7.10 (2020-10-26)
 
 Version 0.7.9 (2020-10-09)
 ========================
+ * XPS community updates, 
+   - fix panda safety 
+   - added support for vision based op long
+   - added support for mdps harness types, see readme for instructions
+   - anti-nag for panda only setup
+   - Added OP-edit for easy editing and live tuning
+   - Added toggles for various options under developer settings
  * Improved car battery power management
  * Improved updater robustness
  * Improved realtime performance
