@@ -104,6 +104,7 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     cameraMalfunction @92;
     visiononlyWarning @ 93;
     belowSteerSpeedDing @ 94;
+
     gasUnavailableDEPRECATED @3;
     dataNeededDEPRECATED @16;
     modelCommIssueDEPRECATED @27;
