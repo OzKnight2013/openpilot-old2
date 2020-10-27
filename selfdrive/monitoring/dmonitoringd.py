@@ -46,8 +46,6 @@ def dmonitoringd_thread(sm=None, pm=None):
       v_cruise = sm['carState'].cruiseState.speed
       for b in sm['carState'].buttonEvents:
         butpressed = b.pressed
-      print(b)
-      print(butpressed)
       driver_engaged = butpressed or \
                         v_cruise != v_cruise_last or \
                         sm['carState'].steeringPressed or \
