@@ -90,6 +90,10 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 2.7
       ret.steerRatio = 15.4
       ret.minSteerSpeed = 32 * CV.MPH_TO_MS
+    elif candidate == CAR.ELANTRA_2020:
+      ret.mass = 1275. + STD_CARGO_KG
+      ret.wheelbase = 2.7
+      ret.steerRatio = 15.4
     elif candidate == CAR.HYUNDAI_GENESIS:
       ret.mass = 2060. + STD_CARGO_KG
       ret.wheelbase = 3.01
