@@ -203,7 +203,7 @@ class Controls:
                                                  LaneChangeState.laneChangeFinishing]:
       self.events.add(EventName.laneChange)
 
-    if self.can_rcv_error or (not CS.canValid and self.sm.frame > 5 / DT_CTRL):
+    if self.can_rcv_error or (not CS.canValid and self.sm.frame > 10 / DT_CTRL):
       self.events.add(EventName.canError)
     if self.mismatch_counter >= 200:
       self.events.add(EventName.controlsMismatch)
@@ -237,7 +237,7 @@ class Controls:
       self.events.add(EventName.fcw)
     if self.sm['model'].frameDropPerc > 1 and not SIMULATION:
        self.events.add(EventName.modeldLagging)
-    if not self.sm.alive['frontFrame'] and (self.sm.frame > 5 / DT_CTRL) and not SIMULATION:
+    if not self.sm.alive['frontFrame'] and (self.sm.frame > 10 / DT_CTRL) and not SIMULATION:
        self.events.add(EventName.cameraMalfunction)
 
     # Only allow engagement with brake pressed when stopped behind another stopped car
@@ -255,7 +255,7 @@ class Controls:
     self.sm.update(0)
 
     # Check for CAN timeout
-    if not can_strs:
+    if not can_strs and self.sm.frame > 10 / DT_CTRL:
       self.can_error_counter += 1
       self.can_rcv_error = True
     else:
