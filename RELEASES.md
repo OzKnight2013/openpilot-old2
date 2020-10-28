@@ -1,7 +1,6 @@
 Version 0.7.11 (2020-XX-XX)
 ========================
 
-
 Version 0.7.10 (2020-10-29)
 ========================
  * Grey panda is deprecated, upgrade to comma two or black panda
