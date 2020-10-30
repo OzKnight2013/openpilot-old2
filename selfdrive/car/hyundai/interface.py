@@ -273,6 +273,13 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.visiononlyWarning)
       self.visiononlyWarning = True
 
+
+      buttonEvents.append(be)
+      be.pressed = bool(self.CS.cruise_main_button)
+      be.type = ButtonType.altButton3
+    if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
+      be = car.CarState.ButtonEvent.new_message()
+
     buttonEvents = []
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
       be = car.CarState.ButtonEvent.new_message()
@@ -286,37 +293,26 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.gapAdjustCruise
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
-      else:
         be.type = ButtonType.unknown
+      else:
       buttonEvents.append(be)
       self.buttonEvents = buttonEvents
-
-    if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
-      be = car.CarState.ButtonEvent.new_message()
-      be.type = ButtonType.altButton3
-      be.pressed = bool(self.CS.cruise_main_button)
-      buttonEvents.append(be)
       self.buttonEvents = buttonEvents
-
     ret.buttonEvents = self.buttonEvents
-
     # handle button press
-    if not self.CP.enableCruise:
-      for b in self.buttonEvents:
-        if b.type == ButtonType.decelCruise and b.pressed \
-                and (not ret.brakePressed or ret.standstill):
-          events.add(EventName.buttonEnable)
-          events.add(EventName.pcmEnable)
-        if b.type == ButtonType.accelCruise and b.pressed \
-                and ((self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill or self.CC.usestockscc):
-          events.add(EventName.buttonEnable)
-          events.add(EventName.pcmEnable)
-        if b.type == ButtonType.cancel and b.pressed:
-          events.add(EventName.buttonCancel)
-          events.add(EventName.pcmDisable)
-        if b.type == ButtonType.altButton3 and b.pressed:
-          events.add(EventName.buttonCancel)
-          events.add(EventName.pcmDisable)
+
+    for b in self.buttonEvents:
+      if b.type == ButtonType.decelCruise and b.pressed \
+              and (not ret.brakePressed or ret.standstill) and not self.CP.enableCruise:
+        events.add(EventName.buttonEnable)
+      if b.type == ButtonType.accelCruise and b.pressed \
+              and ((self.CC.setspeed > self.CC.clu11_speed - 2) or ret.standstill or self.CC.usestockscc) \
+              and not self.CP.enableCruise:
+        events.add(EventName.buttonEnable)
+      if b.type == ButtonType.cancel and b.pressed:
+        events.add(EventName.buttonCancel)
+      if b.type == ButtonType.altButton3 and b.pressed:
+        events.add(EventName.buttonCancel)
 
     ret.events = events.to_msg()
 

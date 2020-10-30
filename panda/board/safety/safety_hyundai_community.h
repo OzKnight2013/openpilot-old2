@@ -1,3 +1,11 @@
+const int HYUNDAI_COMMUNITY_MAX_STEER = 384;             // like stock
+const int HYUNDAI_COMMUNITY_MAX_RT_DELTA = 112;          // max delta torque allowed for real time checks
+const uint32_t HYUNDAI_COMMUNITY_RT_INTERVAL = 250000;   // 250ms between real time checks
+const int HYUNDAI_COMMUNITY_MAX_RATE_UP = 3;
+const int HYUNDAI_COMMUNITY_MAX_RATE_DOWN = 7;
+const int HYUNDAI_COMMUNITY_DRIVER_TORQUE_ALLOWANCE = 50;
+const int HYUNDAI_COMMUNITY_DRIVER_TORQUE_FACTOR = 2;
+const int HYUNDAI_COMMUNITY_STANDSTILL_THRSLD = 30;  // ~1kph
 
 const int HYUNDAI_COMMUNITY_MAX_ACCEL = 150;        // 1.5 m/s2
 const int HYUNDAI_COMMUNITY_MIN_ACCEL = -300;       // -3.0 m/s2
@@ -24,10 +32,10 @@ const CanMsg HYUNDAI_COMMUNITY_NONSCC_TX_MSGS[] = {
   {1057, 0, 8}, //   SCC12,  Bus 0
   {1290, 0, 8}, //   SCC13,  Bus 0
   {905, 0, 8},  //   SCC14,  Bus 0
-  {1186, 0, 8}, //  4a2SCC,  Bus 0
-  {1155, 0, 8}, //   FCA12,  Bus 0
-  {909, 0, 8},  //   FCA11,  Bus 0
-  {2000, 0, 8}  // SCC_DIAG, Bus 0
+  {1186, 0, 8}, //  4a2SCC, Bus 0
+  {1155, 0, 8}, //   FCA12, Bus 0
+  {909, 0, 8},  //   FCA11, Bus 0
+  {2000, 0, 8}  //   SCC_DIAG, Bus 0
  };
 
 // TODO: missing checksum for wheel speeds message,worst failure case is
@@ -98,6 +106,9 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
 
+  if ((bus == 0) && (addr == 593 || addr == 897)) {
+    hyundai_community_mdps_harness_present = false;
+  }
 
   if (hyundai_community_non_scc_car) {
     valid = addr_safety_check(to_push, hyundai_community_nonscc_rx_checks, HYUNDAI_COMMUNITY_NONSCC_RX_CHECK_LEN,
@@ -108,6 +119,15 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
     valid = addr_safety_check(to_push, hyundai_community_rx_checks, HYUNDAI_COMMUNITY_RX_CHECK_LEN,
                             hyundai_community_get_checksum, hyundai_community_compute_checksum,
                             hyundai_community_get_counter);
+  }
+
+  if ((bus == 1) && hyundai_community_mdps_harness_present) {
+
+    if (addr == 593) {
+      int torque_driver_new = ((GET_BYTES_04(to_push) & 0x7ff) * 0.79) - 808; // scale down new driver torque signal to match previous one
+      // update array of samples
+      update_sample(&torque_driver, torque_driver_new);
+    }
   }
 
   if (valid && (bus == 0)) {
@@ -147,10 +167,10 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     // sample wheel speed, averaging opposite corners
     if (addr == 902) {
-      int hyundai_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
-      hyundai_speed += (GET_BYTES_48(to_push) >> 16) & 0x3FFF;  // RL
-      hyundai_speed /= 2;
-      vehicle_moving = hyundai_speed > HYUNDAI_STANDSTILL_THRSLD;
+      int hyundai_community_speed = GET_BYTES_04(to_push) & 0x3FFF;  // FL
+      hyundai_community_speed += (GET_BYTES_48(to_push) >> 16) & 0x3FFF;  // RL
+      hyundai_community_speed /= 2;
+      vehicle_moving = hyundai_community_speed > HYUNDAI_COMMUNITY_STANDSTILL_THRSLD;
     }
 
     if (addr == 916) {
@@ -220,7 +240,7 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   }
 
   // LKA STEER: safety check
-  if (addr == 832) {
+  if ((addr == 832) && ((bus == 0) || ((bus == 1) && (hyundai_community_mdps_harness_present)))) {
     int desired_torque = ((GET_BYTES_04(to_send) >> 16) & 0x7ff) - 1024;
     uint32_t ts = TIM2->CNT;
     bool violation = 0;
@@ -228,22 +248,22 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
     if (controls_allowed) {
 
       // *** global torque limit check ***
-      violation |= max_limit_check(desired_torque, HYUNDAI_MAX_STEER, -HYUNDAI_MAX_STEER);
+      violation |= max_limit_check(desired_torque, HYUNDAI_COMMUNITY_MAX_STEER, -HYUNDAI_COMMUNITY_MAX_STEER);
 
       // *** torque rate limit check ***
       violation |= driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
-        HYUNDAI_MAX_STEER, HYUNDAI_MAX_RATE_UP, HYUNDAI_MAX_RATE_DOWN,
-        HYUNDAI_DRIVER_TORQUE_ALLOWANCE, HYUNDAI_DRIVER_TORQUE_FACTOR);
+        HYUNDAI_COMMUNITY_MAX_STEER, HYUNDAI_COMMUNITY_MAX_RATE_UP, HYUNDAI_COMMUNITY_MAX_RATE_DOWN,
+        HYUNDAI_COMMUNITY_DRIVER_TORQUE_ALLOWANCE, HYUNDAI_COMMUNITY_DRIVER_TORQUE_FACTOR);
 
       // used next time
       desired_torque_last = desired_torque;
 
       // *** torque real time rate limit check ***
-      violation |= rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_MAX_RT_DELTA);
+      violation |= rt_rate_limit_check(desired_torque, rt_torque_last, HYUNDAI_COMMUNITY_MAX_RT_DELTA);
 
       // every RT_INTERVAL set the new limits
       uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last);
-      if (ts_elapsed > HYUNDAI_RT_INTERVAL) {
+      if (ts_elapsed > HYUNDAI_COMMUNITY_RT_INTERVAL) {
         rt_torque_last = desired_torque;
         ts_last = ts;
       }
@@ -269,7 +289,7 @@ static int hyundai_community_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   // FORCE CANCEL: safety check only relevant when spamming the cancel button.
   // ensuring that only the cancel button press is sent (VAL 4) when controls are off.
   // This avoids unintended engagements while still allowing resume spam
-  if ((addr == 1265) && !controls_allowed) {
+  if ((addr == 1265) && !controls_allowed && ((bus != 1) || (!hyundai_community_mdps_harness_present))) {
     if ((GET_BYTES_04(to_send) & 0x7) != 4) {
       tx = 0;
     }
@@ -287,10 +307,22 @@ static int hyundai_community_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_f
   if (!relay_malfunction) {
     if (bus_num == 0) {
       bus_fwd = 2;
+      if ((hyundai_community_mdps_harness_present) && (addr != 1265)) {
+            bus_fwd = 12;
+      }
+    }
+    if ((bus_num == 1) && hyundai_community_mdps_harness_present) {
+        bus_fwd = 20;
     }
     if ((bus_num == 2) && (addr != 832) && (addr != 1157)) {
       if ((addr != 1056) && (addr != 1057) && (addr != 905) && (addr != 1290)) {
         bus_fwd = 0;
+        if (hyundai_community_mdps_harness_present) {
+           bus_fwd = 10;
+        }
+      }
+      else if (hyundai_community_mdps_harness_present) {
+        bus_fwd = 1;
       }
     }
   }

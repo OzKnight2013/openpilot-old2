@@ -52,8 +52,8 @@ class Controls:
 
     self.sm = sm
     if self.sm is None:
-      self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration', 'frontFrame',
-                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman'])
+      self.sm = messaging.SubMaster(['thermal', 'health', 'model', 'liveCalibration',
+                                     'dMonitoringState', 'plan', 'pathPlan', 'liveLocationKalman', 'radarState'])
 
     self.can_sock = can_sock
     if can_sock is None:
@@ -380,7 +380,7 @@ class Controls:
     v_acc_sol = plan.vStart + dt * (a_acc_sol + plan.aStart) / 2.0
 
     # Gas/Brake PID loop
-    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, self.CP)
+    actuators.gas, actuators.brake = self.LoC.update(self.active, CS, v_acc_sol, plan.vTargetFuture, a_acc_sol, self.CP, plan.hasLead, self.sm['radarState'])
     # Steering PID loop and lateral MPC
     actuators.steer, actuators.steerAngle, lac_log = self.LaC.update(self.active, CS, self.CP, path_plan)
 
@@ -426,9 +426,9 @@ class Controls:
     CC.hudControl.speedVisible = self.enabled
     CC.hudControl.lanesVisible = self.enabled
     CC.hudControl.leadVisible = self.sm['plan'].hasLead
-    CC.hudControl.leadDistance = 0 #self.sm['radarState'].leadOne.dRel
-    CC.hudControl.leadvRel = 0 #self.sm['radarState'].leadOne.vRel
-    CC.hudControl.leadyRel = 0 #self.sm['radarState'].leadOne.yRel
+    CC.hudControl.leadDistance = self.sm['radarState'].leadOne.dRel
+    CC.hudControl.leadvRel = self.sm['radarState'].leadOne.vRel
+    CC.hudControl.leadyRel = self.sm['radarState'].leadOne.yRel
 
     right_lane_visible = self.sm['pathPlan'].rProb > 0.5
     left_lane_visible = self.sm['pathPlan'].lProb > 0.5
