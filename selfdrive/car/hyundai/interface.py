@@ -293,11 +293,18 @@ class CarInterface(CarInterfaceBase):
         be.type = ButtonType.gapAdjustCruise
       elif but == Buttons.CANCEL:
         be.type = ButtonType.cancel
-        be.type = ButtonType.unknown
       else:
+        be.type = ButtonType.unknown
       buttonEvents.append(be)
       self.buttonEvents = buttonEvents
+
+    if self.CS.cruise_main_button != self.CS.prev_cruise_main_button:
+      be = car.CarState.ButtonEvent.new_message()
+      be.type = ButtonType.altButton3
+      be.pressed = bool(self.CS.cruise_main_button)
+      buttonEvents.append(be)
       self.buttonEvents = buttonEvents
+
     ret.buttonEvents = self.buttonEvents
     # handle button press
 
