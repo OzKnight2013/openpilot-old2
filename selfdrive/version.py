@@ -8,7 +8,7 @@ from selfdrive.swaglog import cloudlog
 
 from common.op_params import opParams
 
-cloak = opParams().get('mockRemote', True) if not travis else True
+cloak = opParams().get('mockRemote', True)
 
 def run_cmd(cmd: List[str]) -> str:
     return subprocess.check_output(cmd, encoding='utf8').strip()
