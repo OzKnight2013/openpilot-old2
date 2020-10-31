@@ -7,7 +7,6 @@ from common.basedir import BASEDIR
 from selfdrive.swaglog import cloudlog
 
 from common.op_params import opParams
-from common.travis_checker import travis
 
 cloak = opParams().get('mockRemote', True) if not travis else True
 
