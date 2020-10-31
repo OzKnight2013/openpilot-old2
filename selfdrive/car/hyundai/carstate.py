@@ -102,7 +102,7 @@ class CarState(CarStateBase):
       if self.cruise_buttons == 1 or self.cruise_buttons == 2:
         self.allow_nonscc_available = True
       ret.cruiseState.available = self.allow_nonscc_available != 0
-      ret.cruiseState.enabled = ret.cruiseState.available
+      ret.cruiseState.enabled = ret.cruiseState.available if not CP.radarOffCan else bool(self.cruise_main_button)
     elif not self.CP.radarOffCan:
       ret.cruiseState.available = (cp_scc.vl["SCC11"]["MainMode_ACC"] != 0)
       ret.cruiseState.enabled = (cp_scc.vl["SCC12"]['ACCMode'] != 0)
