@@ -70,7 +70,7 @@ class opParams:
                         'OuterLoopGain': Param(3.1, VT.number, 'Turn Aggressiveness'),
                         'InnerLoopGain': Param(2.1, VT.number, 'Over correction'),
                         'RCTimeConstant': Param(1.4, VT.number, 'Time constant'),
-                        'mockRemote': Param(True, bool, "mock git remote to official"},
+                        'mockRemote': Param(True, bool, "mock git remote to official"),
                         'ActuatorEffectiveness': Param(2., VT.number, 'Sensitivity of the actuator, increase for less pingpong, decrease if weak steering'),
                         }
 
