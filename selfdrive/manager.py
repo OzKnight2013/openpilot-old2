@@ -448,7 +448,7 @@ def manager_thread():
   cloudlog.info({"environ": os.environ})
 
   # save boot log
-  subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+  #subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   params = Params()
 
@@ -488,7 +488,7 @@ def manager_thread():
         else:
           start_managed_process(p)
     else:
-      logger_dead = False
+      logger_dead = True
       driver_view = params.get("IsDriverViewEnabled") == b"1"
 
       # TODO: refactor how manager manages processes
