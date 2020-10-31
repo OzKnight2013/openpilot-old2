@@ -175,10 +175,10 @@ static int hyundai_community_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     if (addr == 916) {
       gas_pressed = ((GET_BYTE(to_push, 5) >> 5) & 0x3) == 1;
-      brake_pressed = (GET_BYTE(to_push, 6) >> 7) != 0;
+      brake_pressed = false; //(GET_BYTE(to_push, 6) >> 7) != 0;
     }
 
-    generic_rx_checks((addr == 832));
+    // generic_rx_checks((addr == 832));
   }
     // monitor AEB active command to bypass panda accel safety, don't block AEB
   if ((addr == 1057) && (bus == 2) && (hyundai_community_non_scc_car)){
